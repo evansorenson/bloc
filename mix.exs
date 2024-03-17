@@ -1,3 +1,8 @@
+# Workaround for `mix deps.get` not being able to install Hex locally
+# on Elixir 1.15+ due to Zscaler cert issue.
+# See Github issue: https://github.com/elixir-lang/elixir/issues/13169
+"./apps/vida/priv/repo/cert/zsaler_root_ca.pem" |> Path.expand() |> :public_key.cacerts_load()
+
 defmodule Vida.Umbrella.MixProject do
   use Mix.Project
 
