@@ -1,3 +1,0 @@
-# Vida
-
-**TODO: Add description**

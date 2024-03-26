@@ -1,11 +1,11 @@
 import Config
 
 # Configure your database
-config :vida, Vida.Repo,
+config :bloc, Bloc.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "vida_dev",
+  database: "bloc_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -16,7 +16,7 @@ config :vida, Vida.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :vida_web, VidaWeb.Endpoint,
+config :bloc_web, BlocWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -25,8 +25,8 @@ config :vida_web, VidaWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "soaJ06H5/G20MuhOf66k38jXGDLc4WUGnf5lD9jjQGI6arNuc3zj3khjetJwVAFG",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:vida_web, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:vida_web, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:bloc_web, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:bloc_web, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -53,17 +53,17 @@ config :vida_web, VidaWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :vida_web, VidaWeb.Endpoint,
+config :bloc_web, BlocWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/vida_web/(controllers|live|components)/.*(ex|heex)$"
+      ~r"lib/bloc_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :vida_web, dev_routes: true
+config :bloc_web, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

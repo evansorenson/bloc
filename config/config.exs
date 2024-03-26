@@ -10,8 +10,8 @@
 import Config
 
 # Configure Mix tasks and generators
-config :vida,
-  ecto_repos: [Vida.Repo]
+config :bloc,
+  ecto_repos: [Bloc.Repo]
 
 # Configures the mailer
 #
@@ -20,43 +20,43 @@ config :vida,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :vida, Vida.Mailer, adapter: Swoosh.Adapters.Local
+config :bloc, Bloc.Mailer, adapter: Swoosh.Adapters.Local
 
-config :vida_web,
-  ecto_repos: [Vida.Repo],
-  generators: [context_app: :vida]
+config :bloc_web,
+  ecto_repos: [Bloc.Repo],
+  generators: [context_app: :bloc]
 
 # Configures the endpoint
-config :vida_web, VidaWeb.Endpoint,
+config :bloc_web, BlocWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: VidaWeb.ErrorHTML, json: VidaWeb.ErrorJSON],
+    formats: [html: BlocWeb.ErrorHTML, json: BlocWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Vida.PubSub,
+  pubsub_server: Bloc.PubSub,
   live_view: [signing_salt: "Po8vqhkA"]
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  vida_web: [
+  bloc_web: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
-    cd: Path.expand("../apps/vida_web/assets", __DIR__),
+    cd: Path.expand("../apps/bloc_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.0",
-  vida_web: [
+  bloc_web: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css
       --output=../priv/static/assets/app.css
     ),
-    cd: Path.expand("../apps/vida_web/assets", __DIR__)
+    cd: Path.expand("../apps/bloc_web/assets", __DIR__)
   ]
 
 # Configures Elixir's Logger
