@@ -2,13 +2,12 @@ defmodule BlocWeb.UserConfirmationLiveTest do
   use BlocWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Bloc.AccountsFixtures
 
   alias Bloc.Accounts
   alias Bloc.Repo
 
   setup do
-    %{user: user_fixture()}
+    %{user: insert(:user)}
   end
 
   describe "Confirm user" do

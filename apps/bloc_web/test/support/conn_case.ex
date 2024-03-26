@@ -17,12 +17,15 @@ defmodule BlocWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  import Bloc.Factory
+
   using do
     quote do
       # The default endpoint for testing
       @endpoint BlocWeb.Endpoint
 
       use BlocWeb, :verified_routes
+      import Bloc.Factory
 
       # Import conveniences for testing with connections
       import Plug.Conn
@@ -45,7 +48,7 @@ defmodule BlocWeb.ConnCase do
   test context.
   """
   def register_and_log_in_user(%{conn: conn}) do
-    user = Bloc.AccountsFixtures.user_fixture()
+    user = insert(:user)
     %{conn: log_in_user(conn, user), user: user}
   end
 

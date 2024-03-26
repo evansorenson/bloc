@@ -2,12 +2,11 @@ defmodule BlocWeb.UserResetPasswordLiveTest do
   use BlocWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Bloc.AccountsFixtures
 
   alias Bloc.Accounts
 
   setup do
-    user = user_fixture()
+    user = insert(:user)
 
     token =
       extract_user_token(fn url ->

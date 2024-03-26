@@ -24,7 +24,13 @@ config :bloc, Bloc.Mailer, adapter: Swoosh.Adapters.Local
 
 config :bloc_web,
   ecto_repos: [Bloc.Repo],
-  generators: [context_app: :bloc]
+  generators: [
+    context_app: :bloc,
+    migration: true,
+    binary_id: true,
+    timestamp_type: :utc_datetime,
+    sample_binary_id: "11111111-1111-1111-1111-111111111111"
+  ]
 
 # Configures the endpoint
 config :bloc_web, BlocWeb.Endpoint,

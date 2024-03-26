@@ -68,6 +68,13 @@ defmodule BlocWeb.Router do
       on_mount: [{BlocWeb.UserAuth, :ensure_authenticated}] do
       live("/users/settings", UserSettingsLive, :edit)
       live("/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email)
+
+      live("/blocks", BlockLive.Index, :index)
+      live("/blocks/new", BlockLive.Index, :new)
+      live("/blocks/:id/edit", BlockLive.Index, :edit)
+
+      live("/blocks/:id", BlockLive.Show, :show)
+      live("/blocks/:id/show/edit", BlockLive.Show, :edit)
     end
   end
 

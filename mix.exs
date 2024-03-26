@@ -47,7 +47,11 @@ defmodule Bloc.Umbrella.MixProject do
   defp aliases do
     [
       # run `mix setup` in all child apps
-      setup: ["cmd mix setup"]
+      setup: ["cmd mix setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "ecto.seeds"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "ecto.seeds": ["run apps/bloc/priv/repo/seeds.exs"],
+      "ecto.migrate": ["ecto.migrate"]
     ]
   end
 end

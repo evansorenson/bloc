@@ -2,7 +2,6 @@ defmodule BlocWeb.UserRegistrationLiveTest do
   use BlocWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
-  import Bloc.AccountsFixtures
 
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do
@@ -15,7 +14,7 @@ defmodule BlocWeb.UserRegistrationLiveTest do
     test "redirects if already logged in", %{conn: conn} do
       result =
         conn
-        |> log_in_user(user_fixture())
+        |> log_in_user(insert(:user))
         |> live(~p"/users/register")
         |> follow_redirect(conn, "/")
 
@@ -58,7 +57,7 @@ defmodule BlocWeb.UserRegistrationLiveTest do
     test "renders errors for duplicated email", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
-      user = user_fixture(%{email: "test@email.com"})
+      user = insert(:user, email: "test@email.com")
 
       result =
         lv

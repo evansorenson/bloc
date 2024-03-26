@@ -4,7 +4,6 @@ defmodule BlocWeb.UserAuthTest do
   alias Phoenix.LiveView
   alias Bloc.Accounts
   alias BlocWeb.UserAuth
-  import Bloc.AccountsFixtures
 
   @remember_me_cookie "_bloc_web_user_remember_me"
 
@@ -14,7 +13,7 @@ defmodule BlocWeb.UserAuthTest do
       |> Map.replace!(:secret_key_base, BlocWeb.Endpoint.config(:secret_key_base))
       |> init_test_session(%{})
 
-    %{user: user_fixture(), conn: conn}
+    %{user: insert(:user), conn: conn}
   end
 
   describe "log_in_user/3" do

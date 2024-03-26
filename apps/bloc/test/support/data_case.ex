@@ -24,6 +24,7 @@ defmodule Bloc.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Bloc.DataCase
+      import Bloc.Factory
     end
   end
 

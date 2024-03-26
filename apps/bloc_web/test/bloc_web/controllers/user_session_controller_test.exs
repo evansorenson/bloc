@@ -1,10 +1,8 @@
 defmodule BlocWeb.UserSessionControllerTest do
   use BlocWeb.ConnCase, async: true
 
-  import Bloc.AccountsFixtures
-
   setup do
-    %{user: user_fixture()}
+    %{user: insert(:user)}
   end
 
   describe "POST /users/log_in" do

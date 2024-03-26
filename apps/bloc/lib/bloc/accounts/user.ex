@@ -1,13 +1,13 @@
 defmodule Bloc.Accounts.User do
-  use Ecto.Schema
+  use Bloc.Schema
   import Ecto.Changeset
 
   schema "users" do
     field :email, :string
+    field :role, Ecto.Enum, values: [:admin, :user], default: :user
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
-    # field :status, Ecto.Enum, values: [:patient, :provider, :super_admin]
 
     timestamps()
   end
