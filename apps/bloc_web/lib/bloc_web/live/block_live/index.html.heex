@@ -143,15 +143,14 @@
           </div>
         </div>
         <div class="ml-6 h-6 w-px bg-gray-300"></div>
-        <button
-          fontfamily="Arial"
-          type="button"
-          class="hover:bg-indigo-500 focus-visible:outline
-                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ml-6 rounded-md
-                bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm"
-        >
-          Add event
-        </button>
+        <.link patch={~p"/blocks/new"}>
+          <button
+            type="button"
+            class="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          >
+            New Block
+          </button>
+        </.link>
       </div>
       <div class="ml-6 md:hidden relative">
         <button
@@ -325,49 +324,43 @@
             class="col-start-1 col-end-2
                   row-start-1 grid grid-cols-1"
           >
-            <li style="grid-row: 74 / span 12;" class="mt-px relative flex">
-              <a
-                href="#"
-                class="rounded-lg bg-blue-50 text-xs leading-5 group absolute inset-1 flex flex-col
+            <%= for {id, block}  <- @streams.blocks do %>
+              <% duration = DateTime.diff(block.end_time, block.start_time, :minute) %>
+
+              <li
+                style={"grid-row: #{12 * block.start_time.hour + 2} / span #{(duration / 60) * 12};"}
+                class="mt-px relative flex"
+              >
+                <.link phx-click={JS.navigate(~p"/blocks/#{block}")} class="absolute inset-0">
+                  <div
+                    href="#"
+                    class="rounded-lg bg-blue-50 text-xs leading-5 group absolute inset-1 flex flex-col
                       overflow-y-auto p-2 hover:bg-blue-100"
-              >
-                <p class="font-semibold text-blue-700 order-1">Breakfast</p>
-                <p class="text-blue-500 group-hover:text-blue-700">
-                  <div datetime="2022-01-22T06:00">6:00 AM</div>
-                </p>
-              </a>
-            </li>
-            <li style="grid-row: 92 / span 30;" class="mt-px relative flex">
-              <a
-                href="#"
-                class="rounded-lg bg-pink-50 text-xs leading-5 group absolute inset-1 flex flex-col
-                      overflow-y-auto p-2 hover:bg-pink-100"
-              >
-                <p class="font-semibold text-pink-700 order-1">Flight to Paris</p>
-                <p class="text-pink-500 order-1 group-hover:text-pink-700">
-                  John F. Kennedy International
-                  Airport
-                </p>
-                <p class="text-pink-500 group-hover:text-pink-700">
-                  <div datetime="2022-01-22T07:30">7:30 AM</div>
-                </p>
-              </a>
-            </li>
-            <li style="grid-row: 134 / span 18;" class="mt-px relative flex">
-              <a
-                href="#"
-                class="rounded-lg bg-indigo-50 text-xs leading-5 group absolute inset-1 flex flex-col
-                      overflow-y-auto p-2 hover:bg-indigo-100"
-              >
-                <p class="font-semibold text-indigo-700 order-1">Sightseeing</p>
-                <p class="text-indigo-500 order-1 group-hover:text-indigo-700">
-                  Eiffel Tower
-                </p>
-                <p class="text-indigo-500 group-hover:text-indigo-700">
-                  <div datetime="2022-01-22T11:00">11:00 AM</div>
-                </p>
-              </a>
-            </li>
+                  >
+                    <p class="font-semibold text-blue-700 order-1"><%= block.title %></p>
+                    <p class="text-blue-500 order-1 group-hover:text-blue-700">
+                      Description
+                    </p>
+
+                    <p class="text-blue-500 group-hover:text-blue-700">
+                      <%= Calendar.strftime(block.start_time, "%-H:%M %p") %>
+                    </p>
+
+                    <div class="sr-only">
+                      <.link navigate={~p"/blocks/#{block}"}>Show</.link>
+                    </div>
+                    <.link patch={~p"/blocks/#{block}/edit"}>Edit</.link>
+                    <button
+                      phx-click={JS.push("delete", value: %{id: block.id}) |> hide("##{id}")}
+                      data-confirm="Are you sure?"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </.link>
+              </li>
+            <% end %>
+            <%!-- row_click={fn {_id, block} -> JS.navigate(~p"/blocks/#{block}") end} --%>
           </ul>
         </div>
       </div>
