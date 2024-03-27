@@ -49,10 +49,16 @@ defmodule BlocWeb do
     end
   end
 
-  def live_view do
+  def live_view(opts \\ []) do
     quote do
-      use Phoenix.LiveView,
-        layout: {BlocWeb.Layouts, :app}
+      @opts Keyword.merge(
+              [
+                layout: {BlocWeb.Layouts, :live}
+              ],
+              unquote(opts)
+            )
+
+      use Phoenix.LiveView, @opts
 
       unquote(html_helpers())
     end
