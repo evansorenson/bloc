@@ -75,6 +75,20 @@ defmodule BlocWeb.Router do
 
       live("/blocks/:id", BlockLive.Show, :show)
       live("/blocks/:id/show/edit", BlockLive.Show, :edit)
+
+      live("/habits", HabitLive.Index, :index)
+      live("/habits/new", HabitLive.Index, :new)
+      live("/habits/:id/edit", HabitLive.Index, :edit)
+
+      live("/habits/:id", HabitLive.Show, :show)
+      live("/habits/:id/show/edit", HabitLive.Show, :edit)
+
+      live("/habit_periods", HabitPeriodLive.Index, :index)
+      live("/habit_periods/new", HabitPeriodLive.Index, :new)
+      live("/habit_periods/:id/edit", HabitPeriodLive.Index, :edit)
+
+      live("/habit_periods/:id", HabitPeriodLive.Show, :show)
+      live("/habit_periods/:id/show/edit", HabitPeriodLive.Show, :edit)
     end
   end
 
