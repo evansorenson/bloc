@@ -45,7 +45,9 @@ defmodule Bloc.MixProject do
       {:swoosh, "~> 1.5"},
       {:finch, "~> 0.13"},
       {:uuidv7, "~> 0.2"},
-      {:ex_machina, "~> 2.7.0", only: :test}
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:tzdata, "~> 1.1"},
+      {:ex_doc, "~> 0.17", only: :dev}
     ]
   end
 

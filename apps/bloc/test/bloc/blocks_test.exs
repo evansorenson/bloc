@@ -13,9 +13,10 @@ defmodule Bloc.BlocksTest do
 
     @invalid_attrs %{title: nil, start_time: nil, end_time: nil, user_id: nil}
 
-    test "list_blocks/0 returns all blocks" do
-      block = insert(:block)
-      assert [queried_block] = Blocks.list_blocks()
+    test "list_blocks/0 returns all blocks for user" do
+      user = insert(:user)
+      block = insert(:block, user: user)
+      assert [queried_block] = Blocks.list_blocks(user)
       assert queried_block.id == block.id
     end
 

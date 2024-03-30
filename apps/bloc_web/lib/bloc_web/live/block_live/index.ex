@@ -6,7 +6,7 @@ defmodule BlocWeb.BlockLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :blocks, Blocks.list_blocks())}
+    {:ok, stream(socket, :blocks, Blocks.list_blocks(socket.assigns.current_user))}
   end
 
   @impl true
@@ -21,9 +21,15 @@ defmodule BlocWeb.BlockLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    first_available_time =
+      socket.assigns.current_user |> Blocks.list_blocks() |> Blocks.first_available_time()
+
     socket
     |> assign(:page_title, "New Block")
-    |> assign(:block, %Block{})
+    |> assign(:block, %Block{
+      start_time: first_available_time,
+      end_time: first_available_time |> DateTime.add(1, :hour)
+    })
   end
 
   defp apply_action(socket, :index, _params) do

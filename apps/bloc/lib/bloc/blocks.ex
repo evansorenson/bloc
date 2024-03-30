@@ -7,18 +7,47 @@ defmodule Bloc.Blocks do
   alias Bloc.Repo
 
   alias Bloc.Blocks.Block
+  alias Bloc.Accounts.User
 
   @doc """
   Returns the list of blocks.
 
   ## Examples
 
-      iex> list_blocks()
+      iex> list_blocks(%User{})
       [%Block{}, ...]
 
   """
-  def list_blocks do
-    Repo.all(Block)
+  def list_blocks(%User{id: user_id}, _opts \\ []) do
+    # TODO: only get blocks for today
+    # TODO: make queries composable
+    # TODO: add some indexes for common queries
+
+    from(b in Block,
+      where: b.user_id == ^user_id,
+      order_by: [asc: b.start_time]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets first available time for day's time blocks.
+  """
+  def first_available_time(blocks, opts \\ [timezone: "America/Chicago"])
+
+  def first_available_time([], opts) do
+    opts[:timezone] |> DateTime.now!()
+  end
+
+  def first_available_time(blocks, _opts) do
+    blocks
+    |> Enum.reduce_while(hd(blocks).start_time, fn block, last_end_time ->
+      if last_end_time == block.start_time do
+        {:cont, block.end_time}
+      else
+        {:halt, last_end_time}
+      end
+    end)
   end
 
   @doc """
