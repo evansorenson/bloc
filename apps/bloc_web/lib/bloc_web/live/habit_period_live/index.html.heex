@@ -1,0 +1,47 @@
+<.header>
+  Listing Habit periods
+  <:actions>
+    <.link patch={~p"/habit_periods/new"}>
+      <.button>New Habit period</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="habit_periods"
+  rows={@streams.habit_periods}
+  row_click={fn {_id, habit_period} -> JS.navigate(~p"/habit_periods/#{habit_period}") end}
+>
+  <:col :let={{_id, habit_period}} label="Period type"><%= habit_period.period_type %></:col>
+  <:col :let={{_id, habit_period}} label="Value"><%= habit_period.value %></:col>
+  <:col :let={{_id, habit_period}} label="Goal"><%= habit_period.goal %></:col>
+  <:col :let={{_id, habit_period}} label="Is complete"><%= habit_period.is_complete %></:col>
+  <:col :let={{_id, habit_period}} label="Is active"><%= habit_period.is_active %></:col>
+  <:col :let={{_id, habit_period}} label="Unit"><%= habit_period.unit %></:col>
+  <:col :let={{_id, habit_period}} label="Date"><%= habit_period.date %></:col>
+  <:action :let={{_id, habit_period}}>
+    <div class="sr-only">
+      <.link navigate={~p"/habit_periods/#{habit_period}"}>Show</.link>
+    </div>
+    <.link patch={~p"/habit_periods/#{habit_period}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, habit_period}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: habit_period.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="habit_period-modal" show on_cancel={JS.patch(~p"/habit_periods")}>
+  <.live_component
+    module={BlocWeb.HabitPeriodLive.FormComponent}
+    id={@habit_period.id || :new}
+    title={@page_title}
+    action={@live_action}
+    habit_period={@habit_period}
+    patch={~p"/habit_periods"}
+  />
+</.modal>
