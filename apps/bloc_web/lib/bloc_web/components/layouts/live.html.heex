@@ -405,6 +405,8 @@
 
   <aside class="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
     <!-- Secondary column (hidden on smaller screens) -->
-    <h1>Tasks go here</h1>
+    <%= if @current_user do %>
+      <%= live_render(@socket, BlocWeb.HabitLive.Index, id: "Habits") %>
+    <% end %>
   </aside>
 </div>

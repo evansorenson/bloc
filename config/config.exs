@@ -78,3 +78,5 @@ config :phoenix, :json_library, Jason
 import_config "#{config_env()}.exs"
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
+config :query_builder, :default_page_size, 100

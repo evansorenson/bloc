@@ -6,7 +6,12 @@ defmodule BlocWeb.HabitPeriodLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :habit_periods, Habits.list_habit_periods())}
+    {:ok,
+     stream(
+       socket,
+       :habit_periods,
+       Habits.list_habit_periods(socket.assigns.current_user, where: [{:active?, :ne, nil}])
+     )}
   end
 
   @impl true

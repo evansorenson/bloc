@@ -8,7 +8,7 @@ defmodule Bloc.Repo.Migrations.CreateUsersAuthTables do
       add :id, :uuid, primary_key: true
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
-      add :confirmed_at, :naive_datetime
+      add :confirmed_at, :utc_datetime
       add :role, :string, null: false
 
       timestamps()

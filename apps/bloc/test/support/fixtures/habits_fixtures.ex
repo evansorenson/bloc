@@ -31,8 +31,8 @@ defmodule Bloc.HabitsFixtures do
       |> Enum.into(%{
         date: ~D[2024-03-29],
         goal: 42,
-        is_active: ~N[2024-03-29 16:31:00],
-        is_complete: ~N[2024-03-29 16:31:00],
+        active?: ~N[2024-03-29 16:31:00],
+        complete?: ~N[2024-03-29 16:31:00],
         period_type: :daily,
         unit: :count,
         value: 42

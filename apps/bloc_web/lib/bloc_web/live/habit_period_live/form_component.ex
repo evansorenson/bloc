@@ -28,8 +28,8 @@ defmodule BlocWeb.HabitPeriodLive.FormComponent do
         />
         <.input field={@form[:value]} type="number" label="Value" />
         <.input field={@form[:goal]} type="number" label="Goal" />
-        <.input field={@form[:is_complete]} type="datetime-local" label="Is complete" />
-        <.input field={@form[:is_active]} type="datetime-local" label="Is active" />
+        <.input field={@form[:complete?]} type="datetime-local" label="Is complete" />
+        <.input field={@form[:active?]} type="datetime-local" label="Is active" />
         <.input
           field={@form[:unit]}
           type="select"

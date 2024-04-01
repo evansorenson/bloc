@@ -48,6 +48,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
   def handle_event("validate", %{"block" => block_params}, socket) do
     changeset =
       socket.assigns.block
+      |> Map.put("user_id", socket.assigns.current_user.id)
       |> Blocks.change_block(block_params)
       |> Map.put(:action, :validate)
 

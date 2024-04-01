@@ -9,6 +9,7 @@ defmodule Bloc.Repo.Migrations.CreateHabits do
       add :period_type, :string
       add :goal, :integer
       add :unit, :string
+      add :deleted?, :utc_datetime
       add :user_id, references(:users, on_delete: :nothing, type: :binary_id)
 
       timestamps(type: :utc_datetime)

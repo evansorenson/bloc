@@ -3,10 +3,11 @@ defmodule Bloc.Habits do
   The Habits context.
   """
 
-  import Ecto.Query, warn: false
+  alias Bloc.Accounts.User
+  alias Bloc.Habits.Habit
   alias Bloc.Repo
 
-  alias Bloc.Habits.Habit
+  import Ecto.Query, warn: false
 
   @doc """
   Returns the list of habits.
@@ -69,7 +70,7 @@ defmodule Bloc.Habits do
   """
   def update_habit(%Habit{} = habit, attrs) do
     habit
-    |> Habit.changeset(attrs)
+    |> Habit.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -109,12 +110,15 @@ defmodule Bloc.Habits do
 
   ## Examples
 
-      iex> list_habit_periods()
+      iex> list_habit_periods(%User{})
       [%HabitPeriod{}, ...]
 
   """
-  def list_habit_periods do
-    Repo.all(HabitPeriod)
+  def list_habit_periods(%User{id: user_id}, opts \\ []) do
+    QueryBuilder.where(HabitPeriod, user_id: user_id)
+    |> QueryBuilder.preload([:habit])
+    |> QueryBuilder.from_list(opts)
+    |> Repo.all()
   end
 
   @doc """

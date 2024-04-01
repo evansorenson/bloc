@@ -1,5 +1,10 @@
 defmodule Bloc.Habits.HabitPeriod do
   use Bloc.Schema
+  use QueryBuilder, assoc_fields: [:habit, :user]
+
+  alias Bloc.Accounts.User
+  alias Bloc.Habits.Habit
+
   import Ecto.Changeset
 
   schema "habit_periods" do
@@ -8,9 +13,12 @@ defmodule Bloc.Habits.HabitPeriod do
     field :date, :date
     field :period_type, Ecto.Enum, values: [:daily, :weekly, :monthly]
     field :goal, :integer
-    field :is_complete, :naive_datetime
-    field :is_active, :naive_datetime
-    field :habit_id, :binary_id
+    field :complete?, :utc_datetime
+    field :active?, :utc_datetime
+    field :deleted?, :utc_datetime
+
+    belongs_to :habit, Habit
+    belongs_to :user, User
 
     timestamps(type: :utc_datetime)
   end
@@ -18,7 +26,27 @@ defmodule Bloc.Habits.HabitPeriod do
   @doc false
   def changeset(habit_period, attrs) do
     habit_period
-    |> cast(attrs, [:period_type, :value, :goal, :is_complete, :is_active, :unit, :date])
-    |> validate_required([:period_type, :value, :goal, :is_complete, :is_active, :unit, :date])
+    |> cast(attrs, [
+      :period_type,
+      :value,
+      :goal,
+      :complete?,
+      :active?,
+      :deleted?,
+      :unit,
+      :date,
+      :user_id
+    ])
+    |> validate_required([
+      :period_type,
+      :value,
+      :goal,
+      :complete?,
+      :active?,
+      :deleted?,
+      :unit,
+      :date,
+      :user_id
+    ])
   end
 end

@@ -3,6 +3,10 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   alias Bloc.Habits
 
+  def on_mount(_params, socket) do
+    {:ok, assign(socket, current_user: socket.assigns.current_user)}
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -56,6 +60,8 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"habit" => habit_params}, socket) do
+    habit_params = Map.put(habit_params, "user_id", socket.assigns.current_user.id)
+
     changeset =
       socket.assigns.habit
       |> Habits.change_habit(habit_params)
@@ -69,6 +75,21 @@ defmodule BlocWeb.HabitLive.FormComponent do
   end
 
   defp save_habit(socket, :edit, habit_params) do
+    current_and_future_habit_periods =
+      Habits.list_habit_periods(socket.assigns.current_user,
+        where: [{:date, :gte, Date.utc_today()}]
+      )
+      |> Enum.map(
+        &Habits.change_habit_period(&1, %{
+          "goal" => habit_params["goal"],
+          "unit" => habit_params["unit"],
+          "period_type" => habit_params["period_type"],
+          "complete?" => &1.value >= habit_params["goal"]
+        })
+      )
+
+    habit_params = Map.put(habit_params, "habit_periods", current_and_future_habit_periods)
+
     case Habits.update_habit(socket.assigns.habit, habit_params) do
       {:ok, habit} ->
         notify_parent({:saved, habit})
@@ -76,7 +97,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Habit updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> assign(:live_action, :index)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -84,14 +105,17 @@ defmodule BlocWeb.HabitLive.FormComponent do
   end
 
   defp save_habit(socket, :new, habit_params) do
-    case Habits.create_habit(habit_params) do
+    habit_params
+    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Habits.create_habit()
+    |> case do
       {:ok, habit} ->
         notify_parent({:saved, habit})
 
         {:noreply,
          socket
          |> put_flash(:info, "Habit created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> assign(:live_action, :index)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

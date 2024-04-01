@@ -21,7 +21,13 @@ defmodule Bloc.HabitsTest do
     end
 
     test "create_habit/1 with valid data creates a habit" do
-      valid_attrs = %{unit: :count, title: "some title", notes: "some notes", period_type: :daily, goal: 42}
+      valid_attrs = %{
+        unit: :count,
+        title: "some title",
+        notes: "some notes",
+        period_type: :daily,
+        goal: 42
+      }
 
       assert {:ok, %Habit{} = habit} = Habits.create_habit(valid_attrs)
       assert habit.unit == :count
@@ -37,7 +43,14 @@ defmodule Bloc.HabitsTest do
 
     test "update_habit/2 with valid data updates the habit" do
       habit = habit_fixture()
-      update_attrs = %{unit: :hr, title: "some updated title", notes: "some updated notes", period_type: :weekly, goal: 43}
+
+      update_attrs = %{
+        unit: :hr,
+        title: "some updated title",
+        notes: "some updated notes",
+        period_type: :weekly,
+        goal: 43
+      }
 
       assert {:ok, %Habit{} = habit} = Habits.update_habit(habit, update_attrs)
       assert habit.unit == :hr
@@ -70,7 +83,15 @@ defmodule Bloc.HabitsTest do
 
     import Bloc.HabitsFixtures
 
-    @invalid_attrs %{unit: nil, value: nil, date: nil, period_type: nil, goal: nil, is_complete: nil, is_active: nil}
+    @invalid_attrs %{
+      unit: nil,
+      value: nil,
+      date: nil,
+      period_type: nil,
+      goal: nil,
+      complete?: nil,
+      active?: nil
+    }
 
     test "list_habit_periods/0 returns all habit_periods" do
       habit_period = habit_period_fixture()
@@ -83,7 +104,15 @@ defmodule Bloc.HabitsTest do
     end
 
     test "create_habit_period/1 with valid data creates a habit_period" do
-      valid_attrs = %{unit: :count, value: 42, date: ~D[2024-03-29], period_type: :daily, goal: 42, is_complete: ~N[2024-03-29 16:31:00], is_active: ~N[2024-03-29 16:31:00]}
+      valid_attrs = %{
+        unit: :count,
+        value: 42,
+        date: ~D[2024-03-29],
+        period_type: :daily,
+        goal: 42,
+        complete?: ~N[2024-03-29 16:31:00],
+        active?: ~N[2024-03-29 16:31:00]
+      }
 
       assert {:ok, %HabitPeriod{} = habit_period} = Habits.create_habit_period(valid_attrs)
       assert habit_period.unit == :count
@@ -91,8 +120,8 @@ defmodule Bloc.HabitsTest do
       assert habit_period.date == ~D[2024-03-29]
       assert habit_period.period_type == :daily
       assert habit_period.goal == 42
-      assert habit_period.is_complete == ~N[2024-03-29 16:31:00]
-      assert habit_period.is_active == ~N[2024-03-29 16:31:00]
+      assert habit_period.complete? == ~N[2024-03-29 16:31:00]
+      assert habit_period.active? == ~N[2024-03-29 16:31:00]
     end
 
     test "create_habit_period/1 with invalid data returns error changeset" do
@@ -101,21 +130,35 @@ defmodule Bloc.HabitsTest do
 
     test "update_habit_period/2 with valid data updates the habit_period" do
       habit_period = habit_period_fixture()
-      update_attrs = %{unit: :hr, value: 43, date: ~D[2024-03-30], period_type: :weekly, goal: 43, is_complete: ~N[2024-03-30 16:31:00], is_active: ~N[2024-03-30 16:31:00]}
 
-      assert {:ok, %HabitPeriod{} = habit_period} = Habits.update_habit_period(habit_period, update_attrs)
+      update_attrs = %{
+        unit: :hr,
+        value: 43,
+        date: ~D[2024-03-30],
+        period_type: :weekly,
+        goal: 43,
+        complete?: ~N[2024-03-30 16:31:00],
+        active?: ~N[2024-03-30 16:31:00]
+      }
+
+      assert {:ok, %HabitPeriod{} = habit_period} =
+               Habits.update_habit_period(habit_period, update_attrs)
+
       assert habit_period.unit == :hr
       assert habit_period.value == 43
       assert habit_period.date == ~D[2024-03-30]
       assert habit_period.period_type == :weekly
       assert habit_period.goal == 43
-      assert habit_period.is_complete == ~N[2024-03-30 16:31:00]
-      assert habit_period.is_active == ~N[2024-03-30 16:31:00]
+      assert habit_period.complete? == ~N[2024-03-30 16:31:00]
+      assert habit_period.active? == ~N[2024-03-30 16:31:00]
     end
 
     test "update_habit_period/2 with invalid data returns error changeset" do
       habit_period = habit_period_fixture()
-      assert {:error, %Ecto.Changeset{}} = Habits.update_habit_period(habit_period, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Habits.update_habit_period(habit_period, @invalid_attrs)
+
       assert habit_period == Habits.get_habit_period!(habit_period.id)
     end
 

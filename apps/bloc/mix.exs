@@ -47,7 +47,7 @@ defmodule Bloc.MixProject do
       {:uuidv7, "~> 0.2"},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:tzdata, "~> 1.1"},
-      {:ex_doc, "~> 0.17", only: :dev}
+      {:query_builder, "~> 1.4.2"}
     ]
   end
 

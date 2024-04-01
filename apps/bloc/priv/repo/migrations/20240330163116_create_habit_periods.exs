@@ -7,15 +7,18 @@ defmodule Bloc.Repo.Migrations.CreateHabitPeriods do
       add :period_type, :string
       add :value, :integer
       add :goal, :integer
-      add :is_complete, :naive_datetime
-      add :is_active, :naive_datetime
+      add :complete?, :utc_datetime
+      add :active?, :utc_datetime
+      add :deleted?, :utc_datetime
       add :unit, :string
       add :date, :date
       add :habit_id, references(:habits, on_delete: :nothing, type: :binary_id)
+      add :user_id, references(:users, on_delete: :nothing, type: :binary_id)
 
       timestamps(type: :utc_datetime)
     end
 
     create index(:habit_periods, [:habit_id])
+    create index(:habit_periods, [:user_id])
   end
 end

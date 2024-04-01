@@ -12,8 +12,8 @@
   <:item title="Period type"><%= @habit_period.period_type %></:item>
   <:item title="Value"><%= @habit_period.value %></:item>
   <:item title="Goal"><%= @habit_period.goal %></:item>
-  <:item title="Is complete"><%= @habit_period.is_complete %></:item>
-  <:item title="Is active"><%= @habit_period.is_active %></:item>
+  <:item title="Is complete"><%= @habit_period.complete? %></:item>
+  <:item title="Is active"><%= @habit_period.active? %></:item>
   <:item title="Unit"><%= @habit_period.unit %></:item>
   <:item title="Date"><%= @habit_period.date %></:item>
 </.list>

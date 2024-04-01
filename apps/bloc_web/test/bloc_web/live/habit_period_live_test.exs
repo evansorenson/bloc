@@ -4,9 +4,33 @@ defmodule BlocWeb.HabitPeriodLiveTest do
   import Phoenix.LiveViewTest
   import Bloc.HabitsFixtures
 
-  @create_attrs %{unit: :count, value: 42, date: "2024-03-29", period_type: :daily, goal: 42, is_complete: "2024-03-29T16:31:00", is_active: "2024-03-29T16:31:00"}
-  @update_attrs %{unit: :hr, value: 43, date: "2024-03-30", period_type: :weekly, goal: 43, is_complete: "2024-03-30T16:31:00", is_active: "2024-03-30T16:31:00"}
-  @invalid_attrs %{unit: nil, value: nil, date: nil, period_type: nil, goal: nil, is_complete: nil, is_active: nil}
+  @create_attrs %{
+    unit: :count,
+    value: 42,
+    date: "2024-03-29",
+    period_type: :daily,
+    goal: 42,
+    complete?: "2024-03-29T16:31:00",
+    active?: "2024-03-29T16:31:00"
+  }
+  @update_attrs %{
+    unit: :hr,
+    value: 43,
+    date: "2024-03-30",
+    period_type: :weekly,
+    goal: 43,
+    complete?: "2024-03-30T16:31:00",
+    active?: "2024-03-30T16:31:00"
+  }
+  @invalid_attrs %{
+    unit: nil,
+    value: nil,
+    date: nil,
+    period_type: nil,
+    goal: nil,
+    complete?: nil,
+    active?: nil
+  }
 
   defp create_habit_period(_) do
     habit_period = habit_period_fixture()
@@ -47,7 +71,9 @@ defmodule BlocWeb.HabitPeriodLiveTest do
     test "updates habit_period in listing", %{conn: conn, habit_period: habit_period} do
       {:ok, index_live, _html} = live(conn, ~p"/habit_periods")
 
-      assert index_live |> element("#habit_periods-#{habit_period.id} a", "Edit") |> render_click() =~
+      assert index_live
+             |> element("#habit_periods-#{habit_period.id} a", "Edit")
+             |> render_click() =~
                "Edit Habit period"
 
       assert_patch(index_live, ~p"/habit_periods/#{habit_period}/edit")
@@ -69,7 +95,10 @@ defmodule BlocWeb.HabitPeriodLiveTest do
     test "deletes habit_period in listing", %{conn: conn, habit_period: habit_period} do
       {:ok, index_live, _html} = live(conn, ~p"/habit_periods")
 
-      assert index_live |> element("#habit_periods-#{habit_period.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#habit_periods-#{habit_period.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#habit_periods-#{habit_period.id}")
     end
   end
