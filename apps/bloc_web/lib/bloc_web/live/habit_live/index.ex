@@ -52,7 +52,8 @@ defmodule BlocWeb.HabitLive.Index do
         where: [{:habit_id, habit.id}, {:active?, :ne, nil}]
       )
 
-    {:noreply, stream_insert(socket, :habit_periods, habit_period)}
+    {:noreply,
+     stream_insert(socket, :habit_periods, habit_period) |> assign(:live_action, :index)}
   end
 
   @impl true

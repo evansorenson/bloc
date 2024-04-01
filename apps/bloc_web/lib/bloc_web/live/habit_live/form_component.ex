@@ -3,9 +3,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   alias Bloc.Habits
 
-  def on_mount(_params, socket) do
-    {:ok, assign(socket, current_user: socket.assigns.current_user)}
-  end
+  attr(:disabled, :boolean, default: false)
 
   @impl true
   def render(assigns) do
@@ -41,7 +39,9 @@ defmodule BlocWeb.HabitLive.FormComponent do
           options={Ecto.Enum.values(Bloc.Habits.Habit, :unit)}
         />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Habit</.button>
+          <.button disabled={@disabled} class="disabled:opacity-50">
+            Save Habit
+          </.button>
         </:actions>
       </.simple_form>
     </div>
@@ -96,8 +96,8 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Habit updated successfully")
-         |> assign(:live_action, :index)}
+         |> assign(:disabled, true)
+         |> put_flash(:info, "Habit updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -114,8 +114,8 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Habit created successfully")
-         |> assign(:live_action, :index)}
+         |> assign(:disabled, true)
+         |> put_flash(:info, "Habit created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
