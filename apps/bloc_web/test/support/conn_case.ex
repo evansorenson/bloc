@@ -42,12 +42,12 @@ defmodule BlocWeb.ConnCase do
   @doc """
   Setup helper that registers and logs in users.
 
-      setup :register_and_log_in_user
+      setup :log_in_user
 
   It stores an updated connection and a registered user in the
   test context.
   """
-  def register_and_log_in_user(%{conn: conn}) do
+  def log_in_user(%{conn: conn}) do
     user = insert(:user)
     %{conn: log_in_user(conn, user), user: user}
   end

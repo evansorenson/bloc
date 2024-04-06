@@ -2,20 +2,22 @@ defmodule BlocWeb.HabitLiveTest do
   use BlocWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import Bloc.HabitsFixtures
 
-  @create_attrs %{unit: :count, title: "some title", notes: "some notes", period_type: :daily, goal: 42}
-  @update_attrs %{unit: :hr, title: "some updated title", notes: "some updated notes", period_type: :weekly, goal: 43}
-  @invalid_attrs %{unit: nil, title: nil, notes: nil, period_type: nil, goal: nil}
+  @create_attrs %{
+    title: "some title",
+    notes: "some notes",
+    period_type: :daily
+  }
+  @update_attrs %{
+    title: "some updated title",
+    notes: "some updated notes",
+    period_type: :weekly
+  }
+  @invalid_attrs %{title: nil, notes: nil, period_type: nil}
 
-  defp create_habit(_) do
-    habit = habit_fixture()
-    %{habit: habit}
-  end
+  setup [:log_in_user, :habit]
 
   describe "Index" do
-    setup [:create_habit]
-
     test "lists all habits", %{conn: conn, habit: habit} do
       {:ok, _index_live, html} = live(conn, ~p"/habits")
 
@@ -78,8 +80,6 @@ defmodule BlocWeb.HabitLiveTest do
   end
 
   describe "Show" do
-    setup [:create_habit]
-
     test "displays habit", %{conn: conn, habit: habit} do
       {:ok, _show_live, html} = live(conn, ~p"/habits/#{habit}")
 

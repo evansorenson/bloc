@@ -83,12 +83,12 @@ defmodule BlocWeb.Router do
       live("/habits/:id", HabitLive.Show, :show)
       live("/habits/:id/show/edit", HabitLive.Show, :edit)
 
-      live("/habit_periods", HabitPeriodLive.Index, :index)
-      live("/habit_periods/new", HabitPeriodLive.Index, :new)
-      live("/habit_periods/:id/edit", HabitPeriodLive.Index, :edit)
+      live("/tasks", TaskLive.Index, :index)
+      live("/tasks/new", TaskLive.Index, :new)
+      live("/tasks/:id/edit", TaskLive.Index, :edit)
 
-      live("/habit_periods/:id", HabitPeriodLive.Show, :show)
-      live("/habit_periods/:id/show/edit", HabitPeriodLive.Show, :edit)
+      live("/tasks/:id", TaskLive.Show, :show)
+      live("/tasks/:id/show/edit", TaskLive.Show, :edit)
     end
   end
 

@@ -11,6 +11,7 @@ defmodule Bloc.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [warnings_as_errors: true],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()

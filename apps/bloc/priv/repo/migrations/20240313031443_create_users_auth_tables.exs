@@ -11,7 +11,7 @@ defmodule Bloc.Repo.Migrations.CreateUsersAuthTables do
       add :confirmed_at, :utc_datetime
       add :role, :string, null: false
 
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create unique_index(:users, [:email])
@@ -21,7 +21,7 @@ defmodule Bloc.Repo.Migrations.CreateUsersAuthTables do
       add :token, :binary, null: false
       add :context, :string, null: false
       add :sent_to, :string
-      timestamps(updated_at: false)
+      timestamps(type: :utc_datetime, updated_at: false)
     end
 
     create index(:users_tokens, [:user_id])

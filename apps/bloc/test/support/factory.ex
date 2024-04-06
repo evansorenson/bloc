@@ -4,6 +4,10 @@ defmodule Bloc.Factory do
 
   alias Bloc.Accounts.User
 
+  def user(_context) do
+    {:ok, user: insert(:user)}
+  end
+
   def user_factory(attrs) do
     %{
       email: sequence(:email, &"email-#{&1}@example.com"),
@@ -15,11 +19,49 @@ defmodule Bloc.Factory do
     |> Ecto.Changeset.apply_changes()
   end
 
+  def block(%{user: user}) do
+    {:ok, block: insert(:block, user: user)}
+  end
+
   def block_factory do
     %Bloc.Blocks.Block{
       title: sequence(:title, &"title-#{&1}"),
       start_time: DateTime.utc_now(),
       end_time: DateTime.utc_now() |> DateTime.add(1, :hour),
+      user: build(:user)
+    }
+  end
+
+  def habit(%{user: user}) do
+    {:ok, habit: insert(:habit, user: user)}
+  end
+
+  def habit_factory do
+    %Bloc.Habits.Habit{
+      title: sequence(:title, &"title-#{&1}"),
+      notes: "some notes",
+      period_type: :daily,
+      user: build(:user)
+    }
+  end
+
+  def task(%{user: user} = context) do
+    {:ok, task: insert(:task, habit: context[:habit], user: user)}
+  end
+
+  def task_factory do
+    %Bloc.Tasks.Task{
+      title: sequence(:title, &"title-#{&1}"),
+      notes: "some notes",
+      due_date: Date.utc_today(),
+      user: build(:user)
+    }
+  end
+
+  def habit_task_factory do
+    %Bloc.Tasks.Task{
+      due_date: Date.utc_today(),
+      habit: build(:habit),
       user: build(:user)
     }
   end

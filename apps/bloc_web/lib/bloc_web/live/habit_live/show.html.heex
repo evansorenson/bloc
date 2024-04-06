@@ -12,13 +12,16 @@
   <:item title="Title"><%= @habit.title %></:item>
   <:item title="Notes"><%= @habit.notes %></:item>
   <:item title="Period type"><%= @habit.period_type %></:item>
-  <:item title="Goal"><%= @habit.goal %></:item>
-  <:item title="Unit"><%= @habit.unit %></:item>
 </.list>
 
 <.back navigate={~p"/habits"}>Back to habits</.back>
 
-<.modal :if={@live_action == :edit} id="habit-modal" show on_cancel={JS.patch(~p"/habits/#{@habit}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="habit-modal"
+  show
+  on_cancel={JS.patch(~p"/habits/#{@habit}")}
+>
   <.live_component
     module={BlocWeb.HabitLive.FormComponent}
     id={@habit.id}

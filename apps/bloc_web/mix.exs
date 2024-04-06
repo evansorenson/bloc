@@ -11,6 +11,7 @@ defmodule BlocWeb.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [warnings_as_errors: true],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -57,7 +58,8 @@ defmodule BlocWeb.MixProject do
       {:gettext, "~> 0.20"},
       {:bloc, in_umbrella: true},
       {:jason, "~> 1.2"},
-      {:bandit, "~> 1.2"}
+      {:bandit, "~> 1.2"},
+      {:ua_parser, "~> 1.9"}
     ]
   end
 

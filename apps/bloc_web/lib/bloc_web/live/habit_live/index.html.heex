@@ -7,29 +7,53 @@
   </:actions>
 </.header>
 
-<.table id="habit_periods" rows={@streams.habit_periods}>
-  <:col :let={{_id, habit_period}} label="Period type"><%= habit_period.period_type %></:col>
-  <:col :let={{_id, habit_period}} label="Value"><%= habit_period.value %></:col>
-  <:col :let={{_id, habit_period}} label="Goal"><%= habit_period.goal %></:col>
-  <:col :let={{_id, habit_period}} label="Is complete"><%= habit_period.complete? %></:col>
-  <:col :let={{_id, habit_period}} label="Is active"><%= habit_period.active? %></:col>
-  <:col :let={{_id, habit_period}} label="Unit"><%= habit_period.unit %></:col>
-  <:col :let={{_id, habit_period}} label="Date"><%= habit_period.date %></:col>
-  <:action :let={{_id, habit_period}}>
+<%!-- <.table
+  id="habits"
+  rows={@streams.daily_habits}
+  row_click={fn {_id, habit} -> JS.navigate(~p"/habits/#{habit}") end}
+>
+  <:col :let={{_id, habit}} label="Title"><%= habit.title %></:col>
+  <:action :let={{_id, habit}}>
     <div class="sr-only">
-      <.link navigate={~p"/habit_periods/#{habit_period}"}>Show</.link>
+      <.link navigate={~p"/habits/#{habit}"}>Show</.link>
     </div>
-    <.link patch={~p"/habits/#{habit_period.habit}/edit"}>Edit</.link>
+    <.link phx-click={JS.push("edit", value: %{id: habit.id})}>Edit</.link>
   </:action>
-  <:action :let={{id, habit_period}}>
+  <:action :let={{id, habit}}>
     <.link
-      phx-click={JS.push("delete", value: %{id: habit_period.habit_id}) |> hide("##{id}")}
+      phx-click={JS.push("delete", value: %{id: habit.id}) |> hide("##{id}")}
       data-confirm="Are you sure?"
     >
       Delete
     </.link>
   </:action>
-</.table>
+</.table> --%>
+
+<%!-- <.accordion id="task-accordion" show>
+  <div>
+  <%= for stream.daily_tasks<- @stream.daily_tasks do %>
+    
+  <% end %>
+  </div>
+
+  <.live_component
+    module={BlocWeb.TaskLive.FormComponent}
+    </.live_component>
+</.accordion> --%>
+
+<ul role="list" class="divide-y divide-gray-200">
+  <li class="py-4">
+    Daily
+  </li>
+
+  <li class="py-4">
+    Weekly
+  </li>
+
+  <li class="py-4">
+    Monthly
+  </li>
+</ul>
 
 <.modal :if={@live_action in [:new, :edit]} id="habit-modal" show on_cancel={JS.push("cancel")}>
   <.live_component

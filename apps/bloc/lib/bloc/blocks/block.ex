@@ -9,7 +9,7 @@ defmodule Bloc.Blocks.Block do
 
     belongs_to(:user, Bloc.Accounts.User)
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @required_fields ~w(title start_time end_time user_id)a

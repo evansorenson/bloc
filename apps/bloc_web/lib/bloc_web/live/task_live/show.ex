@@ -1,7 +1,7 @@
-defmodule BlocWeb.HabitPeriodLive.Show do
+defmodule BlocWeb.TaskLive.Show do
   use BlocWeb, :live_view
 
-  alias Bloc.Habits
+  alias Bloc.Tasks
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,9 +13,9 @@ defmodule BlocWeb.HabitPeriodLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:habit_period, Habits.get_habit_period!(id))}
+     |> assign(:task, Tasks.get_task!(id))}
   end
 
-  defp page_title(:show), do: "Show Habit period"
-  defp page_title(:edit), do: "Edit Habit period"
+  defp page_title(:show), do: "Show Task"
+  defp page_title(:edit), do: "Edit Task"
 end

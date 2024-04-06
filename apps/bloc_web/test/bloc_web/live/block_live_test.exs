@@ -16,17 +16,9 @@ defmodule BlocWeb.BlockLiveTest do
   }
   @invalid_attrs %{title: nil, start_time: nil, end_time: nil}
 
-  setup [:register_and_log_in_user]
-
-  defp create_block(%{user: user}) do
-    block = insert(:block, user: user)
-
-    %{block: block}
-  end
+  setup [:log_in_user, :block]
 
   describe "Index" do
-    setup [:create_block]
-
     test "lists all blocks", %{conn: conn, block: block} do
       {:ok, _index_live, html} = live(conn, ~p"/blocks")
 
@@ -35,8 +27,6 @@ defmodule BlocWeb.BlockLiveTest do
     end
 
     test "saves new block", %{conn: conn} do
-      IO.inspect(conn)
-
       {:ok, index_live, _html} = live(conn, ~p"/blocks")
 
       assert index_live |> element("a", "New Block") |> render_click() =~
@@ -91,8 +81,6 @@ defmodule BlocWeb.BlockLiveTest do
   end
 
   describe "Show" do
-    setup [:create_block]
-
     test "displays block", %{conn: conn, block: block} do
       {:ok, _show_live, html} = live(conn, ~p"/blocks/#{block}")
 

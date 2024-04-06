@@ -18,8 +18,10 @@ defmodule Bloc.Habits do
       [%Habit{}, ...]
 
   """
-  def list_habits do
-    Repo.all(Habit)
+  def list_habits(%User{id: user_id}, opts \\ []) do
+    QueryBuilder.where(Habit, user_id: user_id)
+    |> QueryBuilder.from_list(opts)
+    |> Repo.all()
   end
 
   @doc """
@@ -99,106 +101,13 @@ defmodule Bloc.Habits do
       %Ecto.Changeset{data: %Habit{}}
 
   """
-  def change_habit(%Habit{} = habit, attrs \\ %{}) do
-    Habit.changeset(habit, attrs)
+  @spec change_create_habit(map) :: Ecto.Changeset.t()
+  def change_create_habit(attrs) do
+    Habit.changeset(%Habit{}, attrs)
   end
 
-  alias Bloc.Habits.HabitPeriod
-
-  @doc """
-  Returns the list of habit_periods.
-
-  ## Examples
-
-      iex> list_habit_periods(%User{})
-      [%HabitPeriod{}, ...]
-
-  """
-  def list_habit_periods(%User{id: user_id}, opts \\ []) do
-    QueryBuilder.where(HabitPeriod, user_id: user_id)
-    |> QueryBuilder.preload([:habit])
-    |> QueryBuilder.from_list(opts)
-    |> Repo.all()
-  end
-
-  @doc """
-  Gets a single habit_period.
-
-  Raises `Ecto.NoResultsError` if the Habit period does not exist.
-
-  ## Examples
-
-      iex> get_habit_period!(123)
-      %HabitPeriod{}
-
-      iex> get_habit_period!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_habit_period!(id), do: Repo.get!(HabitPeriod, id)
-
-  @doc """
-  Creates a habit_period.
-
-  ## Examples
-
-      iex> create_habit_period(%{field: value})
-      {:ok, %HabitPeriod{}}
-
-      iex> create_habit_period(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_habit_period(attrs \\ %{}) do
-    %HabitPeriod{}
-    |> HabitPeriod.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a habit_period.
-
-  ## Examples
-
-      iex> update_habit_period(habit_period, %{field: new_value})
-      {:ok, %HabitPeriod{}}
-
-      iex> update_habit_period(habit_period, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_habit_period(%HabitPeriod{} = habit_period, attrs) do
-    habit_period
-    |> HabitPeriod.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a habit_period.
-
-  ## Examples
-
-      iex> delete_habit_period(habit_period)
-      {:ok, %HabitPeriod{}}
-
-      iex> delete_habit_period(habit_period)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_habit_period(%HabitPeriod{} = habit_period) do
-    Repo.delete(habit_period)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking habit_period changes.
-
-  ## Examples
-
-      iex> change_habit_period(habit_period)
-      %Ecto.Changeset{data: %HabitPeriod{}}
-
-  """
-  def change_habit_period(%HabitPeriod{} = habit_period, attrs \\ %{}) do
-    HabitPeriod.changeset(habit_period, attrs)
+  @spec change_update_habit(Habit.t(), map) :: Ecto.Changeset.t()
+  def change_update_habit(%Habit{} = habit, attrs \\ %{}) do
+    Habit.update_changeset(habit, attrs)
   end
 end

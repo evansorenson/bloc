@@ -30,14 +30,6 @@ defmodule BlocWeb.HabitLive.FormComponent do
           prompt="Choose a value"
           options={Ecto.Enum.values(Bloc.Habits.Habit, :period_type)}
         />
-        <.input field={@form[:goal]} type="number" label="Goal" />
-        <.input
-          field={@form[:unit]}
-          type="select"
-          label="Unit"
-          prompt="Choose a value"
-          options={Ecto.Enum.values(Bloc.Habits.Habit, :unit)}
-        />
         <:actions>
           <.button disabled={@disabled} class="disabled:opacity-50">
             Save Habit
@@ -50,7 +42,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   @impl true
   def update(%{habit: habit} = assigns, socket) do
-    changeset = Habits.change_habit(habit)
+    changeset = Habits.change_update_habit(habit)
 
     {:ok,
      socket
@@ -64,7 +56,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
     changeset =
       socket.assigns.habit
-      |> Habits.change_habit(habit_params)
+      |> Habits.change_update_habit(habit_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -75,21 +67,6 @@ defmodule BlocWeb.HabitLive.FormComponent do
   end
 
   defp save_habit(socket, :edit, habit_params) do
-    current_and_future_habit_periods =
-      Habits.list_habit_periods(socket.assigns.current_user,
-        where: [{:date, :gte, Date.utc_today()}]
-      )
-      |> Enum.map(
-        &Habits.change_habit_period(&1, %{
-          "goal" => habit_params["goal"],
-          "unit" => habit_params["unit"],
-          "period_type" => habit_params["period_type"],
-          "complete?" => &1.value >= habit_params["goal"]
-        })
-      )
-
-    habit_params = Map.put(habit_params, "habit_periods", current_and_future_habit_periods)
-
     case Habits.update_habit(socket.assigns.habit, habit_params) do
       {:ok, habit} ->
         notify_parent({:saved, habit})

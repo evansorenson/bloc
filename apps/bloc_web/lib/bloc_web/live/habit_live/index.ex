@@ -1,24 +1,42 @@
 defmodule BlocWeb.HabitLive.Index do
-  alias Bloc.Habits.HabitPeriod
   use BlocWeb, :live_view
 
   alias Bloc.Habits
   alias Bloc.Habits.Habit
-  alias Bloc.Repo
+  alias Bloc.Utils.Ok
 
   on_mount({BlocWeb.UserAuth, :ensure_authenticated})
 
   @impl true
-  def mount(params, session, socket) do
-    IO.inspect(params)
-    IO.inspect(session)
+  def mount(_params, _session, socket) do
+    IO.inspect(socket, limit: :infinity)
 
-    {:ok,
-     stream(
-       socket,
-       :habit_periods,
-       Habits.list_habit_periods(socket.assigns.current_user, where: [{:active?, :ne, nil}])
-     )}
+    device =
+      case UAParser.parse(get_connect_info(socket, :user_agent)) do
+        %UAParser.UA{device: %UAParser.Device{family: fam}} = parsed ->
+          IO.inspect(parsed)
+          fam
+
+        _ ->
+          "I don't know your device"
+      end
+
+    IO.inspect(device)
+
+    socket
+    |> stream(
+      :daily_habits,
+      Habits.list_habits(socket.assigns.current_user, where: [period_type: :daily])
+    )
+    |> stream(
+      :weekly_habits,
+      Habits.list_habits(socket.assigns.current_user, where: [period_type: :weekly])
+    )
+    |> stream(
+      :monthly_habits,
+      Habits.list_habits(socket.assigns.current_user, where: [period_type: :monthly])
+    )
+    |> Ok.wrap()
   end
 
   # @impl true
@@ -27,8 +45,11 @@ defmodule BlocWeb.HabitLive.Index do
   # end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    IO.inspect("editting")
+
     socket
-    |> assign(:page_title, "Edit Habit Period")
+    |> assign(:page_title, "Edit Habit")
+    |> assign(:live_action, :edit)
     |> assign(:habit, Habits.get_habit!(id))
   end
 
@@ -41,19 +62,14 @@ defmodule BlocWeb.HabitLive.Index do
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Habit Period")
+    |> assign(:page_title, "Listing Habit")
     |> assign(:habit, nil)
   end
 
   @impl true
   def handle_info({BlocWeb.HabitLive.FormComponent, {:saved, habit}}, socket) do
-    [habit_period] =
-      Habits.list_habit_periods(socket.assigns.current_user,
-        where: [{:habit_id, habit.id}, {:active?, :ne, nil}]
-      )
-
     {:noreply,
-     stream_insert(socket, :habit_periods, habit_period) |> assign(:live_action, :index)}
+     stream_insert(socket, list_for_period(habit), habit) |> assign(:live_action, :index)}
   end
 
   @impl true
@@ -61,19 +77,22 @@ defmodule BlocWeb.HabitLive.Index do
     habit = Habits.get_habit!(id)
     {:ok, _habit} = Habits.delete_habit(habit)
 
-    habit_period =
-      Habits.list_habit_periods(socket.assigns.current_user,
-        where: [{:habit_id, id}, {:active?, :ne, nil}]
-      )
-
-    {:noreply, stream_delete(socket, :habit_periods, habit_period)}
+    {:noreply, stream_delete(socket, list_for_period(habit), habit)}
   end
 
   def handle_event("new", _unsigned_params, socket) do
     {:noreply, apply_action(socket, :new, %{})}
   end
 
+  def handle_event("edit", %{"id" => id}, socket) do
+    {:noreply, apply_action(socket, :edit, %{"id" => id})}
+  end
+
   def handle_event("cancel", unsigned_params, socket) do
     {:noreply, apply_action(socket, :index, unsigned_params)}
   end
+
+  defp list_for_period(%Habit{period_type: :daily}), do: :daily_habits
+  defp list_for_period(%Habit{period_type: :weekly}), do: :weekly_habits
+  defp list_for_period(%Habit{period_type: :monthly}), do: :monthly_habits
 end

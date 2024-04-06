@@ -395,18 +395,24 @@
     </a>
   </div>
 
-  <main class="lg:pl-20">
-    <div class="xl:pl-96">
-      <div class="px-4 sm:px-6 lg:px-8">
-        <%= @inner_content %>
+  <main class="md:pl-20">
+    <div class="md:pl-96">
+      <div class="px-4 sm:px-6 md:hidden">
+        <%!-- <%= @inner_content %> --%>
+        <%= IO.inspect(inspect(@socket)) %>
+      </div>
+      <%= IO.inspect(inspect(@socket), limit: :infinity) %>
+      <%!-- show calendar view on large screen --%>
+      <div class="px-4 hidden md:block">
+      <%= if JS.do %>
+        
+      <% end %>
+        <%= live_render(@socket, BlocWeb.BlockLive.Index, id: "Blocks") %>
       </div>
     </div>
   </main>
 
-  <aside class="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
-    <!-- Secondary column (hidden on smaller screens) -->
-    <%= if @current_user do %>
-      <%= live_render(@socket, BlocWeb.HabitLive.Index, id: "Habits") %>
-    <% end %>
+  <aside class="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 md:px-8 md:block">
+    <%= @inner_content %>
   </aside>
 </div>
