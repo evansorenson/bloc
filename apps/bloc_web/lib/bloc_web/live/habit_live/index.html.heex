@@ -1,13 +1,13 @@
 <.header>
   Listing Habits
   <:actions>
-    <.link phx-click={JS.push("new")}>
+    <.link patch={~p"/habits/new"}>
       <.button>New Habit</.button>
     </.link>
   </:actions>
 </.header>
 
-<%!-- <.table
+<.table
   id="habits"
   rows={@streams.daily_habits}
   row_click={fn {_id, habit} -> JS.navigate(~p"/habits/#{habit}") end}
@@ -17,7 +17,7 @@
     <div class="sr-only">
       <.link navigate={~p"/habits/#{habit}"}>Show</.link>
     </div>
-    <.link phx-click={JS.push("edit", value: %{id: habit.id})}>Edit</.link>
+    <.link patch={~p"/habits/#{habit}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, habit}}>
     <.link
@@ -27,7 +27,7 @@
       Delete
     </.link>
   </:action>
-</.table> --%>
+</.table>
 
 <%!-- <.accordion id="task-accordion" show>
   <div>
@@ -55,7 +55,12 @@
   </li>
 </ul>
 
-<.modal :if={@live_action in [:new, :edit]} id="habit-modal" show on_cancel={JS.push("cancel")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="habit-modal"
+  show
+  on_cancel={JS.patch(~p"/habits")}
+>
   <.live_component
     module={BlocWeb.HabitLive.FormComponent}
     id={@habit.id || :new}
@@ -63,5 +68,6 @@
     action={@live_action}
     habit={@habit}
     current_user={@current_user}
+    patch={~p"/habits"}
   />
 </.modal>

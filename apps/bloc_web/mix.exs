@@ -58,8 +58,7 @@ defmodule BlocWeb.MixProject do
       {:gettext, "~> 0.20"},
       {:bloc, in_umbrella: true},
       {:jason, "~> 1.2"},
-      {:bandit, "~> 1.2"},
-      {:ua_parser, "~> 1.9"}
+      {:bandit, "~> 1.2"}
     ]
   end
 

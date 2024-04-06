@@ -8,7 +8,7 @@
 -->
 <div>
   <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
-  <div class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
+  <div id="mobile-sidebar" class="relative z-50 md:hidden" role="dialog" aria-modal="true">
     <!--
       Off-canvas menu backdrop, show/hide based on off-canvas menu state.
 
@@ -44,7 +44,7 @@
             To: "opacity-0"
         -->
         <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
-          <button type="button" class="-m-2.5 p-2.5">
+          <button type="button" class="-m-2.5 p-2.5" phx-click={JS.hide(to: "#mobile-sidebar")}>
             <span class="sr-only">Close sidebar</span>
             <svg
               class="h-6 w-6 text-white"
@@ -214,7 +214,7 @@
     </div>
   </div>
   <!-- Static sidebar for desktop -->
-  <div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
+  <div class="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-20 md:overflow-y-auto md:bg-gray-900 md:pb-4">
     <div class="flex h-16 shrink-0 items-center justify-center">
       <img
         class="h-8 w-auto"
@@ -366,8 +366,12 @@
     </nav>
   </div>
 
-  <div class="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
-    <button type="button" class="-m-2.5 p-2.5 text-gray-400 lg:hidden">
+  <div class="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 md:hidden">
+    <button
+      type="button"
+      phx-click={JS.show(to: "#mobile-sidebar")}
+      class="-m-2.5 p-2.5 text-gray-400 md:hidden"
+    >
       <span class="sr-only">Open sidebar</span>
       <svg
         class="h-6 w-6"
@@ -396,23 +400,15 @@
   </div>
 
   <main class="md:pl-20">
-    <div class="md:pl-96">
-      <div class="px-4 sm:px-6 md:hidden">
-        <%!-- <%= @inner_content %> --%>
-        <%= IO.inspect(inspect(@socket)) %>
+    <div class="w-full flex">
+      <div class="flex-none w-96 px-4 py-4 sm:px-6 md:overflow-y-auto md:border-r md:border-gray-200 md:py-6 md:px-8 md:block">
+        <%= @inner_content %>
       </div>
-      <%= IO.inspect(inspect(@socket), limit: :infinity) %>
+
       <%!-- show calendar view on large screen --%>
-      <div class="px-4 hidden md:block">
-      <%= if JS.do %>
-        
-      <% end %>
+      <div class="px-4 hidden md:block w-full">
         <%= live_render(@socket, BlocWeb.BlockLive.Index, id: "Blocks") %>
       </div>
     </div>
   </main>
-
-  <aside class="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 md:px-8 md:block">
-    <%= @inner_content %>
-  </aside>
 </div>

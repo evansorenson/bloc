@@ -9,20 +9,6 @@ defmodule BlocWeb.HabitLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    IO.inspect(socket, limit: :infinity)
-
-    device =
-      case UAParser.parse(get_connect_info(socket, :user_agent)) do
-        %UAParser.UA{device: %UAParser.Device{family: fam}} = parsed ->
-          IO.inspect(parsed)
-          fam
-
-        _ ->
-          "I don't know your device"
-      end
-
-    IO.inspect(device)
-
     socket
     |> stream(
       :daily_habits,
@@ -39,24 +25,20 @@ defmodule BlocWeb.HabitLive.Index do
     |> Ok.wrap()
   end
 
-  # @impl true
-  # def handle_params(params, _url, socket) do
-  #   {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  # end
+  @impl true
+  def handle_params(params, _url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    IO.inspect("editting")
-
     socket
     |> assign(:page_title, "Edit Habit")
-    |> assign(:live_action, :edit)
     |> assign(:habit, Habits.get_habit!(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Habit")
-    |> assign(:live_action, :new)
     |> assign(:habit, %Habit{})
   end
 
