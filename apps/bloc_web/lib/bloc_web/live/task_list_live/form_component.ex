@@ -1,0 +1,92 @@
+defmodule BlocWeb.TaskListLive.FormComponent do
+  use BlocWeb, :live_component
+
+  alias Bloc.Tasks
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <div>
+      <.header>
+        <%= @title %>
+        <:subtitle>Use this form to manage task_list records in your database.</:subtitle>
+      </.header>
+
+      <.simple_form
+        for={@form}
+        id="task_list-form"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-submit="save"
+      >
+        <.input field={@form[:title]} type="text" label="Title" />
+        <.input field={@form[:position]} type="number" label="Position" />
+        <.input field={@form[:color]} type="text" label="Color" />
+        <:actions>
+          <.button phx-disable-with="Saving...">Save Task list</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+    """
+  end
+
+  @impl true
+  def update(%{task_list: task_list} = assigns, socket) do
+    changeset = Tasks.change_task_list(task_list)
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign_form(changeset)}
+  end
+
+  @impl true
+  def handle_event("validate", %{"task_list" => task_list_params}, socket) do
+    changeset =
+      socket.assigns.task_list
+      |> Tasks.change_task_list(task_list_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign_form(socket, changeset)}
+  end
+
+  def handle_event("save", %{"task_list" => task_list_params}, socket) do
+    save_task_list(socket, socket.assigns.action, task_list_params)
+  end
+
+  defp save_task_list(socket, :edit, task_list_params) do
+    case Tasks.update_task_list(socket.assigns.task_list, task_list_params) do
+      {:ok, task_list} ->
+        notify_parent({:saved, task_list})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Task list updated successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+    end
+  end
+
+  defp save_task_list(socket, :new, task_list_params) do
+    case Tasks.create_task_list(task_list_params) do
+      {:ok, task_list} ->
+        notify_parent({:saved, task_list})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Task list created successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+    end
+  end
+
+  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    assign(socket, :form, to_form(changeset))
+  end
+
+  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+end

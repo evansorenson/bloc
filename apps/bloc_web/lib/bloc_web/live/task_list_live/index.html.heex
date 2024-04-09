@@ -1,0 +1,43 @@
+<.header>
+  Listing Task lists
+  <:actions>
+    <.link patch={~p"/task_lists/new"}>
+      <.button>New Task list</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="task_lists"
+  rows={@streams.task_lists}
+  row_click={fn {_id, task_list} -> JS.navigate(~p"/task_lists/#{task_list}") end}
+>
+  <:col :let={{_id, task_list}} label="Title"><%= task_list.title %></:col>
+  <:col :let={{_id, task_list}} label="Position"><%= task_list.position %></:col>
+  <:col :let={{_id, task_list}} label="Color"><%= task_list.color %></:col>
+  <:action :let={{_id, task_list}}>
+    <div class="sr-only">
+      <.link navigate={~p"/task_lists/#{task_list}"}>Show</.link>
+    </div>
+    <.link patch={~p"/task_lists/#{task_list}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, task_list}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: task_list.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="task_list-modal" show on_cancel={JS.patch(~p"/task_lists")}>
+  <.live_component
+    module={BlocWeb.TaskListLive.FormComponent}
+    id={@task_list.id || :new}
+    title={@page_title}
+    action={@live_action}
+    task_list={@task_list}
+    patch={~p"/task_lists"}
+  />
+</.modal>

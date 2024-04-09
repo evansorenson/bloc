@@ -10,7 +10,7 @@ defmodule Bloc.Tasks.Task do
   @required_fields ~w(title user_id)a
   @optional_fields ~w(due_date notes habit_id complete? active? deleted?)a
 
-  @habit_required_fields ~w(habit_id due_date)a
+  @habit_required_fields ~w(habit_id user_id due_date)a
 
   @all_fields @required_fields ++ @optional_fields
 

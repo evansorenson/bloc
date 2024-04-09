@@ -1,0 +1,28 @@
+<.header>
+  Task list <%= @task_list.id %>
+  <:subtitle>This is a task_list record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/task_lists/#{@task_list}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit task_list</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Title"><%= @task_list.title %></:item>
+  <:item title="Position"><%= @task_list.position %></:item>
+  <:item title="Color"><%= @task_list.color %></:item>
+</.list>
+
+<.back navigate={~p"/task_lists"}>Back to task_lists</.back>
+
+<.modal :if={@live_action == :edit} id="task_list-modal" show on_cancel={JS.patch(~p"/task_lists/#{@task_list}")}>
+  <.live_component
+    module={BlocWeb.TaskListLive.FormComponent}
+    id={@task_list.id}
+    title={@page_title}
+    action={@live_action}
+    task_list={@task_list}
+    patch={~p"/task_lists/#{@task_list}"}
+  />
+</.modal>

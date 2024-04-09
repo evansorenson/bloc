@@ -70,7 +70,10 @@ defmodule BlocWeb.TaskLive.FormComponent do
   end
 
   defp save_task(socket, :new, task_params) do
-    case Tasks.create_task(task_params) do
+    task_params
+    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Tasks.create_task()
+    |> case do
       {:ok, task} ->
         notify_parent({:saved, task})
 
@@ -80,7 +83,10 @@ defmodule BlocWeb.TaskLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply,
+         socket
+         |> put_flash(:error, "Error creating task")
+         |> assign_form(changeset)}
     end
   end
 

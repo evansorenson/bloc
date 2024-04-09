@@ -51,7 +51,8 @@ defmodule BlocWeb.Router do
     pipe_through([:browser, :redirect_if_user_is_authenticated])
 
     live_session :redirect_if_user_is_authenticated,
-      on_mount: [{BlocWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      on_mount: [{BlocWeb.UserAuth, :redirect_if_user_is_authenticated}],
+      layout: {BlocWeb.Layouts, :root} do
       live("/users/register", UserRegistrationLive, :new)
       live("/users/log_in", UserLoginLive, :new)
       live("/users/reset_password", UserForgotPasswordLive, :new)
@@ -89,6 +90,13 @@ defmodule BlocWeb.Router do
 
       live("/tasks/:id", TaskLive.Show, :show)
       live("/tasks/:id/show/edit", TaskLive.Show, :edit)
+
+      live("/task_lists", TaskListLive.Index, :index)
+      live("/task_lists/new", TaskListLive.Index, :new)
+      live("/task_lists/:id/edit", TaskListLive.Index, :edit)
+
+      live("/task_lists/:id", TaskListLive.Show, :show)
+      live("/task_lists/:id/show/edit", TaskListLive.Show, :edit)
     end
   end
 

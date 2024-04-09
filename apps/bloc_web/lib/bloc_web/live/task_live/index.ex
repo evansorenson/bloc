@@ -8,12 +8,7 @@ defmodule BlocWeb.TaskLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     stream(
-       socket,
-       :tasks,
-       Tasks.list_tasks(socket.assigns.current_user, where: [due_date: Date.utc_today()])
-     )}
+    {:ok, stream(socket, :tasks, Tasks.list_tasks(socket.assigns.current_user))}
   end
 
   @impl true
@@ -40,7 +35,7 @@ defmodule BlocWeb.TaskLive.Index do
   end
 
   @impl true
-  def handle_info({BlocWeb.TaskLive.FormComponent, {:saved, task}}, socket) do
+  def handle_info({_component, {:saved, task}}, socket) do
     {:noreply, stream_insert(socket, :tasks, task)}
   end
 

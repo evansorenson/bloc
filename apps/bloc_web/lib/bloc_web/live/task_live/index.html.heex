@@ -7,11 +7,13 @@
   </:actions>
 </.header>
 
-<%= for {id, task} <- @streams.tasks do %>
-  <.live_component module={BlocWeb.TaskLive.CheckboxComponent} id={id} task={task} />
-<% end %>
+<div class="mt-2" phx-update="stream" id="tasks">
+  <%= for {id, task} <- @streams.tasks do %>
+    <.live_component module={BlocWeb.TaskLive.CheckboxComponent} id={id} task={task} />
+  <% end %>
+</div>
 
-<.table
+<%!-- <.table
   id="tasks"
   rows={@streams.tasks}
   row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
@@ -35,7 +37,7 @@
       Delete
     </.link>
   </:action>
-</.table>
+</.table> --%>
 
 <.modal :if={@live_action in [:new, :edit]} id="task-modal" show on_cancel={JS.patch(~p"/tasks")}>
   <.live_component
@@ -45,5 +47,6 @@
     action={@live_action}
     task={@task}
     patch={~p"/tasks"}
+    current_user={@current_user}
   />
 </.modal>
