@@ -1,4 +1,7 @@
 defmodule BlocWeb.TaskLive.Index do
+  alias BlocWeb.TaskLive.TaskListComponent
+  alias Bloc.Utils.Ok
+  alias Bloc.Tasks.TaskList
   use BlocWeb, :live_view
 
   alias Bloc.Tasks
@@ -8,7 +11,10 @@ defmodule BlocWeb.TaskLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :tasks, Tasks.list_tasks(socket.assigns.current_user))}
+    socket
+    |> stream(:tasks, Tasks.list_tasks(socket.assigns.current_user))
+    |> stream(:task_lists, Tasks.list_task_lists(socket.assigns.current_user))
+    |> Ok.wrap()
   end
 
   @impl true
@@ -28,15 +34,30 @@ defmodule BlocWeb.TaskLive.Index do
     |> assign(:task, %Task{})
   end
 
+  defp apply_action(socket, :new_list, _params) do
+    socket
+    |> assign(:page_title, "New Task List")
+    |> assign(:task_list, %TaskList{})
+  end
+
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Tasks")
     |> assign(:task, nil)
+    |> assign(:task_list, nil)
   end
 
   @impl true
-  def handle_info({_component, {:saved, task}}, socket) do
-    {:noreply, stream_insert(socket, :tasks, task)}
+  def handle_info(
+        {_component, {:saved, %{task: %Task{} = task, dom_id: task_list_dom_id}}},
+        socket
+      ) do
+    send_update(TaskListComponent, id: task_list_dom_id, task: task)
+    {:noreply, socket}
+  end
+
+  def handle_info({_component, {:saved, %TaskList{} = task_list}}, socket) do
+    {:noreply, stream_insert(socket, :task_lists, task_list)}
   end
 
   @impl true

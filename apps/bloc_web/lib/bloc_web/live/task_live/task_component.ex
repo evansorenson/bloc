@@ -1,36 +1,48 @@
-defmodule BlocWeb.TaskLive.CheckboxComponent do
+defmodule BlocWeb.TaskLive.TaskComponent do
   use BlocWeb, :live_component
 
+  alias Bloc.Scope
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
 
   attr(:task, Task, required: true)
+  attr(:scope, Scope, required: true)
+  attr(:task_list_dom_id, :string, required: true)
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div
+    <li
       id={@id}
-      class="relative group flex items-start py-1 pl-2 hover:bg-gray-50 rounded-md cursor-pointer"
+      class={[
+        "relative group flex items-center py-1 pl-2 hover:bg-gray-50 rounded-md",
+        if(is_nil(@task.id) || @task.due_date, do: "", else: "pb-1")
+      ]}
     >
-      <div class="flex h-6 items-center">
-        <input
-          id="tasks"
-          aria-describedby="tasks-description"
-          name="tasks"
-          type="checkbox"
-          class="h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-0 focus-within:"
-          phx-click="complete"
-          checked={@task.complete?}
-          phx-target={@myself}
-        />
-      </div>
-      <div class={[
-        "ml-3",
-        if(@task.due_date, do: "", else: "pb-1")
-      ]}>
+      <input
+        aria-describedby="tasks-description"
+        name="tasks"
+        type="checkbox"
+        class="h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-0 focus-within:"
+        phx-click="complete"
+        checked={@task.complete?}
+        disabled={is_nil(@task.id)}
+        phx-target={@myself}
+      />
+      <div class="ml-3">
         <div class="text-sm leading-6">
-          <label for="tasks" class="font-semibold text-gray-900"><%= @task.title %></label>
+          <%= if is_nil(@task.id) do %>
+            <.simple_form for={@form} phx-submit="save" phx-change="validate" phx-target={@myself}>
+              <.input
+                field={@form[:title]}
+                type="text"
+                class="h-4 block w-full group-hover:bg-gray-50 hover:bg-gray-50 ring-0 rounded-md text-gray-900 placeholder:text-gray-400 sm:text-sm border-none focus:ring-0 focus:border-none"
+                placeholder="New Task"
+              />
+            </.simple_form>
+          <% else %>
+            <label for="tasks" class="font-semibold text-gray-900"><%= @task.title %></label>
+          <% end %>
         </div>
         <div :if={@task.due_date}>
           <span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-light text-gray-600">
@@ -53,7 +65,7 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
           </span>
         </div>
         <%!-- TODO Click plus makes sub-task --%>
-        <div class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 py-2 px-2">
+        <div :if={@task.id} class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 py-2 px-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -66,7 +78,7 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
           </svg>
         </div>
       </div>
-    </div>
+    </li>
     """
   end
 
@@ -82,7 +94,7 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
 
   @impl true
   def handle_event("validate", %{"task" => task_params}, socket) do
-    task_params = Map.put(task_params, "user_id", socket.assigns.current_user.id)
+    task_params = Map.put(task_params, "user_id", socket.assigns.scope.current_user.id)
 
     changeset =
       socket.assigns.task
@@ -93,7 +105,7 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
   end
 
   def handle_event("save", %{"task" => task_params}, socket) do
-    save_task(socket, socket.assigns.action, task_params)
+    save_task(socket, :new, task_params)
   end
 
   @impl true
@@ -101,8 +113,8 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
     complete? = if socket.assigns.task.complete?, do: nil, else: DateTime.utc_now()
 
     case Tasks.update_task(socket.assigns.task, %{complete?: complete?}) do
-      {:ok, task} ->
-        notify_parent({:saved, task})
+      {:ok, _task} ->
+        # notify_parent({:saved, task})
 
         {:noreply,
          socket
@@ -115,8 +127,8 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
 
   defp save_task(socket, :edit, task_params) do
     case Tasks.update_task(socket.assigns.task, task_params) do
-      {:ok, task} ->
-        notify_parent({:saved, task})
+      {:ok, _task} ->
+        # notify_parent({:saved, task})
 
         {:noreply,
          socket
@@ -129,15 +141,17 @@ defmodule BlocWeb.TaskLive.CheckboxComponent do
 
   defp save_task(socket, :new, task_params) do
     task_params
-    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Map.put("user_id", socket.assigns.scope.current_user_id)
+    |> Map.put("task_list_id", socket.assigns.task.task_list_id)
     |> Tasks.create_task()
     |> case do
       {:ok, task} ->
-        notify_parent({:saved, task})
+        notify_parent({:saved, %{task: task, dom_id: socket.assigns.task_list_dom_id}})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task created successfully")}
+         |> put_flash(:info, "Task created successfully")
+         |> assign_form(Tasks.change_task(%Task{task_list_id: task.task_list_id, title: ""}))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

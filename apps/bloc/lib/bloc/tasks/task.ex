@@ -8,8 +8,8 @@ defmodule Bloc.Tasks.Task do
 
   import Ecto.Changeset
 
-  @required_fields ~w(title user_id)a
-  @optional_fields ~w(due_date notes habit_id task_list_id complete? active? deleted?)a
+  @required_fields ~w(title user_id task_list_id)a
+  @optional_fields ~w(due_date notes habit_id complete? active? deleted?)a
 
   @habit_required_fields ~w(habit_id user_id due_date)a
 
@@ -41,6 +41,7 @@ defmodule Bloc.Tasks.Task do
     task
     |> cast(attrs, @all_fields)
     |> validate_required(@required_fields)
+    |> validate_length(:title, min: 1, max: 512)
   end
 
   def habit_changeset(task, attrs) do

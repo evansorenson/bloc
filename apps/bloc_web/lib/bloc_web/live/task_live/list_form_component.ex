@@ -1,4 +1,4 @@
-defmodule BlocWeb.TaskListLive.FormComponent do
+defmodule BlocWeb.TaskLive.ListFormComponent do
   use BlocWeb, :live_component
 
   alias Bloc.Tasks
@@ -54,7 +54,7 @@ defmodule BlocWeb.TaskListLive.FormComponent do
     save_task_list(socket, socket.assigns.action, task_list_params)
   end
 
-  defp save_task_list(socket, :edit, task_list_params) do
+  defp save_task_list(socket, :edit_list, task_list_params) do
     case Tasks.update_task_list(socket.assigns.task_list, task_list_params) do
       {:ok, task_list} ->
         notify_parent({:saved, task_list})
@@ -69,8 +69,11 @@ defmodule BlocWeb.TaskListLive.FormComponent do
     end
   end
 
-  defp save_task_list(socket, :new, task_list_params) do
-    case Tasks.create_task_list(task_list_params) do
+  defp save_task_list(socket, :new_list, task_list_params) do
+    task_list_params
+    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Tasks.create_task_list()
+    |> case do
       {:ok, task_list} ->
         notify_parent({:saved, task_list})
 

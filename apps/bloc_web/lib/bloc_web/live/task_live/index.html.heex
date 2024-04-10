@@ -4,12 +4,27 @@
     <.link patch={~p"/tasks/new"}>
       <.button>New Task</.button>
     </.link>
+    <.link patch={~p"/task_lists/new"}>
+      <.button>New Task List</.button>
+    </.link>
   </:actions>
 </.header>
 
-<div class="mt-2" phx-update="stream" id="tasks">
+<%!-- <div class="mt-2" phx-update="stream" id="tasks">
   <%= for {id, task} <- @streams.tasks do %>
-    <.live_component module={BlocWeb.TaskLive.CheckboxComponent} id={id} task={task} />
+    <.live_component module={BlocWeb.TaskLive.TaskComponent} id={id} task={task} />
+  <% end %>
+</div>
+ --%>
+
+<div class="my-8 space-y-4" phx-update="stream" id="task-lists">
+  <%= for {id, task_list} <- @streams.task_lists do %>
+    <.live_component
+      module={BlocWeb.TaskLive.TaskListComponent}
+      scope={@scope}
+      id={id}
+      task_list={task_list}
+    />
   <% end %>
 </div>
 
@@ -46,6 +61,23 @@
     title={@page_title}
     action={@live_action}
     task={@task}
+    patch={~p"/tasks"}
+    current_user={@current_user}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:new_list, :edit_list]}
+  id="task_list-modal"
+  show
+  on_cancel={JS.patch(~p"/tasks")}
+>
+  <.live_component
+    module={BlocWeb.TaskLive.ListFormComponent}
+    id={@task_list.id || :new_list}
+    title={@page_title}
+    action={@live_action}
+    task_list={@task_list}
     patch={~p"/tasks"}
     current_user={@current_user}
   />

@@ -146,8 +146,13 @@ defmodule Bloc.Tasks do
       [%TaskList{}, ...]
 
   """
-  def list_task_lists do
-    Repo.all(TaskList)
+  def list_task_lists(%User{id: user_id}, opts \\ []) do
+    TaskList
+    |> QueryBuilder.where(user_id: user_id)
+    |> QueryBuilder.order_by(asc: :position)
+    |> QueryBuilder.preload([:tasks])
+    |> QueryBuilder.from_list(opts)
+    |> Repo.all()
   end
 
   @doc """

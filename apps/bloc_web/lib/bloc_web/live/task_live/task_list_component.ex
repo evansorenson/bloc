@@ -1,84 +1,120 @@
-# defmodule BlocWeb.TaskLive.TaskListComponent do
-#   use BlocWeb, :live_component
+defmodule BlocWeb.TaskLive.TaskListComponent do
+  use BlocWeb, :live_component
 
-#   alias Bloc.Tasks
-#   alias Bloc.Tasks.Task
+  alias Bloc.Tasks.TaskList
+  alias Bloc.Tasks.Task
+  alias Bloc.Repo
 
-#   attr(:tasks, :list, required: true)
+  attr(:task_list, TaskList, required: true)
+  attr(:id, :string, required: true)
 
-#   @impl true
-#   def render(assigns) do
-#     ~H"""
-#     <div>
-#       <%= for {id, task} <- @tasks do %>
-#         <.live_component module={BlocWeb.TaskLive.CheckboxComponent} id={id} task={task} />
-#       <% end %>
-#     </div>
-#     """
-#   end
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <div id={@id} class="">
+      <div class="flex w-full group">
+        <h3 class="text-md font-medium text-gray-900"><%= @task_list.title %></h3>
+        <p class="pl-4"><%= @count %></p>
 
-#   @impl true
-#   def update(%{task: task} = assigns, socket) do
-#     changeset = Tasks.change_task(task)
+        <div class="ml-auto flex">
+          <div phx-click={new_task(@id)} role="button" class="opacity-0 group-hover:opacity-100">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.0"
+              stroke="currentColor"
+              class="w-4 h-4 text-gray-500 hover:text-gray-800 cursor-pointer"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </div>
 
-#     {:ok,
-#      socket
-#      |> assign(assigns)
-#      |> assign_form(changeset)}
-#   end
+          <div phx-click={toggle_tasks(@id)} class="cursor-pointer">
+            <svg
+              id={"list-chevron-left-#{@id}"}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
 
-#   @impl true
-#   def handle_event("validate", %{"task" => task_params}, socket) do
-#     task_params = Map.put(task_params, "user_id", socket.assigns.current_user.id)
+            <svg
+              id={"list-chevron-down-#{@id}"}
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 hidden"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+        </div>
+      </div>
 
-#     changeset =
-#       socket.assigns.task
-#       |> Tasks.change_task(task_params)
-#       |> Map.put(:action, :validate)
+      <ul id={"list-tasks-#{@id}"} phx-update="stream" role="list" class="hidden">
+        <.live_component
+          module={BlocWeb.TaskLive.TaskComponent}
+          scope={@scope}
+          id={"new_task-#{@id}"}
+          task={@task}
+          task_list_dom_id={@id}
+        />
 
-#     {:noreply, assign_form(socket, changeset)}
-#   end
+        <%= for {id, task} <- @streams.tasks do %>
+          <.live_component
+            module={BlocWeb.TaskLive.TaskComponent}
+            scope={@scope}
+            id={id}
+            task={task}
+            task_list_dom_id={@id}
+          />
+        <% end %>
+      </ul>
+    </div>
+    """
+  end
 
-#   def handle_event("save", %{"task" => task_params}, socket) do
-#     save_task(socket, socket.assigns.action, task_params)
-#   end
+  def toggle_tasks(id) do
+    JS.toggle(to: "#list-chevron-left-#{id}")
+    |> JS.toggle(to: "#list-chevron-down-#{id}")
+    |> JS.toggle(to: "#list-tasks-#{id}")
+  end
 
-#   defp save_task(socket, :edit, task_params) do
-#     case Tasks.update_task(socket.assigns.task, task_params) do
-#       {:ok, task} ->
-#         notify_parent({:saved, task})
+  def new_task(id) do
+    JS.hide(to: "#list-chevron-left-#{id}")
+    |> JS.show(to: "#list-chevron-down-#{id}")
+    |> JS.show(to: "#list-tasks-#{id}")
+    |> JS.show(to: "#new-task-#{id}")
+  end
 
-#         {:noreply,
-#          socket
-#          |> assign(:disabled, true)
-#          |> put_flash(:info, "Task updated successfully")}
+  @impl true
+  def update(%{task_list: task_list} = assigns, socket) do
+    task_list = Repo.preload(task_list, [:tasks])
 
-#       {:error, %Ecto.Changeset{} = changeset} ->
-#         {:noreply, assign_form(socket, changeset)}
-#     end
-#   end
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(task: %Task{task_list_id: task_list.id})
+     |> assign(:count, length(task_list.tasks))
+     |> stream(:tasks, task_list.tasks)}
+  end
 
-#   defp save_task(socket, :new, task_params) do
-#     task_params
-#     |> Map.put("user_id", socket.assigns.current_user.id)
-#     |> Tasks.create_task()
-#     |> case do
-#       {:ok, task} ->
-#         notify_parent({:saved, task})
+  def update(%{task: inserted_task}, socket) do
+    {:ok,
+     socket
+     |> assign(:count, socket.assigns.count + 1)
+     |> stream_insert(:tasks, inserted_task)}
+  end
 
-#         {:noreply,
-#          socket
-#          |> assign(:disabled, true)
-#          |> put_flash(:info, "Task created successfully")}
-
-#       {:error, %Ecto.Changeset{} = changeset} ->
-#         {:noreply, assign_form(socket, changeset)}
-#     end
-#   end
-
-#   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-#     assign(socket, :form, to_form(changeset))
-#   end
-
-#   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
-# end
+  @impl true
+  def handle_event("new_task", _unsigned_params, socket) do
+    {:noreply, socket |> assign(task: %Task{task_list_id: socket.assigns.task_list.id})}
+  end
+end

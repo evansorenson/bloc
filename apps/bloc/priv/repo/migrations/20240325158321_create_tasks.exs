@@ -10,6 +10,8 @@ defmodule Bloc.Repo.Migrations.CreateTasks do
       add :due_date, :date
       add :title, :string, null: false
       add :notes, :string
+      add :position, :integer
+
       add :habit_id, references(:habits, on_delete: :nothing, type: :binary_id)
       add :user_id, references(:users, on_delete: :nothing, type: :binary_id), null: false
       add :parent_id, references(:tasks, on_delete: :nothing, type: :binary_id)
