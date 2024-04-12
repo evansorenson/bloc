@@ -679,11 +679,47 @@ defmodule BlocWeb.CoreComponents do
       <.icon name="hero-arrow-path" class="ml-1 w-3 h-3 animate-spin" />
   """
   attr(:name, :string, required: true)
+  attr(:id, :string, default: nil)
   attr(:class, :string, default: nil)
+  attr(:type, :atom, values: [:outline, :solid, :mini, :micro], default: :outline)
 
-  def icon(%{name: "hero-" <> _} = assigns) do
+  def icon(%{name: "hero-" <> _ = name, type: type} = assigns) do
+    name = if type == :outline, do: name, else: "#{name}-#{Atom.to_string(type)}"
+
+    assigns =
+      assigns
+      |> assign(:name, name <> " ")
+      |> assign(:default_class, "h-4 w-4 text-gray-500 hover:text-gray-800")
+
     ~H"""
-    <span class={[@name, @class]} />
+    <span id={@id} class={Tails.merge(@name <> @default_class, @class) |> to_string()} />
+    """
+  end
+
+  defp enabled_class(), do: "bg-gray-800 text-white"
+  defp disabled_class(), do: "bg-none text-gray-400 hover:text-white hover:bg-gray-800"
+
+  attr(:name, :string, required: true)
+  attr(:icon, :string, required: true)
+  attr(:navigate, :string, required: true)
+  attr(:class, :string, default: nil)
+  attr(:active?, :boolean, default: false)
+  attr(:show_name?, :boolean, default: false)
+
+  def nav_bar_item(assigns) do
+    ~H"""
+    <li>
+      <.link
+        navigate={@navigate}
+        class={"nav-bar-item text-white group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold #{if @active?, do: enabled_class(), else: disabled_class()}"}
+      >
+        <.icon name={@icon} />
+        <span class="sr-only"><%= @name %></span>
+        <%= if @show_name? do %>
+          <%= @name %>
+        <% end %>
+      </.link>
+    </li>
     """
   end
 

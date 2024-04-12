@@ -17,9 +17,12 @@ defmodule Bloc.Tasks do
 
   """
   def list_tasks(%User{id: user_id}, opts \\ []) do
-    QueryBuilder.where(Task, user_id: user_id)
-    # TODO: investigate why preload joins first - doesn't return items if no habit
-    # |> QueryBuilder.preload([:habit])
+    Task
+    |> QueryBuilder.where(user_id: user_id)
+    |> QueryBuilder.where(parent_id: nil)
+    |> QueryBuilder.where(complete?: nil)
+    |> QueryBuilder.order_by(asc: :position)
+    |> QueryBuilder.preload([:subtasks])
     |> QueryBuilder.from_list(opts)
     |> Repo.all()
   end

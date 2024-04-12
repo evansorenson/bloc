@@ -1,6 +1,6 @@
 defmodule Bloc.Tasks.Task do
   use Bloc.Schema
-  use QueryBuilder, assoc_fields: [:task_list, :habit, :user, :parent, :sub_tasks]
+  use QueryBuilder, assoc_fields: [:task_list, :habit, :user, :parent, :subtasks]
 
   alias Bloc.Tasks.TaskList
   alias Bloc.Accounts.User
@@ -8,8 +8,8 @@ defmodule Bloc.Tasks.Task do
 
   import Ecto.Changeset
 
-  @required_fields ~w(title user_id task_list_id)a
-  @optional_fields ~w(due_date notes habit_id complete? active? deleted?)a
+  @required_fields ~w(title user_id)a
+  @optional_fields ~w(due_date notes habit_id complete? active? deleted? task_list_id parent_id)a
 
   @habit_required_fields ~w(habit_id user_id due_date)a
 
@@ -26,12 +26,15 @@ defmodule Bloc.Tasks.Task do
     field :title, :string
     field :position, :integer
 
+    belongs_to :parent, __MODULE__, foreign_key: :parent_id
     belongs_to :task_list, TaskList
     belongs_to :habit, Habit
-    belongs_to :parent, __MODULE__, foreign_key: :parent_id
     belongs_to :user, User
 
-    has_many :sub_tasks, __MODULE__, foreign_key: :parent_id
+    has_many :subtasks, __MODULE__,
+      foreign_key: :parent_id,
+      preload_order: [asc: :position],
+      where: [complete?: nil]
 
     timestamps(type: :utc_datetime)
   end

@@ -66,7 +66,7 @@ defmodule BlocWeb.Router do
     pipe_through([:browser, :require_authenticated_user])
 
     live_session :require_authenticated_user,
-      on_mount: [{BlocWeb.UserAuth, :ensure_authenticated}, BlocWeb.Scope] do
+      on_mount: [{BlocWeb.UserAuth, :ensure_authenticated}, BlocWeb.Scope, BlocWeb.Nav] do
       live("/users/settings", UserSettingsLive, :edit)
       live("/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email)
 

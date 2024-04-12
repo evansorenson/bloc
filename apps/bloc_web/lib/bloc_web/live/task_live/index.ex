@@ -1,4 +1,5 @@
 defmodule BlocWeb.TaskLive.Index do
+  alias BlocWeb.TaskLive.TaskComponent
   alias BlocWeb.TaskLive.TaskListComponent
   alias Bloc.Utils.Ok
   alias Bloc.Tasks.TaskList
@@ -49,9 +50,20 @@ defmodule BlocWeb.TaskLive.Index do
 
   @impl true
   def handle_info(
+        {_component, {:saved, %{task: %Task{parent_id: parent_id} = subtask, dom_id: dom_id}}},
+        socket
+      )
+      when is_binary(parent_id) do
+    IO.inspect("sending update for subtask")
+    send_update(TaskComponent, id: dom_id, subtask: subtask)
+    {:noreply, socket}
+  end
+
+  def handle_info(
         {_component, {:saved, %{task: %Task{} = task, dom_id: task_list_dom_id}}},
         socket
       ) do
+    IO.inspect("sending update for task")
     send_update(TaskListComponent, id: task_list_dom_id, task: task)
     {:noreply, socket}
   end

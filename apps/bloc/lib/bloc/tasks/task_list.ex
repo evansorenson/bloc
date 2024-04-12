@@ -9,7 +9,11 @@ defmodule Bloc.Tasks.TaskList do
     field :color, :string
 
     belongs_to :user, Bloc.Accounts.User
-    has_many :tasks, Bloc.Tasks.Task, on_delete: :delete_all
+
+    has_many :tasks, Bloc.Tasks.Task,
+      on_delete: :delete_all,
+      preload_order: [asc: :position],
+      where: [complete?: nil]
 
     timestamps(type: :utc_datetime)
   end
