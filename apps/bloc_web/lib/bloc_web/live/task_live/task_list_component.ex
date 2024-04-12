@@ -1,6 +1,7 @@
 defmodule BlocWeb.TaskLive.TaskListComponent do
   use BlocWeb, :live_component
 
+  alias Bloc.Tasks
   alias Bloc.Tasks.TaskList
   alias Bloc.Tasks.Task
   alias Bloc.Repo
@@ -29,7 +30,15 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
         </div>
       </div>
 
-      <ul id={"list-tasks-#{@id}"} phx-update="stream" role="list" class="hidden">
+      <ul
+        id={"list-tasks-#{@id}"}
+        phx-hook="Sortable"
+        phx-update="stream"
+        data-group="tasks"
+        data-list_id={@id}
+        role="list"
+        class="hidden drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+      >
         <.live_component
           module={BlocWeb.TaskLive.TaskComponent}
           scope={@scope}
@@ -77,7 +86,15 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
      |> stream(:tasks, task_list.tasks)}
   end
 
-  def update(%{task: inserted_task}, socket) do
+  def update(%{task: %Task{complete?: complete?, deleted?: deleted?} = removed_task}, socket)
+      when not is_nil(complete?) or not is_nil(deleted?) do
+    {:ok,
+     socket
+     |> assign(:count, socket.assigns.count - 1)
+     |> stream_delete(:tasks, removed_task)}
+  end
+
+  def update(%{task: %Task{} = inserted_task}, socket) do
     {:ok,
      socket
      |> assign(:count, socket.assigns.count + 1)
@@ -87,5 +104,16 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   @impl true
   def handle_event("new_task", _unsigned_params, socket) do
     {:noreply, socket |> assign(task: %Task{task_list_id: socket.assigns.task_list.id})}
+  end
+
+  @impl true
+  def handle_event(
+        "reposition",
+        %{"id" => id, "new" => new_position, "old" => _old_position},
+        socket
+      ) do
+    task = Tasks.get_task!(id)
+
+    {:noreply, socket |> stream_insert(:tasks, task, at: new_position)}
   end
 end

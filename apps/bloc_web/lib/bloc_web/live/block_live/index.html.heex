@@ -149,7 +149,7 @@
           </div>
         </div>
         <div class="ml-6 h-6 w-px bg-gray-300"></div>
-        <.link patch={~p"/blocks/new"}>
+        <.link phx-click="new">
           <button
             type="button"
             class="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -329,11 +329,17 @@
             style="grid-template-rows: 1.75rem repeat(288, minmax(0px, 1fr)) auto;"
             class="col-start-1 col-end-2
                   row-start-1 grid grid-cols-1"
+            phx-update="stream"
+            id="block-list"
+            data-group="tasks"
+            phx-hook="Sortable"
           >
             <%= for {id, block}  <- @streams.blocks do %>
               <li
+                id={id}
                 style={"grid-row: #{((block.start_time.minute + 10 + block.start_time.hour * 60) / 5) |> trunc()} / span #{(DateTime.diff(block.end_time, block.start_time, :minute) / 5) |> trunc()};"}
                 class="relative flex"
+                data-id={block.id}
               >
                 <div
                   phx-click={JS.navigate(~p"/blocks/#{block}")}
@@ -384,7 +390,7 @@
       To: "transform opacity-0 scale-95"
   -->
                     <div
-                      class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                      class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden"
                       role="menu"
                       aria-orientation="vertical"
                       aria-labelledby="menu-button"
@@ -1186,19 +1192,13 @@
               </:action>
             </.table> --%>
 
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="block-modal"
-  show
-  on_cancel={JS.patch(~p"/blocks")}
->
+<.modal :if={@live_action in [:new, :edit]} id="block-modal" show on_cancel={JS.push("cancel")}>
   <.live_component
     module={BlocWeb.BlockLive.FormComponent}
     id={@block.id || :new}
     title={@page_title}
     action={@live_action}
     block={@block}
-    patch={~p"/blocks"}
-    current_user={@current_user}
+    scope={@scope}
   />
 </.modal>

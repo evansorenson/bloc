@@ -3,9 +3,8 @@ defmodule BlocWeb.BlockLive.FormComponent do
 
   alias Bloc.Blocks
 
-  def on_mount(_params, socket) do
-    {:ok, assign(socket, current_user: socket.assigns.current_user)}
-  end
+  attr(:scope, Bloc.Scope, required: true)
+  attr(:disabled, :boolean, default: false)
 
   @impl true
   def render(assigns) do
@@ -27,7 +26,9 @@ defmodule BlocWeb.BlockLive.FormComponent do
         <.input field={@form[:start_time]} type="datetime-local" label="Start time" />
         <.input field={@form[:end_time]} type="datetime-local" label="End time" />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Block</.button>
+          <.button disabled={@disabled}>
+            Save Block
+          </.button>
         </:actions>
       </.simple_form>
     </div>
@@ -48,11 +49,11 @@ defmodule BlocWeb.BlockLive.FormComponent do
   def handle_event("validate", %{"block" => block_params}, socket) do
     changeset =
       socket.assigns.block
-      |> Map.put("user_id", socket.assigns.current_user.id)
+      |> Map.put("user_id", socket.assigns.scope.current_user.id)
       |> Blocks.change_block(block_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply, socket |> assign_form(changeset)}
   end
 
   def handle_event("save", %{"block" => block_params}, socket) do
@@ -66,8 +67,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Block updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> put_flash(:info, "Block updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -76,7 +76,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
 
   defp save_block(socket, :new, block_params) do
     block_params
-    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Map.put("user_id", socket.assigns.scope.current_user.id)
     |> Blocks.create_block()
     |> case do
       {:ok, block} ->
@@ -84,11 +84,11 @@ defmodule BlocWeb.BlockLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Block created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> assign(:disabled, true)
+         |> put_flash(:info, "Block created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply, socket |> assign_form(changeset)}
     end
   end
 

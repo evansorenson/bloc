@@ -41,7 +41,7 @@ defmodule Bloc.Tasks do
       ** (Ecto.NoResultsError)
 
   """
-  def get_task!(id), do: Repo.get!(Task, id)
+  def get_task!(id), do: Repo.get!(Task, id) |> Repo.preload(:subtasks)
 
   @doc """
   Creates a task.

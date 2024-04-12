@@ -15,7 +15,11 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <li id={@id} class={"#{if is_nil(@task.id), do: "hidden"}"}>
+    <li
+      id={@id}
+      data-id={@task.id}
+      class={"#{if is_nil(@task.id), do: "hidden"} drag-ghost:opacity-0"}
+    >
       <div class={[
         "relative group flex items-center py-1 pl-2 hover:bg-gray-50 rounded-md #{if not is_nil(@parent_task_id), do: "pl-8", else: ""} ",
         if(is_nil(@task.id) || @task.due_date, do: "", else: "pb-1")
@@ -79,9 +83,9 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             phx-click={toggle_subtasks(@id)}
             class={"cursor-pointer #{if @task.id && !@task.parent_id && @count > 0, do: "", else: "hidden"}"}
           >
-            <.icon id={"subtasks-chevron-left-#{@id}"} name="hero-chevron-left" />
+            <.icon id={"subtasks-chevron-left-#{@id}"} name="hero-chevron-left" class="hidden" />
 
-            <.icon id={"subtasks-chevron-down-#{@id}"} name="hero-chevron-down" class="hidden" />
+            <.icon id={"subtasks-chevron-down-#{@id}"} name="hero-chevron-down" />
           </div>
         </div>
       </div>
@@ -91,6 +95,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
         id={"subtasks-#{@id}"}
         phx-update="stream"
         role="list"
+        phx-hook="Sortable"
+        data-group="tasks"
       >
         <.live_component
           module={BlocWeb.TaskLive.TaskComponent}
@@ -182,8 +188,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
     complete? = if socket.assigns.task.complete?, do: nil, else: DateTime.utc_now()
 
     case Tasks.update_task(socket.assigns.task, %{complete?: complete?}) do
-      {:ok, _task} ->
-        # notify_parent({:saved, task})
+      {:ok, task} ->
+        notify_parent({:saved, %{task: task, dom_id: socket.assigns.parent_dom_id}})
 
         {:noreply,
          socket
@@ -201,8 +207,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
   defp save_task(socket, :edit, task_params) do
     case Tasks.update_task(socket.assigns.task, task_params) do
-      {:ok, _task} ->
-        # notify_parent({:saved, task})
+      {:ok, task} ->
+        notify_parent({:saved, task})
 
         {:noreply,
          socket
