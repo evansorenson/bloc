@@ -1,4 +1,5 @@
 defmodule Bloc.TasksTest do
+  alias Bloc.Scope
   use Bloc.DataCase
 
   alias Bloc.Tasks
@@ -17,7 +18,7 @@ defmodule Bloc.TasksTest do
       user: user,
       task: task
     } do
-      assert [queried_task] = Tasks.list_tasks(user)
+      assert [queried_task] = Tasks.list_tasks(%Scope{current_user_id: user.id})
       assert load_task(queried_task) == task
     end
 

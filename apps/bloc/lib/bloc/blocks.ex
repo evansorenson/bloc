@@ -4,30 +4,42 @@ defmodule Bloc.Blocks do
   """
 
   import Ecto.Query, warn: false
+  alias Bloc.Scope
   alias Bloc.Repo
 
   alias Bloc.Blocks.Block
-  alias Bloc.Accounts.User
 
   @doc """
   Returns the list of blocks.
 
   ## Examples
 
-      iex> list_blocks(%User{})
+      iex> list_blocks(%Scope{})
       [%Block{}, ...]
 
   """
-  def list_blocks(%User{id: user_id}, _opts \\ []) do
-    # TODO: only get blocks for today
-    # TODO: make queries composable
-    # TODO: add some indexes for common queries
+  def list_blocks(%Scope{} = scope, opts \\ []) do
+    all_query(Block, scope, opts)
+  end
 
-    from(b in Block,
-      where: b.user_id == ^user_id,
-      order_by: [asc: b.start_time]
-    )
+  defp all_query(query, %Scope{current_user_id: user_id}, opts) do
+    query
+    |> QueryBuilder.where(user_id: user_id)
+    # |> QueryBuilder.preload([:task])
+    |> QueryBuilder.from_list(opts)
     |> Repo.all()
+  end
+
+  def blocks_for_day(%Scope{timezone: timezone} = scope, opts \\ []) do
+    beginning_of_day =
+      timezone |> Timex.now() |> Timex.beginning_of_day() |> Timex.Timezone.convert("UTC")
+
+    end_of_day = timezone |> Timex.now() |> Timex.end_of_day() |> Timex.Timezone.convert("UTC")
+
+    Block
+    |> QueryBuilder.where({:start_time, :ge, beginning_of_day})
+    |> QueryBuilder.where({:start_time, :le, end_of_day})
+    |> all_query(scope, opts)
   end
 
   @doc """
@@ -35,8 +47,8 @@ defmodule Bloc.Blocks do
   """
   def first_available_time(blocks, opts \\ [timezone: "America/Chicago"])
 
-  def first_available_time([], opts) do
-    opts[:timezone] |> DateTime.now!()
+  def first_available_time([], _opts) do
+    DateTime.utc_now()
   end
 
   def first_available_time(blocks, _opts) do

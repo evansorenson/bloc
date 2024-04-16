@@ -2,26 +2,21 @@ defmodule Bloc.BlocksTest do
   use Bloc.DataCase
 
   alias Bloc.Blocks
+  alias Bloc.Scope
 
-  setup do
-    user = insert(:user)
-    %{user: user}
-  end
+  setup [:user, :block]
 
   describe "blocks" do
     alias Bloc.Blocks.Block
 
     @invalid_attrs %{title: nil, start_time: nil, end_time: nil, user_id: nil}
 
-    test "list_blocks/0 returns all blocks for user" do
-      user = insert(:user)
-      block = insert(:block, user: user)
-      assert [queried_block] = Blocks.list_blocks(user)
+    test "list_blocks/0 returns all blocks for user", %{user: user, block: block} do
+      assert [queried_block] = Blocks.list_blocks(%Scope{current_user_id: user.id})
       assert queried_block.id == block.id
     end
 
-    test "get_block!/1 returns the block with given id" do
-      block = insert(:block)
+    test "get_block!/1 returns the block with given id", %{block: block} do
       assert Blocks.get_block!(block.id).id == block.id
     end
 
@@ -43,9 +38,7 @@ defmodule Bloc.BlocksTest do
       assert {:error, %Ecto.Changeset{}} = Blocks.create_block(@invalid_attrs)
     end
 
-    test "update_block/2 with valid data updates the block" do
-      block = insert(:block)
-
+    test "update_block/2 with valid data updates the block", %{block: block} do
       update_attrs = %{
         title: "some updated title",
         start_time: ~U[2024-03-26 17:34:00Z],
@@ -73,6 +66,13 @@ defmodule Bloc.BlocksTest do
     test "change_block/1 returns a block changeset" do
       block = insert(:block)
       assert %Ecto.Changeset{} = Blocks.change_block(block)
+    end
+
+    test "blocks_for_day/2 returns all blocks for a given day" do
+      user = insert(:user)
+      block = insert(:block, user: user, start_time: ~U[2024-03-25 17:34:00Z])
+      assert [queried_block] = Blocks.blocks_for_day(user, ~U[2024-03-25])
+      assert queried_block.id == block.id
     end
   end
 end

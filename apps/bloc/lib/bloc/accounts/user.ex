@@ -9,6 +9,8 @@ defmodule Bloc.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
 
+    # field :timezone, :string, default: "America/Chicago"
+
     timestamps()
   end
 

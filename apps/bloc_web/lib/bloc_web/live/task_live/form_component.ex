@@ -3,6 +3,8 @@ defmodule BlocWeb.TaskLive.FormComponent do
 
   alias Bloc.Tasks
 
+  attr(:scope, Bloc.Scope, required: true)
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -22,6 +24,33 @@ defmodule BlocWeb.TaskLive.FormComponent do
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:notes]} type="text" label="Notes" />
         <.input field={@form[:due_date]} type="date" label="Due Date" />
+        <.input
+          field={@form[:estimated_minutes]}
+          type="select"
+          label="Estimate"
+          options={[
+            "15m": 15,
+            "30m": 30,
+            "45m": 45,
+            "1h": 60,
+            "1h 30m": 90,
+            "2h": 120,
+            "2h 30m": 150,
+            "3h": 180
+          ]}
+        />
+
+        <.input
+          field={@form[:task_list_idmove]}
+          type="select"
+          label="Task List"
+          options={
+            for task_list <- @task_lists do
+              {task_list.title, task_list.id}
+            end
+          }
+        />
+
         <:actions>
           <.button phx-disable-with="Saving...">Save Task</.button>
         </:actions>
@@ -37,6 +66,7 @@ defmodule BlocWeb.TaskLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(task_lists: Tasks.list_task_lists(assigns.scope))
      |> assign_form(changeset)}
   end
 
@@ -71,7 +101,7 @@ defmodule BlocWeb.TaskLive.FormComponent do
 
   defp save_task(socket, :new, task_params) do
     task_params
-    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Tasks.create_task()
     |> case do
       {:ok, task} ->

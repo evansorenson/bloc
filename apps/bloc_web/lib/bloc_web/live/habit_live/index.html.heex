@@ -1,7 +1,11 @@
-<.header>
+<.header class="items-center">
+  Habits
   <:actions>
-    <.link patch={~p"/habits/new"}>
-      <.button>New Habit</.button>
+    <.link
+      patch={~p"/habits/new"}
+      class="ml-auto hover:bg-gray-100 rounded-md hover:shadow-sm mr h-full flex items-center p-1"
+    >
+      <.icon name="hero-plus" />
     </.link>
   </:actions>
 </.header>
@@ -114,7 +118,7 @@
     title={@page_title}
     action={@live_action}
     habit={@habit}
-    current_user={@current_user}
+    scope={@scope}
     patch={~p"/habits"}
   />
 </.modal>

@@ -48,7 +48,8 @@ defmodule Bloc.MixProject do
       {:uuidv7, "~> 0.2"},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:tzdata, "~> 1.1"},
-      {:query_builder, "~> 1.4.2"}
+      {:query_builder, "~> 1.4.2"},
+      {:timex, "~> 3.0"}
     ]
   end
 

@@ -21,23 +21,86 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import Sortable from "../vendor/sortable";
+import { Sortable, Droppable, Plugins } from "@shopify/draggable";
 
 let Hooks = {};
 
 Hooks.Sortable = {
   mounted() {
-    let sorter = new Sortable(this.el, {
-      animation: 150,
-      delay: 100,
-      dragClass: "drag-item",
-      ghostClass: "drag-ghost",
-      forceFallback: true,
-      onEnd: (e) => {
-        let params = { old: e.oldIndex, new: e.newIndex, ...e.item.dataset };
-        this.pushEventTo(this.el, "reposition", params);
+    const sortable = new Sortable(this.el, {
+      draggable: ".sortable",
+      mirror: {
+        appendTo: this.el,
+        constrainDimensions: true,
+      },
+      classes: {
+        "draggable:over": ["drag-ghost"],
+        "source:dragging": ["ghost-item"],
       },
     });
+
+    // --- Draggable events --- //
+    // sortable.on("drag:start", (evt) => {
+    //   console.log("drag:start", evt);
+    // });
+
+    // sortable.on("drag:stop", (evt) => {
+    //   console.log("drag:stop", evt);
+
+    // });
+
+    // sortable.on("drag:move", (evt) => {
+    //   console.log("drag:move", evt);
+    // });
+
+    // sortable.on("drag:stopped", (evt) => {
+    //   console.log("drag:stopped", evt);
+    // });
+
+    // sortable.on("draggable:destroy", (evt) => {
+    //   console.log("draggable:destroy", evt);
+    // });
+  },
+};
+
+let dropzones = [];
+
+Hooks.Droppable = {
+  mounted() {
+    dropzones.push(this.el);
+    this.el.ondrop = (event) => {
+      console.log("ondrop", event);
+      event.preventDefault();
+      const entity = JSON.parse(event.dataTransfer.getData("text/plain"));
+      const window = event.target.getAttribute("phx-value-window");
+
+      if (entity && entity.id && entity.event && window) {
+        this.pushEvent(entity.event, {
+          window: +window,
+          ...entity,
+        });
+      } else {
+        console.error("Invalid entity", entity);
+      }
+    };
+
+    this.el.ondragover = (event) => {
+      event.currentTarget.classList.remove("bg-none");
+      event.currentTarget.classList.add("bg-blue-900");
+    };
+
+    this.el.ondragleave = (event) => {
+      event.currentTarget.classList.remove("bg-blue-900");
+      event.currentTarget.classList.add("bg-none");
+    };
+  },
+};
+
+Hooks.ResizeUp = {
+  mounted() {
+    this.el.onmousedown = (event) => {
+      console.log("onmousedown", event);
+    };
   },
 };
 
@@ -63,3 +126,28 @@ liveSocket.connect();
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
+
+window.dragStart = (event) => {
+  event.currentTarget.classList.add("drag-ghost");
+
+  console.log("dragStartingggg", event.target.id);
+
+  console.log("event", event.target.dataset.id);
+
+  event.dataTransfer.setData(
+    "text/plain",
+    JSON.stringify({
+      id: event.target.dataset.id,
+      event: event.target.dataset.event,
+    })
+  );
+};
+
+window.dragEnd = (event) => {
+  console.log("dragEnd", event);
+  event.currentTarget.classList.remove("drag-ghost");
+};
+
+window.startResizeUp = (event) => {
+  console.log("startResizeUp", event);
+};

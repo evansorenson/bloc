@@ -9,7 +9,7 @@ defmodule Bloc.Tasks.Task do
   import Ecto.Changeset
 
   @required_fields ~w(title user_id)a
-  @optional_fields ~w(due_date notes habit_id complete? active? deleted? task_list_id parent_id)a
+  @optional_fields ~w(due_date notes habit_id complete? active? deleted? task_list_id parent_id estimated_minutes)a
 
   @habit_required_fields ~w(habit_id user_id due_date)a
 
@@ -25,6 +25,7 @@ defmodule Bloc.Tasks.Task do
     field :notes, :string
     field :title, :string
     field :position, :integer
+    field :estimated_minutes, :integer
 
     belongs_to :parent, __MODULE__, foreign_key: :parent_id
     belongs_to :task_list, TaskList
@@ -45,6 +46,7 @@ defmodule Bloc.Tasks.Task do
     |> cast(attrs, @all_fields)
     |> validate_required(@required_fields)
     |> validate_length(:title, min: 1, max: 512)
+    |> require_task_list_or_parent()
   end
 
   def habit_changeset(task, attrs) do
@@ -56,5 +58,16 @@ defmodule Bloc.Tasks.Task do
   def update_changeset(task, attrs) do
     task
     |> cast(attrs, @update_allowed_fields)
+  end
+
+  defp require_task_list_or_parent(changeset) do
+    task_list_id = get_field(changeset, :task_list_id)
+    parent_id = get_field(changeset, :parent_id)
+
+    if task_list_id || parent_id do
+      changeset
+    else
+      add_error(changeset, :task_list_id, "must have a task list or parent")
+    end
   end
 end

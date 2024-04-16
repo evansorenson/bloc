@@ -3,8 +3,8 @@ defmodule Bloc.Tasks do
   The Tasks context.
   """
 
-  alias Bloc.Accounts.User
   alias Bloc.Repo
+  alias Bloc.Scope
   alias Bloc.Tasks.Task
 
   @doc """
@@ -12,11 +12,11 @@ defmodule Bloc.Tasks do
 
   ## Examples
 
-      iex> list_tasks(%User{})
+      iex> list_tasks(%Scope{})
       [%Task{}, ...]
 
   """
-  def list_tasks(%User{id: user_id}, opts \\ []) do
+  def list_tasks(%Scope{current_user_id: user_id}, opts \\ []) do
     Task
     |> QueryBuilder.where(user_id: user_id)
     |> QueryBuilder.where(parent_id: nil)
@@ -149,7 +149,7 @@ defmodule Bloc.Tasks do
       [%TaskList{}, ...]
 
   """
-  def list_task_lists(%User{id: user_id}, opts \\ []) do
+  def list_task_lists(%Scope{current_user_id: user_id}, opts \\ []) do
     TaskList
     |> QueryBuilder.where(user_id: user_id)
     |> QueryBuilder.order_by(asc: :position)

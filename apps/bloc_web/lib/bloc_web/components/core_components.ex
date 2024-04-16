@@ -284,6 +284,7 @@ defmodule BlocWeb.CoreComponents do
   )
 
   attr(:errors, :list, default: [])
+  attr(:errors?, :boolean, default: true, doc: "whether to render the error messages")
   attr(:checked, :boolean, doc: "the checked flag for checkbox inputs")
   attr(:prompt, :string, default: nil, doc: "the prompt for select inputs")
   attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
@@ -296,6 +297,7 @@ defmodule BlocWeb.CoreComponents do
 
   attr(:class, :string, default: nil, doc: "the class to apply to the input")
   attr(:label?, :boolean, default: true, doc: "whether to render the label")
+  attr(:combobox?, :boolean, default: false, doc: "whether to render a combobox")
 
   slot(:inner_block)
 
@@ -329,7 +331,7 @@ defmodule BlocWeb.CoreComponents do
         />
         <%= @label %>
       </label>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
     </div>
     """
   end
@@ -351,7 +353,7 @@ defmodule BlocWeb.CoreComponents do
         <option :if={@prompt} value=""><%= @prompt %></option>
         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
     </div>
     """
   end
@@ -371,7 +373,7 @@ defmodule BlocWeb.CoreComponents do
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
     </div>
     """
   end
@@ -394,7 +396,7 @@ defmodule BlocWeb.CoreComponents do
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
     </div>
     """
   end
@@ -407,7 +409,7 @@ defmodule BlocWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="block text-sm font-medium leading-6 text-gray-900">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -438,7 +440,7 @@ defmodule BlocWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
+    <header class={Tails.merge("flex items-center justify-between gap-6", @class) |> to_string()}>
       <div>
         <h1 class="text-lg font-semibold leading-8 text-zinc-800">
           <%= render_slot(@inner_block) %>
@@ -637,6 +639,16 @@ defmodule BlocWeb.CoreComponents do
   end
 
   @doc """
+  Renders a combobox
+  """
+
+  def combobox(assigns) do
+    ~H"""
+
+    """
+  end
+
+  @doc """
   Renders a back navigation link.
 
   ## Examples
@@ -682,6 +694,7 @@ defmodule BlocWeb.CoreComponents do
   attr(:id, :string, default: nil)
   attr(:class, :string, default: nil)
   attr(:type, :atom, values: [:outline, :solid, :mini, :micro], default: :outline)
+  attr(:rest, :global)
 
   def icon(%{name: "hero-" <> _ = name, type: type} = assigns) do
     name = if type == :outline, do: name, else: "#{name}-#{Atom.to_string(type)}"

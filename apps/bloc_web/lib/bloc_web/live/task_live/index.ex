@@ -13,8 +13,8 @@ defmodule BlocWeb.TaskLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     socket
-    |> stream(:tasks, Tasks.list_tasks(socket.assigns.current_user))
-    |> stream(:task_lists, Tasks.list_task_lists(socket.assigns.current_user))
+    |> stream(:tasks, Tasks.list_tasks(socket.assigns.scope))
+    |> stream(:task_lists, Tasks.list_task_lists(socket.assigns.scope))
     |> Ok.wrap()
   end
 
@@ -50,26 +50,36 @@ defmodule BlocWeb.TaskLive.Index do
 
   @impl true
   def handle_info(
-        {_component, {:saved, %{task: %Task{parent_id: parent_id} = subtask, dom_id: dom_id}}},
+        {_component, {:saved, %Task{parent_id: parent_id} = subtask}},
         socket
       )
       when is_binary(parent_id) do
-    IO.inspect("sending update for subtask")
-    send_update(TaskComponent, id: dom_id, subtask: subtask)
+    send_update(TaskComponent, id: "tasks-#{parent_id}", subtask: subtask)
     {:noreply, socket}
   end
 
   def handle_info(
-        {_component, {:saved, %{task: %Task{} = task, dom_id: task_list_dom_id}}},
+        {_component, {:saved, %Task{} = task}},
         socket
       ) do
-    IO.inspect("sending update for task")
-    send_update(TaskListComponent, id: task_list_dom_id, task: task)
+    send_update(TaskListComponent, id: "task_lists-#{task.task_list_id}", task: task)
     {:noreply, socket}
   end
 
   def handle_info({_component, {:saved, %TaskList{} = task_list}}, socket) do
     {:noreply, stream_insert(socket, :task_lists, task_list)}
+  end
+
+  def handle_info({_component, {:task_scheduled, %{task: task, block: block}}}, socket) do
+    IO.inspect("task scheduled")
+
+    send_update(TaskListComponent,
+      id: "task_lists-#{task.task_list_id}",
+      task: task,
+      block: block
+    )
+
+    {:noreply, socket}
   end
 
   @impl true

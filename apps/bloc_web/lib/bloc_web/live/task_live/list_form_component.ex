@@ -3,6 +3,8 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
   alias Bloc.Tasks
 
+  attr(:scope, Bloc.Scope, required: true)
+
   @impl true
   def render(assigns) do
     ~H"""

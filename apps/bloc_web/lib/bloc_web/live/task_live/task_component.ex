@@ -1,4 +1,5 @@
 defmodule BlocWeb.TaskLive.TaskComponent do
+  alias Bloc.Repo
   use BlocWeb, :live_component
 
   alias Bloc.Scope
@@ -9,8 +10,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   attr(:subtask, Task, default: nil)
 
   attr(:scope, Scope, required: true)
-  attr(:parent_dom_id, :string, required: true)
   attr(:parent_task_id, :string, default: nil)
+  attr(:static?, :boolean, default: false)
 
   @impl true
   def render(assigns) do
@@ -18,65 +19,66 @@ defmodule BlocWeb.TaskLive.TaskComponent do
     <li
       id={@id}
       data-id={@task.id}
-      class={"#{if is_nil(@task.id), do: "hidden"} drag-ghost:opacity-0"}
+      data-event="add_block"
+      class={"#{if is_nil(@task.id), do: "hidden"} #{if not @static?, do: "sortable"} drag-ghost:opacity-0 z-30"}
+      phx-value-duration="30"
+      draggable="true"
+      ondragstart="dragStart(event)"
+      phx-click-away={if is_nil(@task.id), do: JS.hide()}
     >
       <div class={[
-        "relative group flex items-center py-1 pl-2 hover:bg-gray-50 rounded-md #{if not is_nil(@parent_task_id), do: "pl-8", else: ""} ",
-        if(is_nil(@task.id) || @task.due_date, do: "", else: "pb-1")
+        "relative group flex items-start pl-2 hover:bg-gray-100 focus-within:bg-gray-100 rounded-md #{if not is_nil(@parent_task_id), do: "pl-8", else: ""} ",
+        if(is_nil(@task.id) || @task.due_date || @task.estimated_minutes, do: "", else: "pb-1")
       ]}>
         <input
           aria-describedby="tasks-description"
           name="tasks"
           type="checkbox"
-          class="h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-0 focus-within:"
+          class="h-3 w-3 mt-1.5 rounded border-gray-300 text-indigo-600 focus:ring-0 focus-within:"
           phx-click="complete"
           checked={@task.complete?}
           disabled={is_nil(@task.id)}
           phx-target={@myself}
         />
-        <div class="ml-3">
+        <div class="ml-3 w-full">
           <div class="text-sm leading-6">
             <%= if is_nil(@task.id) do %>
               <.simple_form for={@form} phx-submit="save" phx-change="validate" phx-target={@myself}>
                 <.input
+                  id={"#{@id}-title-input"}
                   field={@form[:title]}
                   type="text"
-                  class="h-4 block w-full group-hover:bg-gray-50 hover:bg-gray-50 ring-0 rounded-md text-gray-900 placeholder:text-gray-400 sm:text-sm border-none focus:ring-0 focus:border-none"
+                  class="-ml-3 h-6 block w-11/12 group-hover:bg-gray-100 hover:bg-gray-100 ring-0 rounded-md text-gray-900 font-medium placeholder:text-gray-400 sm:text-sm border-none focus:bg-gray-100 focus:ring-0 focus:border-none leading-none"
                   placeholder="New Task"
+                  errors?={false}
+                  label?={false}
                 />
               </.simple_form>
             <% else %>
-              <label for="tasks" class="font-semibold text-gray-900"><%= @task.title %></label>
+              <label for="tasks" class="font-medium text-gray-900"><%= @task.title %></label>
             <% end %>
           </div>
-          <div :if={@task.due_date}>
-            <span class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-light text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-3 h-3"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
-                />
-              </svg>
 
-              <%= Calendar.strftime(@task.due_date, "%m-%d") %>
-            </span>
+          <div class="flex align-middle mb-1 space-x-1">
+            <div :if={@task.due_date}>
+              <span class="inline-flex items-center gap-x-1.5 rounded-md bg-white border px-1 py-0.5 text-xs font-light text-gray-800">
+                <.icon name="hero-calendar" class="h-3 w-3" />
+
+                <%= Calendar.strftime(@task.due_date, "%m-%d") %>
+              </span>
+            </div>
+
+            <div :if={@task.estimated_minutes}>
+              <span class="inline-flex items-center gap-x-1.5 rounded-md bg-white border px-1 py-0.5 text-xs font-light text-gray-800">
+                <.icon name="hero-clock" class="h-3 w-3" />
+                <%= BlocWeb.Util.minutes_to_string(@task.estimated_minutes) %>
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="flex ml-auto place-items-center">
-          <div
-            :if={@task.id}
-            phx-click={new_subtask(@id)}
-            class="opacity-0 group-hover:opacity-100 py-2 px-2"
-          >
+        <div :if={@task.id} class="flex ml-auto place-items-center">
+          <div phx-click={new_subtask(@id)} class="opacity-0 group-hover:opacity-100 py-2 px-2">
             <.icon name="hero-plus" />
           </div>
           <div
@@ -90,30 +92,29 @@ defmodule BlocWeb.TaskLive.TaskComponent do
         </div>
       </div>
 
+      <.live_component
+        :if={not is_nil(@task.id) and is_nil(@parent_task_id)}
+        module={BlocWeb.TaskLive.TaskComponent}
+        scope={@scope}
+        id={"new-subtask-#{@id}"}
+        task={@subtask}
+        parent_task_id={@task.id}
+        static?={true}
+      />
+
       <ul
         :if={not is_nil(@task.id) and is_nil(@parent_task_id)}
         id={"subtasks-#{@id}"}
         phx-update="stream"
         role="list"
-        phx-hook="Sortable"
         data-group="tasks"
       >
-        <.live_component
-          module={BlocWeb.TaskLive.TaskComponent}
-          scope={@scope}
-          id={"new-subtask-#{@id}"}
-          task={@subtask}
-          parent_dom_id={@id}
-          parent_task_id={@task.id}
-        />
-
         <%= for {id, task} <- @streams.subtasks do %>
           <.live_component
             module={BlocWeb.TaskLive.TaskComponent}
             scope={@scope}
             id={id}
             task={task}
-            parent_dom_id={@id}
             parent_task_id={@task.id}
           />
         <% end %>
@@ -144,13 +145,15 @@ defmodule BlocWeb.TaskLive.TaskComponent do
      |> assign_form(changeset)}
   end
 
-  def update(%{task: %Task{parent_id: nil, subtasks: subtasks} = task} = assigns, socket) do
+  def update(%{task: %Task{parent_id: nil} = task} = assigns, socket) do
+    task = Repo.preload(task, :subtasks)
+
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:count, length(subtasks))
+     |> assign(:count, length(task.subtasks))
      |> assign(:subtask, %Task{parent_id: task.id})
-     |> stream(:subtasks, subtasks)}
+     |> stream(:subtasks, task.subtasks)}
   end
 
   @impl true
@@ -189,7 +192,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
     case Tasks.update_task(socket.assigns.task, %{complete?: complete?}) do
       {:ok, task} ->
-        notify_parent({:saved, %{task: task, dom_id: socket.assigns.parent_dom_id}})
+        notify_parent({:saved, task})
 
         {:noreply,
          socket
@@ -228,7 +231,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
     |> case do
       {:ok, task} ->
         IO.inspect(task, label: "task")
-        notify_parent({:saved, %{task: task, dom_id: socket.assigns.parent_dom_id}})
+        notify_parent({:saved, task})
 
         {:noreply,
          socket

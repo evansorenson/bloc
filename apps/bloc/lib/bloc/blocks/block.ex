@@ -1,5 +1,6 @@
 defmodule Bloc.Blocks.Block do
   use Bloc.Schema
+  use QueryBuilder, assoc_fields: [:user]
   import Ecto.Changeset
 
   schema "blocks" do
@@ -19,6 +20,18 @@ defmodule Bloc.Blocks.Block do
   def changeset(block, attrs) do
     block
     |> cast(attrs, @all_fields)
+    |> validate_start_time()
     |> validate_required(@required_fields)
+  end
+
+  defp validate_start_time(changeset) do
+    start_time = get_field(changeset, :start_time)
+    end_time = get_field(changeset, :end_time)
+
+    if DateTime.before?(start_time, end_time) do
+      changeset
+    else
+      add_error(changeset, :start_time, "must be before end time")
+    end
   end
 end

@@ -13,48 +13,41 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   def render(assigns) do
     ~H"""
     <div id={@id} class="">
-      <div class="flex w-full group">
-        <h3 class="text-md font-medium text-gray-900"><%= @task_list.title %></h3>
+      <div phx-click={toggle_tasks(@id)} class="flex w-full align-center group mb-2">
+        <h3 class="text-md font-semibold text-gray-900"><%= @task_list.title %></h3>
         <p class="pl-4"><%= @count %></p>
 
-        <div class="ml-auto flex">
-          <div phx-click={new_task(@id)} role="button" class="opacity-0 group-hover:opacity-100">
-            <.icon name="hero-plus" />
-          </div>
-
-          <div phx-click={toggle_tasks(@id)} class="cursor-pointer">
-            <.icon id={"list-chevron-left-#{@id}"} name="hero-chevron-left" />
-
-            <.icon id={"list-chevron-down-#{@id}"} name="hero-chevron-down" class="hidden" />
-          </div>
-        </div>
+        <button
+          role="button"
+          phx-click={new_task(@id)}
+          role="button"
+          class="ml-auto opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-md block mr-2 mt-0"
+        >
+          <.icon name="hero-plus" />
+        </button>
+        <button role="button" phx-click={toggle_tasks(@id)} class="hover:bg-gray-100 rounded-md block">
+          <.icon id={"list-chevron-left-#{@id}"} name="hero-chevron-left" />
+        </button>
       </div>
+
+      <.live_component
+        module={BlocWeb.TaskLive.TaskComponent}
+        scope={@scope}
+        id={"new_task-#{@id}"}
+        task={@task}
+        static?={true}
+      />
 
       <ul
         id={"list-tasks-#{@id}"}
-        phx-hook="Sortable"
         phx-update="stream"
         data-group="tasks"
         data-list_id={@id}
         role="list"
-        class="hidden drag-item:focus-within:ring-0 drag-item:focus-within:ring-offset-0 drag-ghost:bg-zinc-300 drag-ghost:border-0 drag-ghost:ring-0"
+        class="hidden"
       >
-        <.live_component
-          module={BlocWeb.TaskLive.TaskComponent}
-          scope={@scope}
-          id={"new_task-#{@id}"}
-          task={@task}
-          parent_dom_id={@id}
-        />
-
         <%= for {id, task} <- @streams.tasks do %>
-          <.live_component
-            module={BlocWeb.TaskLive.TaskComponent}
-            scope={@scope}
-            id={id}
-            task={task}
-            parent_dom_id={@id}
-          />
+          <.live_component module={BlocWeb.TaskLive.TaskComponent} scope={@scope} id={id} task={task} />
         <% end %>
       </ul>
     </div>
@@ -62,16 +55,15 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   end
 
   def toggle_tasks(id) do
-    JS.toggle(to: "#list-chevron-left-#{id}")
-    |> JS.toggle(to: "#list-chevron-down-#{id}")
+    JS.toggle_class("-rotate-90", to: "#list-chevron-left-#{id}")
     |> JS.toggle(to: "#list-tasks-#{id}")
   end
 
   def new_task(id) do
-    JS.hide(to: "#list-chevron-left-#{id}")
-    |> JS.show(to: "#list-chevron-down-#{id}")
+    JS.add_class("-rotate-90", to: "#list-chevron-left-#{id}")
     |> JS.show(to: "#list-tasks-#{id}")
-    |> JS.show(to: "#new-task-#{id}")
+    |> JS.show(to: "#new_task-#{id}")
+    |> JS.focus(to: "#new_task-#{id}-title-input")
   end
 
   @impl true
@@ -86,12 +78,13 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
      |> stream(:tasks, task_list.tasks)}
   end
 
+  def update(%{task: task, block: _block}, socket) do
+    remove_task(socket, task)
+  end
+
   def update(%{task: %Task{complete?: complete?, deleted?: deleted?} = removed_task}, socket)
       when not is_nil(complete?) or not is_nil(deleted?) do
-    {:ok,
-     socket
-     |> assign(:count, socket.assigns.count - 1)
-     |> stream_delete(:tasks, removed_task)}
+    remove_task(socket, removed_task)
   end
 
   def update(%{task: %Task{} = inserted_task}, socket) do
@@ -99,6 +92,10 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
      socket
      |> assign(:count, socket.assigns.count + 1)
      |> stream_insert(:tasks, inserted_task)}
+  end
+
+  defp remove_task(socket, task) do
+    {:ok, socket |> assign(:count, socket.assigns.count - 1) |> stream_delete(:tasks, task)}
   end
 
   @impl true
@@ -109,11 +106,19 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   @impl true
   def handle_event(
         "reposition",
-        %{"id" => id, "new" => new_position, "old" => _old_position},
+        %{"id" => _id, "new" => _new_position, "old" => _old_position},
         socket
       ) do
-    task = Tasks.get_task!(id)
+    # task = Tasks.get_task!(id)
+    # {:noreply, socket |> stream_insert(:tasks, task, at: new_position)}
+    {:noreply, socket}
+  end
 
-    {:noreply, socket |> stream_insert(:tasks, task, at: new_position)}
+  @impl true
+  def handle_event("scheduled_task", %{"id" => id}, socket) do
+    {:noreply,
+     socket
+     |> stream_delete(:tasks, Tasks.get_task!(id))
+     |> assign(:count, socket.assigns.count - 1)}
   end
 end

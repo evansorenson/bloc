@@ -92,6 +92,7 @@ module.exports = {
               "mask-repeat": "no-repeat",
               "background-color": "currentColor",
               "vertical-align": "middle",
+              "stroke-width": "4.0",
               display: "inline-block",
               width: size,
               height: size,
