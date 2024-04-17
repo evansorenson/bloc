@@ -7,8 +7,8 @@ defmodule Bloc.Repo.Migrations.CreateBlocks do
       add :title, :string, null: false
       add :start_time, :utc_datetime, null: false
       add :end_time, :utc_datetime, null: false
-      add :user_id, references(:users, on_delete: :nothing, type: :uuid), null: false
-      add :task_id, references(:tasks, on_delete: :nothing, type: :uuid), null: true
+      add :user_id, references(:users, on_delete: :delete_all, type: :uuid), null: false
+      add :task_id, references(:tasks, on_delete: :delete_all, type: :uuid), null: true
 
       timestamps(type: :utc_datetime)
     end

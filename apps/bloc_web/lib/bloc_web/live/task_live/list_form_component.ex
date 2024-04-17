@@ -63,7 +63,7 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task list updated successfully")
+         |> put_flash!(:info, "Task list updated successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -73,7 +73,7 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
   defp save_task_list(socket, :new_list, task_list_params) do
     task_list_params
-    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Tasks.create_task_list()
     |> case do
       {:ok, task_list} ->
@@ -81,11 +81,11 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task list created successfully")
+         |> put_flash!(:info, "Task list created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply, socket |> put_flash!(:error, "Error creating task") |> assign_form(changeset)}
     end
   end
 

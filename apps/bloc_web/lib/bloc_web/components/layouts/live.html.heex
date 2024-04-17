@@ -159,5 +159,7 @@
         <%= live_render(@socket, BlocWeb.BlockLive.Index, id: "Blocks", scope: @scope) %>
       </div>
     </div>
+
+    <.flash_group flash={@flash} />
   </main>
 </div>

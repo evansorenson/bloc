@@ -49,7 +49,8 @@ defmodule Bloc.MixProject do
       {:ex_machina, "~> 2.7.0", only: :test},
       {:tzdata, "~> 1.1"},
       {:query_builder, "~> 1.4.2"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:oban, "~> 2.17"}
     ]
   end
 

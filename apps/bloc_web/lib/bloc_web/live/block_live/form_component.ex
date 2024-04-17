@@ -67,7 +67,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Block updated successfully")}
+         |> put_flash!(:info, "Block updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -85,7 +85,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
         {:noreply,
          socket
          |> assign(:disabled, true)
-         |> put_flash(:info, "Block created successfully")}
+         |> put_flash!(:info, "Block created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, socket |> assign_form(changeset)}

@@ -196,7 +196,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task completed")}
+         |> put_flash!(:info, "Task completed")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -215,7 +215,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task updated successfully")}
+         |> put_flash!(:info, "Task updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -235,7 +235,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task created successfully")
+         |> put_flash!(:info, "Task created successfully")
          |> assign_form(Tasks.change_task(%Task{task_list_id: task.task_list_id, title: ""}))}
 
       {:error, %Ecto.Changeset{} = changeset} ->

@@ -41,7 +41,7 @@ defmodule BlocWeb.TaskLive.FormComponent do
         />
 
         <.input
-          field={@form[:task_list_idmove]}
+          field={@form[:task_list_id]}
           type="select"
           label="Task List"
           options={
@@ -91,7 +91,7 @@ defmodule BlocWeb.TaskLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task updated successfully")
+         |> put_flash!(:info, "Task updated successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -100,6 +100,8 @@ defmodule BlocWeb.TaskLive.FormComponent do
   end
 
   defp save_task(socket, :new, task_params) do
+    IO.inspect(socket.assigns.scope.current_user_id)
+
     task_params
     |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Tasks.create_task()
@@ -109,13 +111,15 @@ defmodule BlocWeb.TaskLive.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Task created successfully")
+         |> put_flash!(:info, "Task created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
+
         {:noreply,
          socket
-         |> put_flash(:error, "Error creating task")
+         |> put_flash!(:error, "Error creating task")
          |> assign_form(changeset)}
     end
   end

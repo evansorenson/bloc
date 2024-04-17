@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = {
+  mode: "jit",
   content: ["./js/**/*.js", "../lib/bloc_web.ex", "../lib/bloc_web/**/*.*ex"],
   theme: {
     extend: {

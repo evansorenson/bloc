@@ -80,3 +80,17 @@ import_config "#{config_env()}.exs"
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 config :query_builder, :default_page_size, 100
+
+config :bloc, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10],
+  repo: Bloc.Repo,
+  plugins: [
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"@midnight", Bloc.Workers.HabitTask}
+     ],
+     timezone: "America/Chicago"},
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
+  ]

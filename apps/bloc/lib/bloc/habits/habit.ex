@@ -1,8 +1,9 @@
 defmodule Bloc.Habits.Habit do
   use Bloc.Schema
-  use QueryBuilder, assoc_fields: [:user, :habit_tasks]
+  use QueryBuilder, assoc_fields: [:user, :tasks]
 
   alias Bloc.Tasks.Task
+  alias Ecto.Changeset
 
   import Ecto.Changeset
 
@@ -11,8 +12,10 @@ defmodule Bloc.Habits.Habit do
     field :notes, :string
     field :period_type, Ecto.Enum, values: [:daily, :weekly, :monthly]
     field :deleted?, :utc_datetime, default: nil
+    field :start_time, :time
+    field :end_time, :time
 
-    has_many :habit_tasks, Task
+    has_many :tasks, Task
     belongs_to :user, Bloc.Accounts.User
 
     timestamps(type: :utc_datetime)
@@ -29,22 +32,41 @@ defmodule Bloc.Habits.Habit do
     habit
     |> cast(attrs, @all_fields)
     |> validate_required(@create_required_fields)
-    |> add_current_task()
-  end
-
-  defp add_current_task(changeset) do
-    put_assoc(changeset, :habit_tasks, [
-      %Task{
-        title: get_field(changeset, :title),
-        notes: get_field(changeset, :notes),
-        due_date: Date.utc_today(),
-        user_id: get_field(changeset, :user_id)
-      }
-    ])
+    |> require_both_start_and_end_time()
+    |> validate_start_time()
   end
 
   def update_changeset(changeset, attrs) do
     changeset
     |> cast(attrs, @update_allowed)
   end
+
+  def require_both_start_and_end_time(changeset) do
+    start_time = get_field(changeset, :start_time)
+    end_time = get_field(changeset, :end_time)
+
+    case {start_time, end_time} do
+      {nil, end_time} when not is_nil(end_time) ->
+        add_error(changeset, :start_time, "must be present when end time is given")
+
+      {start_time, nil} when not is_nil(start_time) ->
+        add_error(changeset, :end_time, "must be present when start time is given")
+
+      _ ->
+        changeset
+    end
+  end
+
+  defp validate_start_time(%Changeset{valid?: true} = changeset) do
+    start_time = get_field(changeset, :start_time)
+    end_time = get_field(changeset, :end_time)
+
+    if DateTime.before?(start_time, end_time) do
+      changeset
+    else
+      add_error(changeset, :start_time, "must be before end time")
+    end
+  end
+
+  defp validate_start_time(changeset), do: changeset
 end

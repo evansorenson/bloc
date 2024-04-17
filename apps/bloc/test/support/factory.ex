@@ -45,8 +45,8 @@ defmodule Bloc.Factory do
     }
   end
 
-  def task(%{user: user} = context) do
-    {:ok, task: insert(:task, habit: context[:habit], user: user)}
+  def task(%{user: user, task_list: task_list} = context) do
+    {:ok, task: insert(:task, habit: context[:habit], user: user, task_list: task_list)}
   end
 
   def task_factory do
@@ -54,6 +54,18 @@ defmodule Bloc.Factory do
       title: sequence(:title, &"title-#{&1}"),
       notes: "some notes",
       due_date: Date.utc_today(),
+      user: build(:user),
+      task_list: build(:task_list)
+    }
+  end
+
+  def task_list(%{user: user}) do
+    {:ok, task_list: insert(:task_list, user: user)}
+  end
+
+  def task_list_factory do
+    %Bloc.Tasks.TaskList{
+      title: sequence(:title, &"title-#{&1}"),
       user: build(:user)
     }
   end

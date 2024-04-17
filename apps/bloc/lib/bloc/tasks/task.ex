@@ -2,6 +2,7 @@ defmodule Bloc.Tasks.Task do
   use Bloc.Schema
   use QueryBuilder, assoc_fields: [:task_list, :habit, :user, :parent, :subtasks]
 
+  alias Bloc.Blocks.Block
   alias Bloc.Tasks.TaskList
   alias Bloc.Accounts.User
   alias Bloc.Habits.Habit
@@ -36,6 +37,8 @@ defmodule Bloc.Tasks.Task do
       foreign_key: :parent_id,
       preload_order: [asc: :position],
       where: [complete?: nil]
+
+    has_many :blocks, Block
 
     timestamps(type: :utc_datetime)
   end

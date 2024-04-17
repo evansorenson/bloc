@@ -3,7 +3,7 @@ defmodule Bloc.HabitsTest do
 
   alias Bloc.Habits
 
-  setup [:user, :habit, :task]
+  setup [:user, :habit, :task_list, :task]
 
   describe "habits" do
     alias Bloc.Habits.Habit

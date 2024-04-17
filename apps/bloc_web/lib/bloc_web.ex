@@ -60,6 +60,8 @@ defmodule BlocWeb do
 
       use Phoenix.LiveView, @opts
 
+      on_mount(BlocWeb.Flash)
+
       unquote(html_helpers())
     end
   end
@@ -67,6 +69,7 @@ defmodule BlocWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+      import BlocWeb.Flash, only: [put_flash!: 3]
 
       unquote(html_helpers())
     end

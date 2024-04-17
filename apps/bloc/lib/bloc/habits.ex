@@ -3,6 +3,9 @@ defmodule Bloc.Habits do
   The Habits context.
   """
 
+  alias Ecto.Multi
+  alias Bloc.Blocks
+  alias Bloc.Blocks.Block
   alias Bloc.Accounts.User
   alias Bloc.Habits.Habit
   alias Bloc.Repo
@@ -53,10 +56,25 @@ defmodule Bloc.Habits do
 
   """
   def create_habit(attrs \\ %{}) do
-    %Habit{}
-    |> Habit.changeset(attrs)
-    |> Repo.insert()
+    # multi
+    Multi.new()
+    |> Multi.insert(:habit, Habit.changeset(%Habit{}, attrs))
+    |> Multi.run(:maybe_create_task, fn _repo, %{habit: habit} -> task_for_habit_today(habit) end)
+    |> Repo.transaction()
   end
+
+  @spec task_for_habit_today(Habit.t()) :: {:ok, Block.t()} | {:ok, nil}
+  def task_for_habit_today(%Habit{start_time: start_time, end_time: end_time} = habit)
+      when not is_nil(start_time) and not is_nil(end_time) do
+    Blocks.create_block(%{
+      title: habit.title,
+      user_id: habit.user_id,
+      start_time: DateTime.new!(Date.utc_today(), habit.start_time),
+      end_time: DateTime.new!(Date.utc_today(), habit.end_time)
+    })
+  end
+
+  def task_for_habit_today(_), do: {:ok, nil}
 
   @doc """
   Updates a habit.

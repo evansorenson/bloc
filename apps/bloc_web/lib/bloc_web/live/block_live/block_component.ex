@@ -14,7 +14,7 @@ defmodule BlocWeb.BlockLive.BlockComponent do
     <li
       id={@id}
       style={"grid-row: #{@start} / span #{@span};"}
-      class="draggable  relative flex flex-col text-xs ml-1 mr-2 drag-ghost:opacity-100 z-30"
+      class="draggable h-full relative flex flex-col text-xs ml-1 mr-2 drag-ghost:opacity-100 z-30 "
     >
       <div
         id={"#{@id}-resize-up"}
@@ -33,7 +33,8 @@ defmodule BlocWeb.BlockLive.BlockComponent do
         data-event="resize_down"
       />
       <div
-        class="leading-5 group h-full flex flex-col pl-2  rounded-lg bg-blue-50 hover:bg-blue-100"
+        style={"max-height: #{@span * 9}px;"}
+        class="group h-full overflow-clip flex flex-col px-2 pt-1 rounded-lg bg-blue-50 hover:bg-blue-100"
         data-id={@block.id}
         draggable="true"
         ondragstart="dragStart(event)"
@@ -53,7 +54,7 @@ defmodule BlocWeb.BlockLive.BlockComponent do
           <.link navigate={~p"/blocks/#{@block.id}"}>Show</.link>
         </div>
 
-        <div class="absolute top-2 right-2 text-left">
+        <div class="absolute top-2 right-2 text-left hidden">
           <div class="">
             <button
               type="button"

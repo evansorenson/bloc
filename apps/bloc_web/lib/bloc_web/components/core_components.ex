@@ -101,6 +101,7 @@ defmodule BlocWeb.CoreComponents do
   attr(:flash, :map, default: %{}, doc: "the map of flash messages to display")
   attr(:title, :string, default: nil)
   attr(:kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup")
+  attr(:entity_id, :string, default: nil, doc: "the optional entity id for the flash message")
   attr(:rest, :global, doc: "the arbitrary HTML attributes to add to the flash container")
 
   slot(:inner_block, doc: "the optional inner block that renders the flash message")
@@ -109,10 +110,57 @@ defmodule BlocWeb.CoreComponents do
     assigns = assign_new(assigns, :id, fn -> "flash-#{assigns.kind}" end)
 
     ~H"""
+    <!-- Global notification live region, render this permanently at the end of the document -->
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
-      phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+      aria-live="assertive"
+      class="pointer-events-none absolute bottom-0 left-0 z-50 w-96 flex items-end px-4 py-6 sm:items-start sm:p-6"
+      {@rest}
+    >
+      <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+        <!--
+      Notification panel, dynamically insert this into the live region when it needs to be displayed
+
+      Entering: "transform ease-out duration-300 transition"
+        From: "translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+        To: "translate-y-0 opacity-100 sm:translate-x-0"
+      Leaving: "transition ease-in duration-100"
+        From: "opacity-100"
+        To: "opacity-0"
+    -->
+        <div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+          <div class="p-4">
+            <div class="flex items-center">
+              <div class="flex w-0 flex-1 justify-between">
+                <p class="w-0 flex-1 text-sm font-medium text-gray-900"><%= msg %></p>
+                <button
+                  type="button"
+                  class="ml-3 flex-shrink-0 rounded-md bg-white text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  phx-click=""
+                >
+                  Undo
+                </button>
+              </div>
+              <div class="ml-4 flex flex-shrink-0">
+                <button
+                  type="button"
+                  class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+                >
+                  <span class="sr-only">Close</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%!-- <div
       role="alert"
       class={[
         "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
@@ -130,7 +178,7 @@ defmodule BlocWeb.CoreComponents do
       <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
         <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
       </button>
-    </div>
+    </div> --%>
     """
   end
 
@@ -149,7 +197,7 @@ defmodule BlocWeb.CoreComponents do
     <div id={@id}>
       <.flash kind={:info} title={gettext("Success!")} flash={@flash} />
       <.flash kind={:error} title={gettext("Error!")} flash={@flash} />
-      <.flash
+      <%!-- <.flash
         id="client-error"
         kind={:error}
         title={gettext("We can't find the internet")}
@@ -171,7 +219,7 @@ defmodule BlocWeb.CoreComponents do
       >
         <%= gettext("Hang in there while we get back on track") %>
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 animate-spin" />
-      </.flash>
+      </.flash> --%>
     </div>
     """
   end
