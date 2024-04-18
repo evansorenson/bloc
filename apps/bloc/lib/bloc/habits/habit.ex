@@ -22,7 +22,7 @@ defmodule Bloc.Habits.Habit do
   end
 
   @create_required_fields ~w(title period_type user_id)a
-  @optional_fields ~w(notes)a
+  @optional_fields ~w(notes start_time end_time)a
   @all_fields @create_required_fields ++ @optional_fields
 
   @update_allowed ~w(title notes period_type deleted?)a
@@ -63,7 +63,7 @@ defmodule Bloc.Habits.Habit do
     start_time = get_field(changeset, :start_time)
     end_time = get_field(changeset, :end_time)
 
-    if !start_time || DateTime.before?(start_time, end_time) do
+    if !start_time || Time.before?(start_time, end_time) do
       changeset
     else
       add_error(changeset, :start_time, "must be before end time")

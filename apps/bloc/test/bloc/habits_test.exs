@@ -32,6 +32,53 @@ defmodule Bloc.HabitsTest do
       assert habit.period_type == :daily
     end
 
+    test "create_habit/1 cannot create with start_time after end_time", %{user: user} do
+      invalid_attrs = %{
+        title: "some title",
+        notes: "some notes",
+        period_type: :daily,
+        user_id: user.id,
+        start_time: ~T[12:00:00],
+        end_time: ~T[10:00:00]
+      }
+
+      assert {:error, %Ecto.Changeset{errors: [start_time: {"must be before end time", []}]}} =
+               Habits.create_habit(invalid_attrs)
+    end
+
+    test "create_habit/1 cannot create with start_time and no end_time", %{user: user} do
+      invalid_attrs = %{
+        title: "some title",
+        notes: "some notes",
+        period_type: :daily,
+        user_id: user.id,
+        start_time: ~T[09:00:00]
+      }
+
+      assert {:error,
+              %Ecto.Changeset{
+                errors: [end_time: {"must be present when start time is given", []}]
+              }} = Habits.create_habit(invalid_attrs)
+    end
+
+    test "create_habit/1 with valid data creates a habit with start and end time", %{user: user} do
+      valid_attrs = %{
+        title: "some title",
+        notes: "some notes",
+        period_type: :daily,
+        user_id: user.id,
+        start_time: ~T[09:00:00],
+        end_time: ~T[10:00:00]
+      }
+
+      assert {:ok, %Habit{} = habit} = Habits.create_habit(valid_attrs)
+      assert habit.title == "some title"
+      assert habit.notes == "some notes"
+      assert habit.period_type == :daily
+      assert habit.start_time == ~T[09:00:00]
+      assert habit.end_time == ~T[10:00:00]
+    end
+
     test "create_habit/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Habits.create_habit(@invalid_attrs)
     end
