@@ -182,7 +182,6 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   def handle_event("save", %{"task" => task_params}, socket) do
-    IO.inspect("saving subtask")
     save_task(socket, :new, task_params)
   end
 
@@ -230,7 +229,6 @@ defmodule BlocWeb.TaskLive.TaskComponent do
     |> Tasks.create_task()
     |> case do
       {:ok, task} ->
-        IO.inspect(task, label: "task")
         notify_parent({:saved, task})
 
         {:noreply,
@@ -239,7 +237,6 @@ defmodule BlocWeb.TaskLive.TaskComponent do
          |> assign_form(Tasks.change_task(%Task{task_list_id: task.task_list_id, title: ""}))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end

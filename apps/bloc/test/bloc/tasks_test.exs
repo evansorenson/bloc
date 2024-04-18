@@ -77,9 +77,8 @@ defmodule Bloc.TasksTest do
       assert task.parent_id == parent_task.id
     end
 
-    test "task must be assigned to parent task or task list", %{
-      user: user,
-      habit: habit
+    test "task must be assigned to parent task or task list or habit", %{
+      user: user
     } do
       invalid_attrs = %{
         title: "some title",
@@ -87,8 +86,7 @@ defmodule Bloc.TasksTest do
         complete?: ~U[2024-03-25 17:34:00Z],
         active?: ~U[2024-03-25 17:34:00Z],
         deleted?: ~U[2024-03-25 17:34:00Z],
-        user_id: user.id,
-        habit_id: habit.id
+        user_id: user.id
       }
 
       assert {:error, %Ecto.Changeset{}} = Tasks.create_task(invalid_attrs)

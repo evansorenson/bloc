@@ -3,9 +3,8 @@ defmodule Bloc.Habits do
   The Habits context.
   """
 
-  alias Ecto.Multi
-  alias Bloc.Blocks
-  alias Bloc.Blocks.Block
+  alias Ecto.Changeset
+  alias Bloc.Tasks.Task
   alias Bloc.Accounts.User
   alias Bloc.Habits.Habit
   alias Bloc.Repo
@@ -56,21 +55,46 @@ defmodule Bloc.Habits do
 
   """
   def create_habit(attrs \\ %{}) do
-    # multi
-    Multi.new()
-    |> Multi.insert(:habit, Habit.changeset(%Habit{}, attrs))
-    |> Multi.run(:maybe_create_task, fn _repo, %{habit: habit} -> task_for_habit_today(habit) end)
-    |> Repo.transaction()
+    Repo.transaction(fn _ ->
+      with {:ok, habit} <- Habit.changeset(%Habit{}, attrs) |> Repo.insert(),
+           {:ok, _task} <- habit |> task_for_habit_today() |> maybe_insert_task() do
+        habit
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
   end
 
-  @spec task_for_habit_today(Habit.t()) :: {:ok, Block.t()} | {:ok, nil}
-  def task_for_habit_today(%Habit{start_time: start_time, end_time: end_time} = habit)
-      when not is_nil(start_time) and not is_nil(end_time) do
-    Blocks.create_block(%{
+  defp maybe_insert_task(%Changeset{} = task) do
+    Repo.insert(task)
+  end
+
+  defp maybe_insert_task(nil), do: {:ok, nil}
+
+  @spec task_for_habit_today(Habit.t()) :: Task.t()
+  def task_for_habit_today(%Habit{} = habit) do
+    today = Date.utc_today()
+
+    blocks =
+      if habit.start_time && habit.end_time do
+        [
+          %{
+            title: habit.title,
+            user_id: habit.user_id,
+            start_time: DateTime.new!(today, habit.start_time),
+            end_time: DateTime.new!(today, habit.end_time)
+          }
+        ]
+      else
+        []
+      end
+
+    Task.changeset(%Task{}, %{
       title: habit.title,
+      habit_id: habit.id,
       user_id: habit.user_id,
-      start_time: DateTime.new!(Date.utc_today(), habit.start_time),
-      end_time: DateTime.new!(Date.utc_today(), habit.end_time)
+      due_date: today,
+      blocks: blocks
     })
   end
 

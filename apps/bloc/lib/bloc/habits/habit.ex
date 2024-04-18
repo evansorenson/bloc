@@ -39,6 +39,8 @@ defmodule Bloc.Habits.Habit do
   def update_changeset(changeset, attrs) do
     changeset
     |> cast(attrs, @update_allowed)
+    |> require_both_start_and_end_time()
+    |> validate_start_time()
   end
 
   def require_both_start_and_end_time(changeset) do
@@ -61,7 +63,7 @@ defmodule Bloc.Habits.Habit do
     start_time = get_field(changeset, :start_time)
     end_time = get_field(changeset, :end_time)
 
-    if DateTime.before?(start_time, end_time) do
+    if !start_time || DateTime.before?(start_time, end_time) do
       changeset
     else
       add_error(changeset, :start_time, "must be before end time")

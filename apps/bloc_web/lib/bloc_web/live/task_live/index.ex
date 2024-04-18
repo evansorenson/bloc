@@ -71,8 +71,6 @@ defmodule BlocWeb.TaskLive.Index do
   end
 
   def handle_info({_component, {:task_scheduled, %{task: task, block: block}}}, socket) do
-    IO.inspect("task scheduled")
-
     send_update(TaskListComponent,
       id: "task_lists-#{task.task_list_id}",
       task: task,

@@ -55,6 +55,7 @@ config :bloc_web, BlocWeb.Endpoint,
 # Watch static and templates for browser reloading.
 config :bloc_web, BlocWeb.Endpoint,
   live_reload: [
+    web_console_logger: true,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",

@@ -100,7 +100,6 @@ defmodule BlocWeb.TaskLive.FormComponent do
   end
 
   defp save_task(socket, :new, task_params) do
-    IO.inspect(socket.assigns.scope.current_user_id)
 
     task_params
     |> Map.put("user_id", socket.assigns.scope.current_user_id)
@@ -115,7 +114,6 @@ defmodule BlocWeb.TaskLive.FormComponent do
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
 
         {:noreply,
          socket

@@ -26,8 +26,6 @@ defmodule BlocWeb.BlockLive.Index do
     first_available_time =
       socket.assigns.scope |> Blocks.blocks_for_day() |> Blocks.first_available_time()
 
-    IO.inspect("new block")
-
     socket
     |> assign(:page_title, "New Block")
     |> assign(:live_action, :new)
@@ -70,8 +68,7 @@ defmodule BlocWeb.BlockLive.Index do
   end
 
   def handle_event("add_block", %{"id" => task_id, "window" => window}, socket) do
-    start_time =
-      window_to_date_time(socket.assigns.scope, window) |> IO.inspect(label: "start_time")
+    start_time = window_to_date_time(socket.assigns.scope, window)
 
     task = Tasks.get_task!(task_id)
     end_time = start_time |> DateTime.add(task.estimated_minutes || 30, :minute)
@@ -139,7 +136,6 @@ defmodule BlocWeb.BlockLive.Index do
     timezone
     |> Timex.today()
     |> DateTime.new!(time_from_minutes, timezone)
-    |> IO.inspect()
     |> Timex.Timezone.convert("UTC")
   end
 end

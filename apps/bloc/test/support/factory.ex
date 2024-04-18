@@ -41,7 +41,9 @@ defmodule Bloc.Factory do
       title: sequence(:title, &"title-#{&1}"),
       notes: "some notes",
       period_type: :daily,
-      user: build(:user)
+      user: build(:user),
+      start_time: nil,
+      end_time: nil
     }
   end
 
@@ -55,7 +57,8 @@ defmodule Bloc.Factory do
       notes: "some notes",
       due_date: Date.utc_today(),
       user: build(:user),
-      task_list: build(:task_list)
+      task_list: build(:task_list),
+      habit: build(:habit)
     }
   end
 

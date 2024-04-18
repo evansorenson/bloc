@@ -239,14 +239,12 @@ defmodule BlocWeb.BlockLive.BlockComponent do
     span =
       (DateTime.diff(block.end_time, block.start_time, :minute) / 5)
       |> trunc()
-      |> IO.inspect(label: "span")
 
     local_start_time = Timex.Timezone.convert(block.start_time, assigns.scope.timezone)
 
     start =
       ((local_start_time.minute + 10 + local_start_time.hour * 60) / 5)
       |> trunc()
-      |> IO.inspect(label: "start")
 
     {:ok, socket |> assign(assigns) |> assign(:span, span) |> assign(:start, start)}
   end
