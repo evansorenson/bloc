@@ -1,7 +1,10 @@
 defmodule BlocWeb.HabitLive.FormComponent do
+  alias Bloc.Scope
   use BlocWeb, :live_component
 
   alias Bloc.Habits
+
+  attr(:scope, Scope, required: true)
 
   @impl true
   def render(assigns) do
@@ -28,6 +31,8 @@ defmodule BlocWeb.HabitLive.FormComponent do
           prompt="Choose a value"
           options={Ecto.Enum.values(Bloc.Habits.Habit, :period_type)}
         />
+        <.input field={@form[:start_time]} type="time" label="Start time" />
+        <.input field={@form[:end_time]} type="time" label="End time" />
         <:actions>
           <.button phx-disable-with="Saving...">
             Save Habit
@@ -50,7 +55,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"habit" => habit_params}, socket) do
-    habit_params = Map.put(habit_params, "user_id", socket.assigns.current_user.id)
+    habit_params = Map.put(habit_params, "user_id", socket.assigns.scope.current_user_id)
 
     changeset =
       socket.assigns.habit
@@ -81,7 +86,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   defp save_habit(socket, :new, habit_params) do
     habit_params
-    |> Map.put("user_id", socket.assigns.current_user.id)
+    |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Habits.create_habit()
     |> case do
       {:ok, habit} ->
