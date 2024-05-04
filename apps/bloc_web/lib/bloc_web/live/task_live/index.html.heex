@@ -1,34 +1,36 @@
-<.header>
-  Tasks
-  <:actions>
-    <.link patch={~p"/tasks/new"}>
-      <.button>New Task</.button>
-    </.link>
-    <.link patch={~p"/task_lists/new"}>
-      <.button>New Task List</.button>
-    </.link>
-  </:actions>
-</.header>
+<div class="w-full flex md:pl-20">
+  <div class="flex-none w-96 px-4 py-4 sm:px-6 md:overflow-y-auto md:border-r md:border-gray-200 md:py-6 md:px-8 md:block">
+    <.header>
+      Tasks
+      <:actions>
+        <.link patch={~p"/tasks/new"}>
+          <.button>New Task</.button>
+        </.link>
+        <.link patch={~p"/task_lists/new"}>
+          <.button>New Task List</.button>
+        </.link>
+      </:actions>
+    </.header>
 
-<%!-- <div class="mt-2" phx-update="stream" id="tasks">
+    <%!-- <div class="mt-2" phx-update="stream" id="tasks">
   <%= for {id, task} <- @streams.tasks do %>
     <.live_component module={BlocWeb.TaskLive.TaskComponent} id={id} task={task} />
   <% end %>
 </div>
  --%>
 
-<div class="my-8 space-y-4" phx-update="stream" id="task-lists">
-  <%= for {id, task_list} <- @streams.task_lists do %>
-    <.live_component
-      module={BlocWeb.TaskLive.TaskListComponent}
-      scope={@scope}
-      id={id}
-      task_list={task_list}
-    />
-  <% end %>
-</div>
+    <div class="my-8 space-y-4" phx-update="stream" id="task-lists">
+      <%= for {id, task_list} <- @streams.task_lists do %>
+        <.live_component
+          module={BlocWeb.TaskLive.TaskListComponent}
+          scope={@scope}
+          id={id}
+          task_list={task_list}
+        />
+      <% end %>
+    </div>
 
-<%!-- <.table
+    <%!-- <.table
   id="tasks"
   rows={@streams.tasks}
   row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
@@ -54,31 +56,43 @@
   </:action>
 </.table> --%>
 
-<.modal :if={@live_action in [:new, :edit]} id="task-modal" show on_cancel={JS.patch(~p"/tasks")}>
-  <.live_component
-    module={BlocWeb.TaskLive.FormComponent}
-    id={@task.id || :new}
-    title={@page_title}
-    action={@live_action}
-    task={@task}
-    patch={~p"/tasks"}
-    scope={@scope}
-  />
-</.modal>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="task-modal"
+      show
+      on_cancel={JS.patch(~p"/tasks")}
+    >
+      <.live_component
+        module={BlocWeb.TaskLive.FormComponent}
+        id={@task.id || :new}
+        title={@page_title}
+        action={@live_action}
+        task={@task}
+        patch={~p"/tasks"}
+        scope={@scope}
+      />
+    </.modal>
 
-<.modal
-  :if={@live_action in [:new_list, :edit_list]}
-  id="task_list-modal"
-  show
-  on_cancel={JS.patch(~p"/tasks")}
->
-  <.live_component
-    module={BlocWeb.TaskLive.ListFormComponent}
-    id={@task_list.id || :new_list}
-    title={@page_title}
-    action={@live_action}
-    task_list={@task_list}
-    patch={~p"/tasks"}
-    scope={@scope}
-  />
-</.modal>
+    <.modal
+      :if={@live_action in [:new_list, :edit_list]}
+      id="task_list-modal"
+      show
+      on_cancel={JS.patch(~p"/tasks")}
+    >
+      <.live_component
+        module={BlocWeb.TaskLive.ListFormComponent}
+        id={@task_list.id || :new_list}
+        title={@page_title}
+        action={@live_action}
+        task_list={@task_list}
+        patch={~p"/tasks"}
+        scope={@scope}
+      />
+    </.modal>
+  </div>
+
+  <%!-- show calendar view on large screen --%>
+  <div class="px-4 hidden md:block w-full">
+    <%= live_render(@socket, BlocWeb.BlockLive.Index, id: "Blocks", scope: @scope) %>
+  </div>
+</div>

@@ -70,6 +70,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
   end
 
   defp save_habit(socket, :edit, habit_params) do
+    # TOOO: fix habit time based on user zone
     case Habits.update_habit(socket.assigns.habit, habit_params) do
       {:ok, habit} ->
         notify_parent({:saved, habit})

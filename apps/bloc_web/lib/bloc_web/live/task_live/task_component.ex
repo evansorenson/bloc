@@ -16,19 +16,24 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <li
+    <div
       id={@id}
       data-id={@task.id}
       data-event="add_block"
-      class={"#{if is_nil(@task.id), do: "hidden"} #{if not @static?, do: "sortable"} drag-ghost:opacity-0 z-30"}
+      class={[
+        "drag-ghost:opacity-0 z-30",
+        !@task.id && @parent_task_id && "hidden",
+        not @static? && "sortable"
+      ]}
       phx-value-duration="30"
       draggable="true"
       ondragstart="dragStart(event)"
-      phx-click-away={if is_nil(@task.id), do: JS.hide()}
+      phx-click-away={if is_nil(@task.id) and @parent_task_id, do: JS.hide()}
+      phx-remove={JS.transition("fade-out duration-500")}
     >
       <div class={[
-        "relative group flex items-start pl-2 hover:bg-gray-100 focus-within:bg-gray-100 rounded-md #{if not is_nil(@parent_task_id), do: "pl-8", else: ""} ",
-        if(is_nil(@task.id) || @task.due_date || @task.estimated_minutes, do: "", else: "pb-1")
+        "relative group flex items-start pl-2 py-1 my-0.5 hover:bg-gray-100 focus-within:bg-gray-100 rounded-md",
+        @parent_task_id && "pl-8"
       ]}>
         <input
           aria-describedby="tasks-description"
@@ -59,7 +64,10 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <% end %>
           </div>
 
-          <div class="flex align-middle mb-1 space-x-1">
+          <div
+            :if={@task.due_date || @task.estimated_minutes}
+            class="flex align-middle mb-1 space-x-1"
+          >
             <div :if={@task.due_date}>
               <span class="inline-flex items-center gap-x-1.5 rounded-md bg-white border px-1 py-0.5 text-xs font-light text-gray-800">
                 <.icon name="hero-calendar" class="h-3 w-3" />
@@ -77,8 +85,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
           </div>
         </div>
 
-        <div :if={@task.id} class="flex ml-auto place-items-center">
-          <div phx-click={new_subtask(@id)} class="opacity-0 group-hover:opacity-100 py-2 px-2">
+        <div :if={@task.id && !@parent_task_id} class="flex ml-auto place-items-center space-x-2 mr-2">
+          <div phx-click={new_subtask(@id)} class="opacity-0 group-hover:opacity-100">
             <.icon name="hero-plus" />
           </div>
           <div
@@ -119,7 +127,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
           />
         <% end %>
       </ul>
-    </li>
+    </div>
     """
   end
 
@@ -134,6 +142,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
     |> JS.show(to: "#subtasks-chevron-down-#{id}")
     |> JS.show(to: "#subtasks-#{id}")
     |> JS.show(to: "#new-subtask-#{id}")
+    |> JS.focus(to: "#new-subtask-#{id}-title-input")
   end
 
   def update(%{task: %Task{id: nil} = task} = assigns, socket) do
@@ -157,7 +166,15 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   @impl true
+  def update(%{subtask: %Task{complete?: complete?} = subtask}, socket)
+      when not is_nil(complete?) do
+    IO.inspect(subtask, label: "deleting subtask")
+    {:ok, socket |> stream_delete(:subtasks, subtask) |> assign(:count, socket.assigns.count - 1)}
+  end
+
   def update(%{subtask: subtask}, socket) do
+    IO.inspect(subtask, label: "inserting subtask")
+
     {:ok,
      socket
      |> stream_insert(:subtasks, subtask)

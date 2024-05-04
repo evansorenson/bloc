@@ -12,58 +12,44 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id={@id} class="">
-      <div phx-click={toggle_tasks(@id)} class="flex w-full align-center group mb-2">
-        <h3 class="text-md font-semibold text-gray-900"><%= @task_list.title %></h3>
-        <p class="pl-4"><%= @count %></p>
-
-        <button
-          role="button"
-          phx-click={new_task(@id)}
-          role="button"
-          class="ml-auto opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-md block mr-2 mt-0"
-        >
-          <.icon name="hero-plus" />
-        </button>
-        <button role="button" phx-click={toggle_tasks(@id)} class="hover:bg-gray-100 rounded-md block">
-          <.icon id={"list-chevron-left-#{@id}"} name="hero-chevron-left" />
-        </button>
-      </div>
-
-      <.live_component
-        module={BlocWeb.TaskLive.TaskComponent}
-        scope={@scope}
-        id={"new_task-#{@id}"}
-        task={@task}
-        static?={true}
-      />
-
-      <ul
-        id={"list-tasks-#{@id}"}
-        phx-update="stream"
-        data-group="tasks"
-        data-list_id={@id}
-        role="list"
-        class="hidden"
+    <div>
+      <.dropdown_list
+        id={@id}
+        title={@task_list.title}
+        count={@count}
+        new_item_to_focus={"#new_task-#{@id}-title-input"}
       >
-        <%= for {id, task} <- @streams.tasks do %>
-          <.live_component module={BlocWeb.TaskLive.TaskComponent} scope={@scope} id={id} task={task} />
-        <% end %>
-      </ul>
+        <:new_item>
+          <.live_component
+            module={BlocWeb.TaskLive.TaskComponent}
+            scope={@scope}
+            id={"new_task-#{@id}"}
+            task={@task}
+            static?={true}
+          />
+        </:new_item>
+
+        <:items>
+          <ul
+            id={"list-tasks-#{@id}"}
+            phx-update="stream"
+            data-group="tasks"
+            data-list_id={@id}
+            role="list"
+          >
+            <%= for {id, task} <- @streams.tasks do %>
+              <.live_component
+                module={BlocWeb.TaskLive.TaskComponent}
+                scope={@scope}
+                id={id}
+                task={task}
+              />
+            <% end %>
+          </ul>
+        </:items>
+      </.dropdown_list>
     </div>
     """
-  end
-
-  def toggle_tasks(id) do
-    JS.toggle_class("-rotate-90", to: "#list-chevron-left-#{id}")
-    |> JS.toggle(to: "#list-tasks-#{id}")
-  end
-
-  def new_task(id) do
-    JS.add_class("-rotate-90", to: "#list-chevron-left-#{id}")
-    |> JS.show(to: "#list-tasks-#{id}")
-    |> JS.show(to: "#new_task-#{id}")
-    |> JS.focus(to: "#new_task-#{id}-title-input")
   end
 
   @impl true

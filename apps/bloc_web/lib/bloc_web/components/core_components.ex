@@ -608,6 +608,72 @@ defmodule BlocWeb.CoreComponents do
     """
   end
 
+  slot(:new_item)
+  slot(:items, required: true)
+  slot(:header)
+  attr(:id, :string, required: true)
+  attr(:title, :string, required: true)
+  attr(:count, :integer, required: true)
+  attr(:new_item_to_focus, :string, default: nil)
+
+  def dropdown_list(assigns) do
+    ~H"""
+    <div id={@id}>
+      <div phx-click={toggle_dropdown(@id)} class="flex w-full group mb-2 items-center justify-center">
+        <div class="flex items-center justify-center">
+          <h3 class="text-md font-semibold text-gray-900"><%= @title %></h3>
+          <div class="pl-4">
+            <p class="px-1.5 text-gray-600 bg-gray-200 rounded-full text-sm"><%= @count %></p>
+          </div>
+        </div>
+
+        <button
+          role="button"
+          phx-click={new_item(@id, @new_item_to_focus)}
+          role="button"
+          class="ml-auto opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-md block mr-2 mt-0"
+        >
+          <.icon name="hero-plus" />
+        </button>
+        <button
+          role="button"
+          phx-click={toggle_dropdown(@id)}
+          class="hover:bg-gray-100 rounded-md block mr-2"
+        >
+          <.icon
+            id={"dropdown-list-chevron-left-#{@id}"}
+            name="hero-chevron-left"
+            class="transition-all transform duration-300"
+          />
+        </button>
+      </div>
+
+      <div id={"new-item-#{@id}"} class="hidden" phx-click-away={JS.hide(to: "#new-item-#{@id}")}>
+        <%= render_slot(@new_item) %>
+      </div>
+
+      <div id={"dropdown-items-#{@id}"} class="hidden">
+        <%= render_slot(@items) %>
+      </div>
+    </div>
+    """
+  end
+
+  def toggle_dropdown(id) do
+    JS.toggle_class("-rotate-90", to: "#dropdown-list-chevron-left-#{id}")
+    |> JS.toggle(to: "#dropdown-items-#{id}")
+  end
+
+  def new_item(id, new_item_to_focus \\ nil) do
+    JS.add_class("-rotate-90", to: "#dropdown-list-chevron-left-#{id}")
+    |> JS.show(to: "#dropdown-items-#{id}")
+    |> JS.show(to: "#new-item-#{id}")
+
+    if new_item_to_focus do
+      JS.focus(to: new_item_to_focus)
+    end
+  end
+
   @doc """
   Renders an accordion.
 

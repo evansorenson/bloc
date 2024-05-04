@@ -55,6 +55,7 @@ defmodule BlocWeb.TaskLive.Index do
       )
       when is_binary(parent_id) do
     send_update(TaskComponent, id: "tasks-#{parent_id}", subtask: subtask)
+
     {:noreply, socket}
   end
 

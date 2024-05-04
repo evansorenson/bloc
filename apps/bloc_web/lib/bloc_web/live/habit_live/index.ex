@@ -3,26 +3,22 @@ defmodule BlocWeb.HabitLive.Index do
 
   alias Bloc.Habits
   alias Bloc.Habits.Habit
-  alias Bloc.Utils.Ok
 
   on_mount({BlocWeb.UserAuth, :ensure_authenticated})
 
   @impl true
   def mount(_params, _session, socket) do
-    socket
-    |> stream(
-      :daily_habits,
-      Habits.list_habits(socket.assigns.current_user, where: [period_type: :daily])
-    )
-    |> stream(
-      :weekly_habits,
-      Habits.list_habits(socket.assigns.current_user, where: [period_type: :weekly])
-    )
-    |> stream(
-      :monthly_habits,
-      Habits.list_habits(socket.assigns.current_user, where: [period_type: :monthly])
-    )
-    |> Ok.wrap()
+    all_periods = Ecto.Enum.values(Habit, :period_type) |> IO.inspect(label: "all_periods")
+    all_habits = Habits.list_habits(socket.assigns.current_user)
+
+    socket =
+      Enum.reduce(all_periods, socket, fn period, socket ->
+        all_habits
+        |> Enum.filter(&(&1.period_type == period))
+        |> then(&stream(socket, period, &1))
+      end)
+
+    {:ok, socket}
   end
 
   @impl true
@@ -49,17 +45,16 @@ defmodule BlocWeb.HabitLive.Index do
   end
 
   @impl true
-  def handle_info({BlocWeb.HabitLive.FormComponent, {:saved, habit}}, socket) do
-    {:noreply,
-     stream_insert(socket, list_for_period(habit), habit) |> assign(:live_action, :index)}
+  def handle_info({BlocWeb.HabitLive.FormComponent, {:saved, %Habit{} = habit}}, socket) do
+    {:noreply, stream_insert(socket, habit.period_type, habit) |> assign(:live_action, :index)}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    habit = Habits.get_habit!(id)
+    %Habit{} = habit = Habits.get_habit!(id)
     {:ok, _habit} = Habits.delete_habit(habit)
 
-    {:noreply, stream_delete(socket, list_for_period(habit), habit)}
+    {:noreply, stream_delete(socket, habit.period_type, habit)}
   end
 
   def handle_event("new", _unsigned_params, socket) do
@@ -73,8 +68,4 @@ defmodule BlocWeb.HabitLive.Index do
   def handle_event("cancel", unsigned_params, socket) do
     {:noreply, apply_action(socket, :index, unsigned_params)}
   end
-
-  defp list_for_period(%Habit{period_type: :daily}), do: :daily_habits
-  defp list_for_period(%Habit{period_type: :weekly}), do: :weekly_habits
-  defp list_for_period(%Habit{period_type: :monthly}), do: :monthly_habits
 end
