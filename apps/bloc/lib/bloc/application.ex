@@ -14,10 +14,10 @@ defmodule Bloc.Application do
       {DNSCluster, query: Application.get_env(:bloc, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Bloc.PubSub},
       # Start the Finch HTTP client for sending emails
-      {Finch, name: Bloc.Finch},
+      {Finch, name: Bloc.Finch}
       # Start a worker by calling: Bloc.Worker.start_link(arg)
       # {Bloc.Worker, arg}
-      {Oban, Application.fetch_env!(:bloc, Oban)}
+      # {Oban, Application.fetch_env!(:bloc, Oban)}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Bloc.Supervisor)
