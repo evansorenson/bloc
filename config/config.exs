@@ -102,3 +102,8 @@ config :oapi_generator,
       location: "apps/bloc/lib/jira"
     ]
   ]
+
+config :bloc,
+  base_url: "https://billcom.atlassian.net",
+  username: "evan.sorenson@hq.bill.com",
+  password: System.get_env("JIRA_TOKEN")

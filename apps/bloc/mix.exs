@@ -50,8 +50,7 @@ defmodule Bloc.MixProject do
       {:tzdata, "~> 1.1"},
       {:query_builder, "~> 1.4.2"},
       {:timex, "~> 3.0"},
-      {:oban, "~> 2.17"},
-      {:oapi_generator, "~> 0.1.0", only: :dev, runtime: false}
+      {:oban, "~> 2.17"}
     ]
   end
 
