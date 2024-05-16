@@ -1,4 +1,5 @@
 defmodule Bloc.Accounts.UserNotifier do
+  @moduledoc false
   import Swoosh.Email
 
   alias Bloc.Mailer

@@ -1,10 +1,10 @@
 defmodule Rolex.ScopeTest do
   use ExUnit.Case, async: true
 
-  doctest Rolex.Scope
-
   alias Rolex.Permission
   alias Rolex.Scope
+
+  doctest Rolex.Scope
 
   @perm %Permission{name: :perm}
 

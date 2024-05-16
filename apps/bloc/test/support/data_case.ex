@@ -18,13 +18,13 @@ defmodule Bloc.DataCase do
 
   using do
     quote do
-      alias Bloc.Repo
-
+      import Bloc.DataCase
+      import Bloc.Factory
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Bloc.DataCase
-      import Bloc.Factory
+
+      alias Bloc.Repo
     end
   end
 

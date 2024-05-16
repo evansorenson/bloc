@@ -7,6 +7,7 @@ defmodule RolexTest do
     test "raises on nested scopes" do
       assert_raise RuntimeError, ~r/^invalid scope location/, fn ->
         defmodule NestedScopes do
+          @moduledoc false
           use Rolex
 
           scope :test do
@@ -20,6 +21,7 @@ defmodule RolexTest do
     test "raises on duplicate scopes" do
       assert_raise RuntimeError, ~r/^scope ":test" is duplicated.$/, fn ->
         defmodule DuplicateScopes do
+          @moduledoc false
           use Rolex
 
           scope :test do
@@ -36,6 +38,7 @@ defmodule RolexTest do
     test "raises on unknown role" do
       assert_raise RuntimeError, ~r/^unknown role/, fn ->
         defmodule UnknownRole do
+          @moduledoc false
           use Rolex
 
           scope :role_test do
@@ -52,6 +55,7 @@ defmodule RolexTest do
     test "raises when not implemented for remote checks" do
       assert_raise RuntimeError, ~r/^invalid check {OtherModule, :remote}/, fn ->
         defmodule RemoteChecks do
+          @moduledoc false
           use Rolex
 
           roles([
@@ -72,6 +76,7 @@ defmodule RolexTest do
     test "raises when not implemented for local checks" do
       assert_raise RuntimeError, ~r/^invalid check {RolexTest.LocalChecks, :local_check}/, fn ->
         defmodule LocalChecks do
+          @moduledoc false
           use Rolex
 
           roles([
@@ -91,6 +96,7 @@ defmodule RolexTest do
 
     test "does not raise on implemented local checks" do
       defmodule GoodLocalChecks do
+        @moduledoc false
         use Rolex
 
         roles([
@@ -112,6 +118,7 @@ defmodule RolexTest do
 
   describe "checks 'and' and 'or'" do
     defmodule Checker do
+      @moduledoc false
       def is_true?(_, _, _, _), do: true
       def is_true_again?(_, _, _, _), do: true
       def is_false?(_, _, _, _), do: false
@@ -119,6 +126,7 @@ defmodule RolexTest do
     end
 
     defmodule CheckAny do
+      @moduledoc false
       use Rolex
 
       roles([:test_role])
@@ -223,6 +231,7 @@ defmodule RolexTest do
 
   describe "can?/4" do
     defmodule TestUserCan do
+      @moduledoc false
       use Rolex
 
       roles([:test_role])
@@ -249,6 +258,7 @@ defmodule RolexTest do
 
   describe "filter/4" do
     defmodule TestFilter do
+      @moduledoc false
       use Rolex
 
       roles([:role_a, :role_b])
@@ -297,6 +307,7 @@ defmodule RolexTest do
 
   describe "split/4" do
     defmodule TestSplit do
+      @moduledoc false
       use Rolex
 
       roles([:role_a, :role_b])
@@ -346,6 +357,7 @@ defmodule RolexTest do
 
   describe "has?/4" do
     defmodule TestUserHas do
+      @moduledoc false
       use Rolex
 
       roles([:test_role])
@@ -379,6 +391,7 @@ defmodule RolexTest do
       # A totally overkill example where we can test
       # each macro accepts module attributes
       defmodule CanUseModuleAttributes do
+        @moduledoc false
         use Rolex
 
         @test_role :test_role
@@ -417,6 +430,7 @@ defmodule RolexTest do
 
     test "can use for loops" do
       defmodule CanUseForLoops do
+        @moduledoc false
         use Rolex
 
         roles([:test_role, :another_test])
@@ -461,6 +475,7 @@ defmodule RolexTest do
 
   describe ":roles_getter option" do
     defmodule CustomRoleGetter do
+      @moduledoc false
       use Rolex, roles_getter: &__MODULE__.get_roles/1
 
       roles([:test_role])

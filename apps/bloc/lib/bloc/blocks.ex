@@ -4,10 +4,10 @@ defmodule Bloc.Blocks do
   """
 
   import Ecto.Query, warn: false
-  alias Bloc.Scope
-  alias Bloc.Repo
 
   alias Bloc.Blocks.Block
+  alias Bloc.Repo
+  alias Bloc.Scope
 
   @doc """
   Returns the list of blocks.
@@ -32,9 +32,9 @@ defmodule Bloc.Blocks do
 
   def blocks_for_day(%Scope{timezone: timezone} = scope, opts \\ []) do
     beginning_of_day =
-      timezone |> Timex.now() |> Timex.beginning_of_day() |> Timex.Timezone.convert("UTC")
+      timezone |> DateTime.now!() |> Timex.beginning_of_day() |> Timex.Timezone.convert("UTC")
 
-    end_of_day = timezone |> Timex.now() |> Timex.end_of_day() |> Timex.Timezone.convert("UTC")
+    end_of_day = timezone |> DateTime.now!() |> Timex.end_of_day() |> Timex.Timezone.convert("UTC")
 
     Block
     |> QueryBuilder.where({:start_time, :ge, beginning_of_day})
@@ -52,8 +52,7 @@ defmodule Bloc.Blocks do
   end
 
   def first_available_time(blocks, _opts) do
-    blocks
-    |> Enum.reduce_while(hd(blocks).start_time, fn block, last_end_time ->
+    Enum.reduce_while(blocks, hd(blocks).start_time, fn block, last_end_time ->
       if last_end_time == block.start_time do
         {:cont, block.end_time}
       else

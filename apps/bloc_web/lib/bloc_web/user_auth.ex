@@ -1,8 +1,9 @@
 defmodule BlocWeb.UserAuth do
+  @moduledoc false
   use BlocWeb, :verified_routes
 
-  import Plug.Conn
   import Phoenix.Controller
+  import Plug.Conn
 
   alias Bloc.Accounts
 

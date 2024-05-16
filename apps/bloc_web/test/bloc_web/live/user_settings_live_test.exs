@@ -1,8 +1,9 @@
 defmodule BlocWeb.UserSettingsLiveTest do
   use BlocWeb.ConnCase, async: true
 
-  alias Bloc.Accounts
   import Phoenix.LiveViewTest
+
+  alias Bloc.Accounts
 
   describe "Settings page" do
     test "renders settings page", %{conn: conn} do

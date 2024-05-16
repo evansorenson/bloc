@@ -1,4 +1,5 @@
 defmodule BlocWeb.TaskLive.FormComponent do
+  @moduledoc false
   use BlocWeb, :live_component
 
   alias Bloc.Tasks

@@ -16,8 +16,9 @@ defmodule BlocWeb.CoreComponents do
   """
   use Phoenix.Component
 
-  alias Phoenix.LiveView.JS
   import BlocWeb.Gettext
+
+  alias Phoenix.LiveView.JS
 
   @doc """
   Renders a modal.
@@ -327,9 +328,7 @@ defmodule BlocWeb.CoreComponents do
                range radio search select tel text textarea time url week)
   )
 
-  attr(:field, Phoenix.HTML.FormField,
-    doc: "a form field struct retrieved from the form, for example: @form[:email]"
-  )
+  attr(:field, Phoenix.HTML.FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]")
 
   attr(:errors, :list, default: [])
   attr(:errors?, :boolean, default: true, doc: "whether to render the error messages")
@@ -338,10 +337,8 @@ defmodule BlocWeb.CoreComponents do
   attr(:options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2")
   attr(:multiple, :boolean, default: false, doc: "the multiple flag for select inputs")
 
-  attr(:rest, :global,
-    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
-                multiple pattern placeholder readonly required rows size step)
-  )
+  attr(:rest, :global, include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+                multiple pattern placeholder readonly required rows size step))
 
   attr(:class, :string, default: nil, doc: "the class to apply to the input")
   attr(:label?, :boolean, default: true, doc: "whether to render the label")
@@ -660,12 +657,14 @@ defmodule BlocWeb.CoreComponents do
   end
 
   def toggle_dropdown(id) do
-    JS.toggle_class("-rotate-90", to: "#dropdown-list-chevron-left-#{id}")
+    "-rotate-90"
+    |> JS.toggle_class(to: "#dropdown-list-chevron-left-#{id}")
     |> JS.toggle(to: "#dropdown-items-#{id}")
   end
 
   def new_item(id, new_item_to_focus \\ nil) do
-    JS.add_class("-rotate-90", to: "#dropdown-list-chevron-left-#{id}")
+    "-rotate-90"
+    |> JS.add_class(to: "#dropdown-list-chevron-left-#{id}")
     |> JS.show(to: "#dropdown-items-#{id}")
     |> JS.show(to: "#new-item-#{id}")
 
@@ -823,8 +822,8 @@ defmodule BlocWeb.CoreComponents do
     """
   end
 
-  defp enabled_class(), do: "bg-gray-800 text-white"
-  defp disabled_class(), do: "bg-none text-gray-400 hover:text-white hover:bg-gray-800"
+  defp enabled_class, do: "bg-gray-800 text-white"
+  defp disabled_class, do: "bg-none text-gray-400 hover:text-white hover:bg-gray-800"
 
   attr(:name, :string, required: true)
   attr(:icon, :string, required: true)
@@ -856,8 +855,7 @@ defmodule BlocWeb.CoreComponents do
     JS.show(js,
       to: selector,
       transition:
-        {"transition-all transform ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
+        {"transition-all transform ease-out duration-300", "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
          "opacity-100 translate-y-0 sm:scale-100"}
     )
   end
@@ -867,8 +865,7 @@ defmodule BlocWeb.CoreComponents do
       to: selector,
       time: 200,
       transition:
-        {"transition-all transform ease-in duration-200",
-         "opacity-100 translate-y-0 sm:scale-100",
+        {"transition-all transform ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
          "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
     )
   end

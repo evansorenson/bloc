@@ -1,4 +1,5 @@
 defmodule BlocWeb.BlockLive.BlockComponent do
+  @moduledoc false
   use BlocWeb, :live_component
 
   alias Bloc.Blocks.Block
@@ -237,24 +238,18 @@ defmodule BlocWeb.BlockLive.BlockComponent do
   @impl true
   def update(%{block: block} = assigns, socket) do
     span =
-      (DateTime.diff(block.end_time, block.start_time, :minute) / 5)
-      |> trunc()
+      trunc(DateTime.diff(block.end_time, block.start_time, :minute) / 5)
 
     local_start_time = Timex.Timezone.convert(block.start_time, assigns.scope.timezone)
 
     start =
-      ((local_start_time.minute + 10 + local_start_time.hour * 60) / 5)
-      |> trunc()
+      trunc((local_start_time.minute + 10 + local_start_time.hour * 60) / 5)
 
     {:ok, socket |> assign(assigns) |> assign(:span, span) |> assign(:start, start)}
   end
 
   @impl true
-  def handle_event(
-        "reposition",
-        %{"id" => _id, "new" => _new_position, "old" => _old_position},
-        socket
-      ) do
+  def handle_event("reposition", %{"id" => _id, "new" => _new_position, "old" => _old_position}, socket) do
     # task = Tasks.get_task!(id)
     # {:noreply, socket |> stream_insert(:tasks, task, at: new_position)}
     {:noreply, socket}

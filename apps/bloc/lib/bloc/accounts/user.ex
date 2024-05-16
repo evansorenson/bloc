@@ -1,5 +1,7 @@
 defmodule Bloc.Accounts.User do
+  @moduledoc false
   use Bloc.Schema
+
   import Ecto.Changeset
 
   schema "users" do
@@ -128,7 +130,7 @@ defmodule Bloc.Accounts.User do
   Confirms the account by setting `confirmed_at`.
   """
   def confirm_changeset(user) do
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
     change(user, confirmed_at: now)
   end
 

@@ -1,8 +1,8 @@
 defmodule BlocWeb.TaskListLiveTest do
   use BlocWeb.ConnCase
 
-  import Phoenix.LiveViewTest
   import Bloc.TasksFixtures
+  import Phoenix.LiveViewTest
 
   @create_attrs %{position: 42, title: "some title", color: "some color"}
   @update_attrs %{position: 43, title: "some updated title", color: "some updated color"}

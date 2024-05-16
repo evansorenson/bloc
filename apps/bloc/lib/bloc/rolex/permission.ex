@@ -31,9 +31,10 @@ defmodule Rolex.Permission do
     permission
     |> matching_roles(user)
     |> Enum.reduce_while(false, fn role, false ->
-      case Role.apply_checks(role, user, scope, name, object) do
-        true -> {:halt, true}
-        false -> {:cont, false}
+      if Role.apply_checks(role, user, scope, name, object) do
+        {:halt, true}
+      else
+        {:cont, false}
       end
     end)
   end

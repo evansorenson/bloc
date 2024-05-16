@@ -1,11 +1,12 @@
 defmodule Bloc.Workers.HabitTask do
+  @moduledoc false
   use Oban.Worker
+
+  import Ecto.Query
 
   alias Bloc.Habits
   alias Bloc.Habits.Habit
   alias Bloc.Repo
-
-  import Ecto.Query
 
   require Logger
 

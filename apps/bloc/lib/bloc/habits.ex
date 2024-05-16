@@ -3,13 +3,13 @@ defmodule Bloc.Habits do
   The Habits context.
   """
 
-  alias Ecto.Changeset
-  alias Bloc.Tasks.Task
+  import Ecto.Query, warn: false
+
   alias Bloc.Accounts.User
   alias Bloc.Habits.Habit
   alias Bloc.Repo
-
-  import Ecto.Query, warn: false
+  alias Bloc.Tasks.Task
+  alias Ecto.Changeset
 
   @doc """
   Returns the list of habits.
@@ -21,7 +21,8 @@ defmodule Bloc.Habits do
 
   """
   def list_habits(%User{id: user_id}, opts \\ []) do
-    QueryBuilder.where(Habit, user_id: user_id)
+    Habit
+    |> QueryBuilder.where(user_id: user_id)
     |> QueryBuilder.from_list(opts)
     |> Repo.all()
   end
@@ -56,7 +57,7 @@ defmodule Bloc.Habits do
   """
   def create_habit(attrs \\ %{}) do
     Repo.transaction(fn _ ->
-      with {:ok, habit} <- Habit.changeset(%Habit{}, attrs) |> Repo.insert(),
+      with {:ok, habit} <- %Habit{} |> Habit.changeset(attrs) |> Repo.insert(),
            {:ok, _task} <- habit |> task_for_habit_today() |> maybe_insert_task() do
         habit
       else

@@ -3,6 +3,8 @@ defmodule Rolex.Check do
   Type used to represent a check.
   """
 
+  require Logger
+
   @typedoc """
   Stores as `{module, function}`, arity is assumed 4.
   """
@@ -13,8 +15,6 @@ defmodule Rolex.Check do
         }
 
   defstruct [:call]
-
-  require Logger
 
   @doc """
   Apply the check returning if it was successful.

@@ -1,4 +1,5 @@
 defmodule BlocWeb.BlockLive.FormComponent do
+  @moduledoc false
   use BlocWeb, :live_component
 
   alias Bloc.Blocks
@@ -53,7 +54,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
       |> Blocks.change_block(block_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, socket |> assign_form(changeset)}
+    {:noreply, assign_form(socket, changeset)}
   end
 
   def handle_event("save", %{"block" => block_params}, socket) do
@@ -65,9 +66,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
       {:ok, block} ->
         notify_parent({:saved, block})
 
-        {:noreply,
-         socket
-         |> put_flash!(:info, "Block updated successfully")}
+        {:noreply, put_flash!(socket, :info, "Block updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -88,7 +87,7 @@ defmodule BlocWeb.BlockLive.FormComponent do
          |> put_flash!(:info, "Block created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, socket |> assign_form(changeset)}
+        {:noreply, assign_form(socket, changeset)}
     end
   end
 

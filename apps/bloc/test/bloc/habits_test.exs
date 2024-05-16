@@ -11,11 +11,11 @@ defmodule Bloc.HabitsTest do
     @invalid_attrs %{title: nil, notes: nil, period_type: nil}
 
     test "list_habits/0 returns all habits", %{habit: habit, user: user} do
-      assert Habits.list_habits(user) |> load_habit() == [habit]
+      assert user |> Habits.list_habits() |> load_habit() == [habit]
     end
 
     test "get_habit!/1 returns the habit with given id", %{habit: habit} do
-      assert Habits.get_habit!(habit.id) |> load_habit() == habit
+      assert habit.id |> Habits.get_habit!() |> load_habit() == habit
     end
 
     test "create_habit/1 with valid data creates a habit", %{user: user} do
@@ -102,10 +102,10 @@ defmodule Bloc.HabitsTest do
   end
 
   defp load_habit(habits) when is_list(habits) do
-    habits |> Enum.map(&load_habit/1)
+    Enum.map(habits, &load_habit/1)
   end
 
   defp load_habit(habit) do
-    habit |> Repo.preload([:user], force: true)
+    Repo.preload(habit, [:user], force: true)
   end
 end

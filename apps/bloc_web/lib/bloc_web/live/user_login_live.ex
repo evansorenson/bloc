@@ -1,4 +1,5 @@
 defmodule BlocWeb.UserLoginLive do
+  @moduledoc false
   use BlocWeb, :live_view
 
   def render(assigns) do

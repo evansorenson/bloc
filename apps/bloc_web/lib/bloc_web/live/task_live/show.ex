@@ -1,4 +1,5 @@
 defmodule BlocWeb.TaskLive.Show do
+  @moduledoc false
   use BlocWeb, :live_view
 
   alias Bloc.Tasks

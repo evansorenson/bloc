@@ -1,4 +1,5 @@
 defmodule BlocWeb.BlockLive.Show do
+  @moduledoc false
   use BlocWeb, :live_view
 
   alias Bloc.Blocks

@@ -1,6 +1,9 @@
 defmodule Bloc.Accounts.UserToken do
+  @moduledoc false
   use Ecto.Schema
+
   import Ecto.Query
+
   alias Bloc.Accounts.UserToken
 
   @hash_algorithm :sha256

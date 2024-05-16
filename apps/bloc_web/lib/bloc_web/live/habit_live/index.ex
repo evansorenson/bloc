@@ -1,4 +1,5 @@
 defmodule BlocWeb.HabitLive.Index do
+  @moduledoc false
   use BlocWeb, :live_view
 
   alias Bloc.Habits
@@ -8,7 +9,7 @@ defmodule BlocWeb.HabitLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    all_periods = Ecto.Enum.values(Habit, :period_type) |> IO.inspect(label: "all_periods")
+    all_periods = Habit |> Ecto.Enum.values(:period_type) |> IO.inspect(label: "all_periods")
     all_habits = Habits.list_habits(socket.assigns.current_user)
 
     socket =
@@ -46,7 +47,7 @@ defmodule BlocWeb.HabitLive.Index do
 
   @impl true
   def handle_info({BlocWeb.HabitLive.FormComponent, {:saved, %Habit{} = habit}}, socket) do
-    {:noreply, stream_insert(socket, habit.period_type, habit) |> assign(:live_action, :index)}
+    {:noreply, socket |> stream_insert(habit.period_type, habit) |> assign(:live_action, :index)}
   end
 
   @impl true

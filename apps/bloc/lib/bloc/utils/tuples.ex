@@ -1,4 +1,5 @@
 defmodule Tuples do
+  @moduledoc false
   @doc """
   Wraps the item in a tuple with `:ok` atom.
 

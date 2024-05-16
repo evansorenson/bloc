@@ -24,9 +24,9 @@ defmodule BlocWeb do
       use Phoenix.Router, helpers: false
 
       # Import common connection and controller functions to use in pipelines
-      import Plug.Conn
       import Phoenix.Controller
       import Phoenix.LiveView.Router
+      import Plug.Conn
     end
   end
 
@@ -42,8 +42,8 @@ defmodule BlocWeb do
         formats: [:html, :json],
         layouts: [html: BlocWeb.Layouts]
 
-      import Plug.Conn
       import BlocWeb.Gettext
+      import Plug.Conn
 
       unquote(verified_routes())
     end
@@ -51,14 +51,14 @@ defmodule BlocWeb do
 
   def live_view(opts \\ []) do
     quote do
+      use Phoenix.LiveView, @opts
+
       @opts Keyword.merge(
               [
                 layout: {BlocWeb.Layouts, :live}
               ],
               unquote(opts)
             )
-
-      use Phoenix.LiveView, @opts
 
       on_mount(BlocWeb.Flash)
 
@@ -69,6 +69,7 @@ defmodule BlocWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+
       import BlocWeb.Flash, only: [put_flash!: 3]
 
       unquote(html_helpers())
@@ -91,10 +92,10 @@ defmodule BlocWeb do
   defp html_helpers do
     quote do
       # HTML escaping functionality
-      import Phoenix.HTML
       # Core UI components and translation
       import BlocWeb.CoreComponents
       import BlocWeb.Gettext
+      import Phoenix.HTML
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

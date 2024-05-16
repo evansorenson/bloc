@@ -1,4 +1,5 @@
 defmodule BlocWeb.UserForgotPasswordLive do
+  @moduledoc false
   use BlocWeb, :live_view
 
   alias Bloc.Accounts

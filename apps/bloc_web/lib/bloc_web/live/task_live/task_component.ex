@@ -1,7 +1,8 @@
 defmodule BlocWeb.TaskLive.TaskComponent do
-  alias Bloc.Repo
+  @moduledoc false
   use BlocWeb, :live_component
 
+  alias Bloc.Repo
   alias Bloc.Scope
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
@@ -132,13 +133,15 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   def toggle_subtasks(id) do
-    JS.toggle(to: "#subtasks-chevron-left-#{id}")
+    [to: "#subtasks-chevron-left-#{id}"]
+    |> JS.toggle()
     |> JS.toggle(to: "#subtasks-chevron-down-#{id}")
     |> JS.toggle(to: "#subtasks-#{id}")
   end
 
   def new_subtask(id) do
-    JS.hide(to: "#subtasks-chevron-left-#{id}")
+    [to: "#subtasks-chevron-left-#{id}"]
+    |> JS.hide()
     |> JS.show(to: "#subtasks-chevron-down-#{id}")
     |> JS.show(to: "#subtasks-#{id}")
     |> JS.show(to: "#new-subtask-#{id}")
@@ -166,8 +169,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   @impl true
-  def update(%{subtask: %Task{complete?: complete?} = subtask}, socket)
-      when not is_nil(complete?) do
+  def update(%{subtask: %Task{complete?: complete?} = subtask}, socket) when not is_nil(complete?) do
     IO.inspect(subtask, label: "deleting subtask")
     {:ok, socket |> stream_delete(:subtasks, subtask) |> assign(:count, socket.assigns.count - 1)}
   end
@@ -183,7 +185,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   def update(assigns, socket) do
-    {:ok, socket |> assign(assigns)}
+    {:ok, assign(socket, assigns)}
   end
 
   @impl true
@@ -210,9 +212,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
       {:ok, task} ->
         notify_parent({:saved, task})
 
-        {:noreply,
-         socket
-         |> put_flash!(:info, "Task completed")}
+        {:noreply, put_flash!(socket, :info, "Task completed")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -221,7 +221,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
   @impl true
   def handle_event("new_subtask", _unsigned_params, socket) do
-    {:noreply, socket |> assign(subtask: %Task{parent_id: socket.assigns.task.id})}
+    {:noreply, assign(socket, subtask: %Task{parent_id: socket.assigns.task.id})}
   end
 
   defp save_task(socket, :edit, task_params) do
@@ -229,9 +229,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
       {:ok, task} ->
         notify_parent({:saved, task})
 
-        {:noreply,
-         socket
-         |> put_flash!(:info, "Task updated successfully")}
+        {:noreply, put_flash!(socket, :info, "Task updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

@@ -1,10 +1,11 @@
 defmodule BlocWeb.TaskLive.TaskListComponent do
+  @moduledoc false
   use BlocWeb, :live_component
 
-  alias Bloc.Tasks
-  alias Bloc.Tasks.TaskList
-  alias Bloc.Tasks.Task
   alias Bloc.Repo
+  alias Bloc.Tasks
+  alias Bloc.Tasks.Task
+  alias Bloc.Tasks.TaskList
 
   attr(:task_list, TaskList, required: true)
   attr(:id, :string, required: true)
@@ -86,15 +87,11 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
 
   @impl true
   def handle_event("new_task", _unsigned_params, socket) do
-    {:noreply, socket |> assign(task: %Task{task_list_id: socket.assigns.task_list.id})}
+    {:noreply, assign(socket, task: %Task{task_list_id: socket.assigns.task_list.id})}
   end
 
   @impl true
-  def handle_event(
-        "reposition",
-        %{"id" => _id, "new" => _new_position, "old" => _old_position},
-        socket
-      ) do
+  def handle_event("reposition", %{"id" => _id, "new" => _new_position, "old" => _old_position}, socket) do
     # task = Tasks.get_task!(id)
     # {:noreply, socket |> stream_insert(:tasks, task, at: new_position)}
     {:noreply, socket}

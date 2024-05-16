@@ -4,9 +4,11 @@ defmodule Bloc.Accounts do
   """
 
   import Ecto.Query, warn: false
-  alias Bloc.Repo
 
-  alias Bloc.Accounts.{User, UserToken, UserNotifier}
+  alias Bloc.Accounts.User
+  alias Bloc.Accounts.UserNotifier
+  alias Bloc.Accounts.UserToken
+  alias Bloc.Repo
 
   ## Database getters
 
@@ -38,8 +40,7 @@ defmodule Bloc.Accounts do
       nil
 
   """
-  def get_user_by_email_and_password(email, password)
-      when is_binary(email) and is_binary(password) do
+  def get_user_by_email_and_password(email, password) when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
     if User.valid_password?(user, password), do: user
   end

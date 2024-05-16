@@ -27,9 +27,7 @@ defmodule Rolex.Role do
   @doc false
   defp run_push_checks(%__MODULE__{checks: checks} = role, new_checks) do
     new_checks =
-      new_checks
-      |> Enum.flat_map(fn
-        # Flat Mapping a single value
+      Enum.flat_map(new_checks, fn
         %Check{} = check ->
           if Enum.member?(checks, [check]) do
             raise "Duplicate check \"#{inspect(check.call)}\" defined for role \"#{role.name}\"."
@@ -37,15 +35,18 @@ defmodule Rolex.Role do
             [check]
           end
 
-        # Flat Mapping a tuple where the second item is a list and doesn't match expected
         {role_name, _check} when role_name != role.name ->
           []
 
-        # Fallback
         {_, check} ->
           [check]
       end)
 
+    # Flat Mapping a single value
+
+    # Flat Mapping a tuple where the second item is a list and doesn't match expected
+
+    # Fallback
     check_list = Enum.filter([new_checks | checks], fn check_list -> length(check_list) > 0 end)
 
     %__MODULE__{role | checks: check_list}
@@ -87,8 +88,7 @@ defmodule Rolex.Role do
   @spec filter(t(), Rolex.user(), Rolex.scope(), Rolex.permission(), [Rolex.object()]) :: [
           Rolex.object()
         ]
-  def filter(%__MODULE__{checks: []} = _role, _user, _scope, _permission, objects),
-    do: objects
+  def filter(%__MODULE__{checks: []} = _role, _user, _scope, _permission, objects), do: objects
 
   def filter(%__MODULE__{checks: checks} = _role, user, scope, permission, objects) do
     checks

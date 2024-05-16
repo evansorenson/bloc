@@ -1,8 +1,11 @@
 defmodule Bloc.Blocks.Block do
-  alias Ecto.Changeset
+  @moduledoc false
   use Bloc.Schema
   use QueryBuilder, assoc_fields: [:user]
+
   import Ecto.Changeset
+
+  alias Ecto.Changeset
 
   schema "blocks" do
     field :title, :string

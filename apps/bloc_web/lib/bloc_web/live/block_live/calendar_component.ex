@@ -1,11 +1,13 @@
-defmodule BlocWeb.BlockLive.Index do
-  require Logger
-  alias Bloc.Scope
-  alias Bloc.Tasks
-  use BlocWeb, :live_view
+defmodule BlocWeb.CalendarComponent do
+  @moduledoc false
+  use BlocWeb, :live_component
 
   alias Bloc.Blocks
   alias Bloc.Blocks.Block
+  alias Bloc.Scope
+  alias Bloc.Tasks
+
+  require Logger
 
   on_mount({BlocWeb.UserAuth, :ensure_authenticated})
   on_mount(BlocWeb.Scope)
@@ -31,7 +33,7 @@ defmodule BlocWeb.BlockLive.Index do
     |> assign(:live_action, :new)
     |> assign(:block, %Block{
       start_time: first_available_time,
-      end_time: first_available_time |> DateTime.add(1, :hour)
+      end_time: DateTime.add(first_available_time, 1, :hour)
     })
   end
 
@@ -71,7 +73,7 @@ defmodule BlocWeb.BlockLive.Index do
     start_time = window_to_date_time(socket.assigns.scope, window)
 
     task = Tasks.get_task!(task_id)
-    end_time = start_time |> DateTime.add(task.estimated_minutes || 30, :minute)
+    end_time = DateTime.add(start_time, task.estimated_minutes || 30, :minute)
 
     case Blocks.create_block(%{
            start_time: start_time,
@@ -85,7 +87,7 @@ defmodule BlocWeb.BlockLive.Index do
         {:noreply, stream_insert(socket, :blocks, block)}
 
       {:error, _} ->
-        {:noreply, socket |> put_flash(:error, "Failed to create block")}
+        {:noreply, put_flash(socket, :error, "Failed to create block")}
     end
   end
 
@@ -125,7 +127,7 @@ defmodule BlocWeb.BlockLive.Index do
           params: params
         )
 
-        {:noreply, socket |> put_flash(:error, "Failed to update block")}
+        {:noreply, put_flash(socket, :error, "Failed to update block")}
     end
   end
 

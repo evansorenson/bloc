@@ -1,6 +1,8 @@
 defmodule Bloc.Tasks.TaskList do
+  @moduledoc false
   use Bloc.Schema
   use QueryBuilder, assoc_fields: [:tasks]
+
   import Ecto.Changeset
 
   schema "task_lists" do

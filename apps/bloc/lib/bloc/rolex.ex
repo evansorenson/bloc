@@ -190,13 +190,14 @@ defmodule Rolex do
 
   defmacro __using__(opts) do
     quote do
-      import unquote(__MODULE__), only: :macros
-      unquote(__MODULE__).__init__(__MODULE__, unquote(opts))
+      @behaviour Rolex
 
       @before_compile unquote(__MODULE__)
       @after_compile unquote(__MODULE__)
 
-      @behaviour Rolex
+      import unquote(__MODULE__), only: :macros
+
+      unquote(__MODULE__).__init__(__MODULE__, unquote(opts))
     end
   end
 
@@ -536,24 +537,21 @@ defmodule Rolex do
 
   defmacro __before_compile__(env) do
     scopes =
-      env.module
-      |> Module.get_attribute(@scopes)
-      |> Enum.map(fn scope -> {scope.name, scope} end)
-      |> Enum.into(%{})
+      env.module |> Module.get_attribute(@scopes) |> Map.new(fn scope -> {scope.name, scope} end)
 
     roles = Module.get_attribute(env.module, @roles)
     permissions = gen_permissions(scopes)
 
     quote do
-      def scopes() do
+      def scopes do
         unquote(Macro.escape(scopes))
       end
 
-      def roles() do
+      def roles do
         unquote(Macro.escape(roles))
       end
 
-      def permissions() do
+      def permissions do
         unquote(Macro.escape(permissions))
       end
 
@@ -636,11 +634,7 @@ defmodule Rolex do
 
   defp gen_permissions(scopes) do
     # Gen a map of scopes->permissions
-    scopes
-    |> Enum.map(fn {scope_name, scope} ->
-      {scope_name, Map.keys(scope.permissions)}
-    end)
-    |> Enum.into(%{})
+    Map.new(scopes, fn {scope_name, scope} -> {scope_name, Map.keys(scope.permissions)} end)
   end
 
   defp validate_checks!(caller) do

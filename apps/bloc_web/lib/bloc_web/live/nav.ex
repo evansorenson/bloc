@@ -1,17 +1,17 @@
 defmodule BlocWeb.Nav do
-  import Phoenix.LiveView
+  @moduledoc false
   use Phoenix.Component
 
-  alias BlocWeb.TodayLive
+  import Phoenix.LiveView
+
   alias BlocWeb.HabitLive.Index, as: HabitLiveIndex
   alias BlocWeb.HabitLive.Show, as: HabitLiveShow
   alias BlocWeb.TaskLive.Index, as: TaskLiveIndex
   alias BlocWeb.TaskLive.Show, as: TaskLiveShow
+  alias BlocWeb.TodayLive
 
   def on_mount(:default, _params, _session, socket) do
-    {:cont,
-     socket
-     |> attach_hook(:active_tab, :handle_params, &handle_active_tab_params/3)}
+    {:cont, attach_hook(socket, :active_tab, :handle_params, &handle_active_tab_params/3)}
   end
 
   defp handle_active_tab_params(_params, _url, socket) do

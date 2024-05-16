@@ -1,5 +1,6 @@
 defmodule Bloc.Factory do
   # with Ecto
+  @moduledoc false
   use ExMachina.Ecto, repo: Bloc.Repo
 
   alias Bloc.Accounts.User
@@ -27,7 +28,7 @@ defmodule Bloc.Factory do
     %Bloc.Blocks.Block{
       title: sequence(:title, &"title-#{&1}"),
       start_time: DateTime.utc_now(),
-      end_time: DateTime.utc_now() |> DateTime.add(1, :hour),
+      end_time: DateTime.add(DateTime.utc_now(), 1, :hour),
       user: build(:user)
     }
   end

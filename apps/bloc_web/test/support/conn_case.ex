@@ -22,15 +22,15 @@ defmodule BlocWeb.ConnCase do
   using do
     quote do
       # The default endpoint for testing
-      @endpoint BlocWeb.Endpoint
-
       use BlocWeb, :verified_routes
-      import Bloc.Factory
 
+      import Bloc.Factory
       # Import conveniences for testing with connections
-      import Plug.Conn
-      import Phoenix.ConnTest
       import BlocWeb.ConnCase
+      import Phoenix.ConnTest
+      import Plug.Conn
+
+      @endpoint BlocWeb.Endpoint
     end
   end
 

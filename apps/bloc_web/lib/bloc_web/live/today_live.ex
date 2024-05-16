@@ -1,4 +1,5 @@
 defmodule BlocWeb.TodayLive do
+  @moduledoc false
   use BlocWeb, :live_view
 
   on_mount({BlocWeb.UserAuth, :ensure_authenticated})
@@ -22,8 +23,7 @@ defmodule BlocWeb.TodayLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket
-    |> Tuples.ok()
+    Tuples.ok(socket)
   end
 
   @impl true
@@ -34,6 +34,6 @@ defmodule BlocWeb.TodayLive do
   end
 
   defp apply_action(socket, :index, _params) do
-    socket |> assign(:page_title, "Today")
+    assign(socket, :page_title, "Today")
   end
 end

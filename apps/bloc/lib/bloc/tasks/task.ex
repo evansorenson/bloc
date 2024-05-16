@@ -1,13 +1,14 @@
 defmodule Bloc.Tasks.Task do
+  @moduledoc false
   use Bloc.Schema
   use QueryBuilder, assoc_fields: [:task_list, :habit, :user, :parent, :subtasks]
 
-  alias Bloc.Blocks.Block
-  alias Bloc.Tasks.TaskList
-  alias Bloc.Accounts.User
-  alias Bloc.Habits.Habit
-
   import Ecto.Changeset
+
+  alias Bloc.Accounts.User
+  alias Bloc.Blocks.Block
+  alias Bloc.Habits.Habit
+  alias Bloc.Tasks.TaskList
 
   @required_fields ~w(title user_id)a
   @optional_fields ~w(due_date notes habit_id complete? active? deleted? task_list_id parent_id estimated_minutes)a
@@ -60,8 +61,7 @@ defmodule Bloc.Tasks.Task do
   end
 
   def update_changeset(task, attrs) do
-    task
-    |> cast(attrs, @update_allowed_fields)
+    cast(task, attrs, @update_allowed_fields)
   end
 
   defp require_task_list_or_parent(changeset) do

@@ -1,8 +1,10 @@
 defmodule Bloc.Workers.HabitTaskTest do
-  alias Bloc.Tasks.Task
   use Bloc.DataCase
-  doctest Bloc.Workers.HabitTask
+
+  alias Bloc.Tasks.Task
   alias Bloc.Workers.HabitTask
+
+  doctest Bloc.Workers.HabitTask
 
   describe "perform/1" do
     test "task inserted for daily habits" do
@@ -29,7 +31,7 @@ defmodule Bloc.Workers.HabitTaskTest do
 
       HabitTask.perform(%Oban.Job{args: nil})
 
-      [task] = Repo.all(Task) |> Repo.preload(:blocks)
+      [task] = Task |> Repo.all() |> Repo.preload(:blocks)
       [block] = task.blocks
       assert block.title == habit.title
       assert block.start_time == DateTime.new!(Date.utc_today(), ~T[09:00:00])

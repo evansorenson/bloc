@@ -1,8 +1,9 @@
 defmodule BlocWeb.HabitLive.FormComponent do
-  alias Bloc.Scope
+  @moduledoc false
   use BlocWeb, :live_component
 
   alias Bloc.Habits
+  alias Bloc.Scope
 
   attr(:scope, Scope, required: true)
 

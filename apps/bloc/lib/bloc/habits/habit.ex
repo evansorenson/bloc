@@ -1,11 +1,12 @@
 defmodule Bloc.Habits.Habit do
+  @moduledoc false
   use Bloc.Schema
   use QueryBuilder, assoc_fields: [:user, :tasks]
 
+  import Ecto.Changeset
+
   alias Bloc.Tasks.Task
   alias Ecto.Changeset
-
-  import Ecto.Changeset
 
   schema "habits" do
     field :title, :string

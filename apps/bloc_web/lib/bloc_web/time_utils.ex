@@ -1,4 +1,5 @@
 defmodule TimeUtils do
+  @moduledoc false
   alias Bloc.Scope
 
   def today(%Scope{timezone: timezone}) do
@@ -7,11 +8,7 @@ defmodule TimeUtils do
     |> DateTime.to_date()
   end
 
-  def block_datetime_string(
-        %Scope{timezone: timezone},
-        %DateTime{} = datetime,
-        start_or_end
-      ) do
+  def block_datetime_string(%Scope{timezone: timezone}, %DateTime{} = datetime, start_or_end) do
     datetime
     |> DateTime.shift_zone!(timezone)
     |> do_block_datetime_string(start_or_end)

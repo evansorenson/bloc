@@ -1,9 +1,9 @@
 defmodule BlocWeb.UserAuthTest do
   use BlocWeb.ConnCase, async: true
 
-  alias Phoenix.LiveView
   alias Bloc.Accounts
   alias BlocWeb.UserAuth
+  alias Phoenix.LiveView
 
   @remember_me_cookie "_bloc_web_user_remember_me"
 
@@ -138,7 +138,7 @@ defmodule BlocWeb.UserAuthTest do
     end
 
     test "assigns nil to current_user assign if there isn't a user_token", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       {:cont, updated_socket} =
         UserAuth.on_mount(:mount_current_user, %{}, session, %LiveView.Socket{})
@@ -172,7 +172,7 @@ defmodule BlocWeb.UserAuthTest do
     end
 
     test "redirects to login page if there isn't a user_token", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       socket = %LiveView.Socket{
         endpoint: BlocWeb.Endpoint,
@@ -199,7 +199,7 @@ defmodule BlocWeb.UserAuthTest do
     end
 
     test "doesn't redirect if there is no authenticated user", %{conn: conn} do
-      session = conn |> get_session()
+      session = get_session(conn)
 
       assert {:cont, _updated_socket} =
                UserAuth.on_mount(

@@ -1,9 +1,9 @@
 defmodule Rolex.CheckTest do
   use ExUnit.Case, async: true
 
-  doctest Rolex.Check
-
   alias Rolex.Check
+
+  doctest Rolex.Check
 
   def do_true(scope, perm, user, object) do
     Process.send(self(), {scope, perm, user, object}, [])

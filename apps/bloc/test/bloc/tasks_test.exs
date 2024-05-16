@@ -1,7 +1,7 @@
 defmodule Bloc.TasksTest do
-  alias Bloc.Scope
   use Bloc.DataCase
 
+  alias Bloc.Scope
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
 

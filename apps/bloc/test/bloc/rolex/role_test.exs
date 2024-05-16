@@ -1,10 +1,10 @@
 defmodule Rolex.RoleTest do
   use ExUnit.Case, async: true
 
-  doctest Rolex.Role
-
   alias Rolex.Check
   alias Rolex.Role
+
+  doctest Rolex.Role
 
   @falsey_role %Role{name: :falsey, checks: [[%Check{call: {__MODULE__, :false_check}}]]}
   @truthy_role %Role{name: :truthy, checks: [[%Check{call: {__MODULE__, :true_check}}]]}

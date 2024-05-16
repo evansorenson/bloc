@@ -1,4 +1,5 @@
 defmodule BlocWeb.Flash do
+  @moduledoc false
   import Phoenix.LiveView
 
   def on_mount(_name, _params, _session, socket) do

@@ -1,11 +1,11 @@
 defmodule Rolex.PermissionTest do
   use ExUnit.Case, async: true
 
-  doctest Rolex.Permission
-
   alias Rolex.Check
   alias Rolex.Permission
   alias Rolex.Role
+
+  doctest Rolex.Permission
 
   @falsey_role %Role{name: :falsey, checks: [[%Check{call: {__MODULE__, :false_check}}]]}
   @truthy_role %Role{name: :truthy, checks: [[%Check{call: {__MODULE__, :true_check}}]]}
@@ -121,8 +121,7 @@ defmodule Rolex.PermissionTest do
 
     test "uses the custom :roles_getter if provided" do
       perm =
-        %Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}
-        |> Permission.add_role(@truthy_role)
+        Permission.add_role(%Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}, @truthy_role)
 
       assert Permission.can?(perm, %{}, :scope, %{})
     end
@@ -179,8 +178,7 @@ defmodule Rolex.PermissionTest do
 
     test "uses the custom :roles_getter if provided" do
       perm =
-        %Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}
-        |> Permission.add_role(@filter_truthy_role)
+        Permission.add_role(%Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}, @filter_truthy_role)
 
       assert ["foo"] = Permission.filter(perm, %{}, :scope, ["foo"])
     end
@@ -216,8 +214,7 @@ defmodule Rolex.PermissionTest do
 
     test "uses the custom :roles_getter if provided" do
       perm =
-        %Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}
-        |> Permission.add_role(@truthy_role)
+        Permission.add_role(%Permission{name: :test_perm, roles_getter: fn _ -> [:truthy] end}, @truthy_role)
 
       assert Permission.has?(perm, %{})
     end

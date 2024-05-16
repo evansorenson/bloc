@@ -1,4 +1,5 @@
 defmodule BlocWeb.DayTaskList do
+  @moduledoc false
   use BlocWeb, :live_component
 
   alias Bloc.Tasks
