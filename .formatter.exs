@@ -16,7 +16,7 @@ locals_without_parens = [
 ]
 
 [
-  plugins: [Phoenix.LiveView.HTMLFormatter],
+  plugins: [Phoenix.LiveView.HTMLFormatter, Styler],
   inputs: ["mix.exs", "config/*.exs"],
   subdirectories: ["apps/*"],
   locals_without_parens: locals_without_parens

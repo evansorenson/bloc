@@ -79,7 +79,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <div :if={@task.estimated_minutes}>
               <span class="inline-flex items-center gap-x-1.5 rounded-md bg-white border px-1 py-0.5 text-xs font-light text-gray-800">
                 <.icon name="hero-clock" class="h-3 w-3" />
-                <%= BlocWeb.Util.minutes_to_string(@task.estimated_minutes) %>
+                <%= TimeUtils.minutes_to_string(@task.estimated_minutes) %>
               </span>
             </div>
           </div>

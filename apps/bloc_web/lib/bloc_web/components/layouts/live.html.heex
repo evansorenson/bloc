@@ -71,6 +71,13 @@
             <ul role="list" class="-mx-2 flex-1 space-y-1">
               <.nav_bar_item
                 name="Tasks"
+                navigate={~p"/today"}
+                icon="hero-calendar"
+                active?={@active_tab == :today}
+                show_name?={true}
+              />
+              <.nav_bar_item
+                name="Tasks"
                 navigate={~p"/tasks"}
                 icon="hero-check-circle"
                 active?={@active_tab == :tasks}
@@ -100,6 +107,12 @@
     </div>
     <nav class="mt-8">
       <ul role="list" class="flex flex-col items-center space-y-1">
+        <.nav_bar_item
+          name="Habits"
+          navigate={~p"/today"}
+          icon="hero-calendar"
+          active?={@active_tab == :today}
+        />
         <.nav_bar_item
           name="Tasks"
           navigate={~p"/tasks"}

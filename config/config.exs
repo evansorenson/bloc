@@ -47,8 +47,7 @@ config :bloc_web, BlocWeb.Endpoint,
 config :esbuild,
   version: "0.17.11",
   bloc_web: [
-    args:
-      ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
+    args: ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../apps/bloc_web/assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
@@ -96,14 +95,9 @@ config :query_builder, :default_page_size, 100
 #   ]
 
 config :oapi_generator,
-  jira: [
+  jirex: [
     output: [
-      base_module: Jira,
-      location: "apps/bloc/lib/jira"
+      base_module: Jirex,
+      location: "apps/jirex/lib/jirex"
     ]
   ]
-
-config :bloc,
-  base_url: "https://billcom.atlassian.net",
-  username: "evan.sorenson@hq.bill.com",
-  password: System.get_env("JIRA_TOKEN")

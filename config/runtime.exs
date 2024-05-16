@@ -7,6 +7,8 @@ import Config
 # any compile-time configuration in here, as it won't be applied.
 # The block below contains prod specific runtime configuration.
 if config_env() == :prod do
+  import Config
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
@@ -21,8 +23,6 @@ if config_env() == :prod do
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6
-
-  import Config
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -107,3 +107,8 @@ if config_env() == :prod do
 
   config :bloc, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 end
+
+config :jirex,
+  base_url: "https://billcom.atlassian.net",
+  username: "evan.sorenson@hq.bill.com",
+  password: System.get_env("JIRA_TOKEN")

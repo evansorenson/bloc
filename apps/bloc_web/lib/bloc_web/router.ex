@@ -70,6 +70,8 @@ defmodule BlocWeb.Router do
       live("/users/settings", UserSettingsLive, :edit)
       live("/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email)
 
+      live("/today", TodayLive, :index)
+
       live("/blocks", BlockLive.Index, :index)
       live("/blocks/new", BlockLive.Index, :new)
       live("/blocks/:id/edit", BlockLive.Index, :edit)

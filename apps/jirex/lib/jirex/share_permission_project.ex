@@ -1,0 +1,122 @@
+defmodule Jirex.SharePermissionProject do
+  @moduledoc """
+  Provides struct and type for a SharePermissionProject
+  """
+
+  @type t :: %__MODULE__{
+          archived: boolean | nil,
+          archivedBy: map | nil,
+          archivedDate: DateTime.t() | nil,
+          assigneeType: String.t() | nil,
+          avatarUrls: map | nil,
+          components: [Jirex.ProjectComponent.t()] | nil,
+          deleted: boolean | nil,
+          deletedBy: map | nil,
+          deletedDate: DateTime.t() | nil,
+          description: String.t() | nil,
+          email: String.t() | nil,
+          expand: String.t() | nil,
+          favourite: boolean | nil,
+          id: String.t() | nil,
+          insight: map | nil,
+          isPrivate: boolean | nil,
+          issueTypeHierarchy: map | nil,
+          issueTypes: [Jirex.IssueTypeDetails.t()] | nil,
+          key: String.t() | nil,
+          landingPageInfo: map | nil,
+          lead: map | nil,
+          name: String.t() | nil,
+          permissions: map | nil,
+          projectCategory: map | nil,
+          projectTypeKey: String.t() | nil,
+          properties: map | nil,
+          retentionTillDate: DateTime.t() | nil,
+          roles: map | nil,
+          self: String.t() | nil,
+          simplified: boolean | nil,
+          style: String.t() | nil,
+          url: String.t() | nil,
+          uuid: String.t() | nil,
+          versions: [Jirex.Version.t()] | nil
+        }
+
+  defstruct [
+    :archived,
+    :archivedBy,
+    :archivedDate,
+    :assigneeType,
+    :avatarUrls,
+    :components,
+    :deleted,
+    :deletedBy,
+    :deletedDate,
+    :description,
+    :email,
+    :expand,
+    :favourite,
+    :id,
+    :insight,
+    :isPrivate,
+    :issueTypeHierarchy,
+    :issueTypes,
+    :key,
+    :landingPageInfo,
+    :lead,
+    :name,
+    :permissions,
+    :projectCategory,
+    :projectTypeKey,
+    :properties,
+    :retentionTillDate,
+    :roles,
+    :self,
+    :simplified,
+    :style,
+    :url,
+    :uuid,
+    :versions
+  ]
+
+  @doc false
+  @spec __fields__(atom) :: keyword
+  def __fields__(type \\ :t)
+
+  def __fields__(:t) do
+    [
+      archived: :boolean,
+      archivedBy: :map,
+      archivedDate: {:string, :date_time},
+      assigneeType: {:enum, ["PROJECT_LEAD", "UNASSIGNED"]},
+      avatarUrls: :map,
+      components: [{Jirex.ProjectComponent, :t}],
+      deleted: :boolean,
+      deletedBy: :map,
+      deletedDate: {:string, :date_time},
+      description: {:string, :generic},
+      email: {:string, :generic},
+      expand: {:string, :generic},
+      favourite: :boolean,
+      id: {:string, :generic},
+      insight: :map,
+      isPrivate: :boolean,
+      issueTypeHierarchy: :map,
+      issueTypes: [{Jirex.IssueTypeDetails, :t}],
+      key: {:string, :generic},
+      landingPageInfo: :map,
+      lead: :map,
+      name: {:string, :generic},
+      permissions: :map,
+      projectCategory: :map,
+      projectTypeKey: {:enum, ["software", "service_desk", "business"]},
+      properties: :map,
+      retentionTillDate: {:string, :date_time},
+      roles: :map,
+      self: {:string, :uri},
+      simplified: :boolean,
+      style: {:enum, ["classic", "next-gen"]},
+      url: {:string, :generic},
+      uuid: {:string, :uuid},
+      versions: [{Jirex.Version, :t}]
+    ]
+  end
+end

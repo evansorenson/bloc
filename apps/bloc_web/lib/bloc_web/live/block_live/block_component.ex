@@ -43,7 +43,7 @@ defmodule BlocWeb.BlockLive.BlockComponent do
         <p class="font-semibold text-blue-700 order-1"><%= @block.title %></p>
 
         <p class="text-blue-500 group-hover:text-blue-700">
-          <%= BlocWeb.Util.block_datetime_string(@scope, @block.start_time, :start) %> → <%= BlocWeb.Util.block_datetime_string(
+          <%= TimeUtils.block_datetime_string(@scope, @block.start_time, :start) %> → <%= TimeUtils.block_datetime_string(
             @scope,
             @block.end_time,
             :end

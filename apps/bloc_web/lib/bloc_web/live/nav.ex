@@ -2,6 +2,7 @@ defmodule BlocWeb.Nav do
   import Phoenix.LiveView
   use Phoenix.Component
 
+  alias BlocWeb.TodayLive
   alias BlocWeb.HabitLive.Index, as: HabitLiveIndex
   alias BlocWeb.HabitLive.Show, as: HabitLiveShow
   alias BlocWeb.TaskLive.Index, as: TaskLiveIndex
@@ -16,6 +17,9 @@ defmodule BlocWeb.Nav do
   defp handle_active_tab_params(_params, _url, socket) do
     active_tab =
       case {socket.view, socket.assigns.live_action} do
+        {TodayLive, _} ->
+          :today
+
         {HabitLiveIndex, _} ->
           :habits
 
