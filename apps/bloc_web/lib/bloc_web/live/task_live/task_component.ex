@@ -14,6 +14,12 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   attr(:parent_task_id, :string, default: nil)
   attr(:static?, :boolean, default: false)
 
+  # @impl true
+  # def mount(socket) do
+  #   Tuples.ok(socket)
+  #   # |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
+  # end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -165,6 +171,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
      |> assign(assigns)
      |> assign(:count, length(task.subtasks))
      |> assign(:subtask, %Task{parent_id: task.id})
+     |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
      |> stream(:subtasks, task.subtasks)}
   end
 

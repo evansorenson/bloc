@@ -51,7 +51,7 @@ defmodule BlocWeb do
 
   def live_view(opts \\ []) do
     quote do
-      use Phoenix.LiveView, @opts
+      use Phoenix.LiveView, unquote(opts)
 
       @opts Keyword.merge(
               [

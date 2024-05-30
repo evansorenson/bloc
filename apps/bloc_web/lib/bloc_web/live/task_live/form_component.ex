@@ -5,6 +5,7 @@ defmodule BlocWeb.TaskLive.FormComponent do
   alias Bloc.Tasks
 
   attr(:scope, Bloc.Scope, required: true)
+  attr(:on_save, :any, required: true)
 
   @impl true
   def render(assigns) do
@@ -85,33 +86,25 @@ defmodule BlocWeb.TaskLive.FormComponent do
     save_task(socket, socket.assigns.action, task_params)
   end
 
-  defp save_task(socket, :edit, task_params) do
+  defp save_task(socket, :edit_task, task_params) do
     case Tasks.update_task(socket.assigns.task, task_params) do
-      {:ok, task} ->
-        notify_parent({:saved, task})
-
-        {:noreply,
-         socket
-         |> put_flash!(:info, "Task updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+      {:ok, _task} ->
+        socket.assigns.on_save.()
+        {:noreply, put_flash!(socket, :info, "Task updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
   end
 
-  defp save_task(socket, :new, task_params) do
+  defp save_task(socket, :new_task, task_params) do
     task_params
     |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Tasks.create_task()
     |> case do
-      {:ok, task} ->
-        notify_parent({:saved, task})
-
-        {:noreply,
-         socket
-         |> put_flash!(:info, "Task created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+      {:ok, _task} ->
+        socket.assigns.on_save.()
+        {:noreply, put_flash!(socket, :info, "Task created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -124,6 +117,4 @@ defmodule BlocWeb.TaskLive.FormComponent do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

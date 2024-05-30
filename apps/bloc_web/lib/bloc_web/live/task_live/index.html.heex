@@ -90,9 +90,4 @@
       />
     </.modal>
   </div>
-
-  <%!-- show calendar view on large screen --%>
-  <div class="px-4 hidden md:block w-full">
-    <%= live_render(@socket, BlocWeb.BlockLive.Index, id: "Blocks", scope: @scope) %>
-  </div>
 </div>

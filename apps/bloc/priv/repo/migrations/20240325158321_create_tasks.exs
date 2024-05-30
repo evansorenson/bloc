@@ -8,6 +8,8 @@ defmodule Bloc.Repo.Migrations.CreateTasks do
       add :active?, :utc_datetime
       add :deleted?, :utc_datetime
       add :due_date, :date
+      add :assigned_date, :date
+      add :rolled_over_count, :integer
       add :title, :string, null: false
       add :notes, :string
       add :position, :integer

@@ -11,7 +11,7 @@ defmodule Bloc.Tasks.Task do
   alias Bloc.Tasks.TaskList
 
   @required_fields ~w(title user_id)a
-  @optional_fields ~w(due_date notes habit_id complete? active? deleted? task_list_id parent_id estimated_minutes)a
+  @optional_fields ~w(assigned_date due_date notes habit_id complete? active? deleted? task_list_id parent_id estimated_minutes)a
 
   @habit_required_fields ~w(habit_id user_id due_date)a
 
@@ -23,11 +23,13 @@ defmodule Bloc.Tasks.Task do
     field :active?, :utc_datetime
     field :complete?, :utc_datetime
     field :deleted?, :utc_datetime
+    field :assigned_date, :date
     field :due_date, :date
     field :notes, :string
     field :title, :string
     field :position, :integer
     field :estimated_minutes, :integer
+    field :rolled_over_count, :integer
 
     belongs_to :parent, __MODULE__, foreign_key: :parent_id
     belongs_to :task_list, TaskList

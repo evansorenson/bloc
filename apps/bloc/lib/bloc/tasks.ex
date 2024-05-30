@@ -7,6 +7,19 @@ defmodule Bloc.Tasks do
   alias Bloc.Scope
   alias Bloc.Tasks.Task
   alias Bloc.Tasks.TaskList
+  alias Jirex.IssueSearch
+
+  @pubsub Bloc.PubSub
+
+  def subscribe(scope) do
+    Phoenix.PubSub.subscribe(@pubsub, topic(scope))
+  end
+
+  def unsubscribe(scope) do
+    Phoenix.PubSub.unsubscribe(@pubsub, topic(scope))
+  end
+
+  defp topic(%Scope{current_user_id: current_user_id}), do: "tasks:#{current_user_id}"
 
   @doc """
   Returns the list of tasks.
@@ -26,6 +39,26 @@ defmodule Bloc.Tasks do
     |> QueryBuilder.preload([:subtasks])
     |> QueryBuilder.from_list(opts)
     |> Repo.all()
+  end
+
+  @spec list_for_integration(Scope.t(), atom) :: {:ok, list()} | {:error, any()}
+  def list_for_integration(%Scope{current_user_id: _user_id}, :jira) do
+    # TODO: would have to find jira token/info by user here or assign in scope maybe ?
+    # for now we can just use my token :)
+
+    [
+      jql: "assignee=currentUser()  AND status != 'Closed' order by createdDate DESC",
+      fields: "summary,status",
+      maxResults: 10
+    ]
+    |> IssueSearch.search_for_issues_using_jql()
+    |> case do
+      {:ok, response} ->
+        {:ok, response.body.issues}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   @doc """

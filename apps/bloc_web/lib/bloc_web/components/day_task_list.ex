@@ -21,7 +21,7 @@ defmodule BlocWeb.DayTaskList do
         </.header>
 
         <div class="flex flex-col mt-4">
-          <%= for {id, task} <- @streams.tasks do %>
+          <%= for {id, task} <- @streams.day_tasks do %>
             <.live_component
               module={BlocWeb.TaskLive.TaskComponent}
               id={id}
@@ -40,7 +40,7 @@ defmodule BlocWeb.DayTaskList do
     socket
     |> assign(assigns)
     |> stream(
-      :tasks,
+      :day_tasks,
       Tasks.list_tasks(assigns.scope,
         order_by: [{:desc, :complete?}, {:asc, :due_date}]
       )

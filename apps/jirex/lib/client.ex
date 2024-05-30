@@ -4,7 +4,7 @@ defmodule Jirex.Client do
 
   def request(request) do
     TeslaClient.new()
-    |> TeslaClient.request!(Map.to_list(request))
+    |> TeslaClient.request(Map.to_list(request))
     |> Decoder.decode_response(request)
   end
 end

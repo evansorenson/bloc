@@ -14,7 +14,9 @@ defmodule Jirex.Decoder do
   Decode a response body based on type information from the operation and schemas
   """
   @spec decode_response(Tesla.Env.t(), keyword) :: {:ok, Operation.t()}
-  def decode_response(%Tesla.Env{status: code} = response, %{response: types} = _request) do
+  def decode_response({:error, _} = response, _request), do: response
+
+  def decode_response({:ok, %Tesla.Env{status: code} = response}, %{response: types} = _request) do
     with {:ok, decoded_json} <- decode_body(response, []),
          {:ok, response_type} <- get_type(types, code) do
       IO.inspect(response_type, label: "response_type")
