@@ -58,10 +58,8 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
   end
 
   defp save_task_list(socket, :edit_list, task_list_params) do
-    case Tasks.update_task_list(socket.assigns.task_list, task_list_params) do
-      {:ok, task_list} ->
-        notify_parent({:saved, task_list})
-
+    case Tasks.update_task_list(socket.assigns.task_list, task_list_params, socket.assigns.scope) do
+      {:ok, _task_list} ->
         {:noreply,
          socket
          |> put_flash!(:info, "Task list updated successfully")
@@ -74,12 +72,9 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
   defp save_task_list(socket, :new_list, task_list_params) do
     task_list_params
-    |> Map.put("user_id", socket.assigns.scope.current_user_id)
-    |> Tasks.create_task_list()
+    |> Tasks.create_task_list(socket.assigns.scope)
     |> case do
-      {:ok, task_list} ->
-        notify_parent({:saved, task_list})
-
+      {:ok, _task_list} ->
         {:noreply,
          socket
          |> put_flash!(:info, "Task list created successfully")
@@ -93,6 +88,4 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

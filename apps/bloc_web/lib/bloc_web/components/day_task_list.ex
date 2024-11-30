@@ -2,7 +2,13 @@ defmodule BlocWeb.DayTaskList do
   @moduledoc false
   use BlocWeb, :live_component
 
+  alias Bloc.Events.TaskCompleted
+  alias Bloc.Events.TaskCreated
+  alias Bloc.Events.TaskDeleted
+  alias Bloc.Events.TaskUpdated
   alias Bloc.Tasks
+
+  require Logger
 
   attr(:day, Date, required: true)
   attr(:scope, Bloc.Scope, required: true)
@@ -10,23 +16,24 @@ defmodule BlocWeb.DayTaskList do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full flex">
-      <div class="flex-none w-96 px-4 py-4 sm:px-6 md:overflow-y-auto md:border-l md:border-gray-200 md:py-6 md:px-8 md:block">
-        <.header>
-          <%= Calendar.strftime(@day, "%A") %>
-          <h2><%= Calendar.strftime(@day, "%B %d") %></h2>
-          <:actions>
-            <.button>New Task</.button>
-          </:actions>
-        </.header>
+    <div class="h-full bg-white flex flex-col border-r border-gray-200">
+      <div class="flex-none px-4 py-3 border-b border-gray-200">
+        <div class="flex items-baseline">
+          <span class="text-base font-medium text-gray-900">
+            <%= Calendar.strftime(@day, "%A") %>
+          </span>
+          <span class="ml-2 text-sm text-gray-500"><%= Calendar.strftime(@day, "%B %d") %></span>
+        </div>
+      </div>
 
-        <div class="flex flex-col mt-4">
+      <div class="flex-1 overflow-y-auto">
+        <div id="day_tasks_list" class="p-4 space-y-2" phx-update="stream">
           <%= for {id, task} <- @streams.day_tasks do %>
             <.live_component
               module={BlocWeb.TaskLive.TaskComponent}
+              scope={@scope}
               id={id}
               task={task}
-              scope={@scope}
             />
           <% end %>
         </div>
@@ -36,15 +43,75 @@ defmodule BlocWeb.DayTaskList do
   end
 
   @impl true
+  def update(%{event: %TaskCreated{task: task}}, socket) do
+    if task.due_date == socket.assigns.day do
+      Logger.debug("task created to day - added task", task_id: task.id)
+
+      {:ok,
+       socket
+       |> stream_insert(:day_tasks, task)
+       |> assign(:count, socket.assigns.count + 1)}
+    else
+      Logger.debug("task created to different day - ignored", task_id: task.id)
+      {:ok, socket}
+    end
+  end
+
+  def update(%{event: %TaskUpdated{task: task, old_task: old_task}}, socket) do
+    if task.due_date == socket.assigns.day do
+      Logger.debug("task updated to day - added task", task_id: task.id)
+
+      {:ok, stream_insert(socket, :day_tasks, task)}
+    else
+      Logger.debug("task is different day - deleted task", task_id: old_task.id)
+      {:ok, stream_delete(socket, :day_tasks, old_task)}
+    end
+  end
+
+  def update(%{event: %TaskDeleted{task: task}}, socket) do
+    Logger.debug("task deleted day task", task_id: task.id)
+    {:ok, stream_delete(socket, :day_tasks, task)}
+  end
+
+  def update(%{event: %TaskCompleted{task: task}}, socket) do
+    Logger.debug("task completed day task", task_id: task.id)
+    {:ok, stream_delete(socket, :day_tasks, task)}
+  end
+
   def update(assigns, socket) do
-    socket
-    |> assign(assigns)
-    |> stream(
-      :day_tasks,
+    Logger.debug("day task list update", day: assigns.day)
+
+    tasks =
       Tasks.list_tasks(assigns.scope,
+        date: assigns.day,
         order_by: [{:desc, :complete?}, {:asc, :due_date}]
       )
-    )
-    |> Tuples.ok()
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:count, length(tasks))
+     |> stream(:day_tasks, tasks)}
+  end
+
+  @impl true
+  def handle_event("create_jira_task", %{"key" => jira_key, "summary" => summary}, socket) do
+    task_params = %{
+      "title" => summary,
+      "due_date" => socket.assigns.day,
+      "user_id" => socket.assigns.scope.current_user_id,
+      "jira_key" => jira_key
+    }
+
+    case Tasks.create_task(task_params, socket.assigns.scope) do
+      {:ok, task} ->
+        {:noreply,
+         socket
+         |> stream_insert(:day_tasks, task)
+         |> put_flash(:info, "Task created from Jira ticket")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, put_flash(socket, :error, "Error creating task: #{inspect(changeset.errors)}")}
+    end
   end
 end

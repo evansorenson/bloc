@@ -9,20 +9,13 @@ defmodule BlocWeb.CalendarComponent do
 
   require Logger
 
-  @impl true
-  def update(assigns, socket) do
-    socket
-    |> assign(assigns)
-    |> stream(:blocks, Blocks.blocks_for_day(assigns.scope))
-    |> apply_action(:index, %{})
-    |> Tuples.ok()
-  end
+  attr(:day, Date, required: true)
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <div id="" class="h-screen flex flex-col w-96">
+      <div id="" class="h-screen flex flex-col w-60">
         <header class="items-center justify-between px-6 py-4 flex flex-none border-b border-gray-200">
           <div class="items-center flex w-full justify-between">
             <div class="inline-flex rounded-md shadow-sm">
@@ -110,7 +103,7 @@ defmodule BlocWeb.CalendarComponent do
               <div class="w-14 bg-white flex-none ring-1 ring-gray-100"></div>
               <div id="day-grid" class="grid flex-auto grid-cols-1 grid-rows-1">
                 <div
-                  style="grid-template-rows: repeat(48, minmax(3.5rem, 1fr));"
+                  style="grid-template-rows: repeat(48, minmax(2.0rem, 1fr));"
                   class="col-start-1 col-end-2 row-start-1
                   grid divide-y divide-gray-100"
                 >
@@ -125,7 +118,7 @@ defmodule BlocWeb.CalendarComponent do
                   <% end %>
                 </div>
                 <ul
-                  style="grid-template-rows: 1.75rem repeat(288, minmax(0px, 1fr)) auto;"
+                  style="grid-template-rows: 1.00rem repeat(288, minmax(0px, 1fr)) auto;"
                   class="droppable-container col-start-1 col-end-2
                   row-start-1 grid grid-cols-1"
                   id="window-list"
@@ -143,7 +136,7 @@ defmodule BlocWeb.CalendarComponent do
                   <% end %>
                 </ul>
                 <ul
-                  style="grid-template-rows: 1.75rem repeat(288, minmax(0px, 1fr)) auto;"
+                  style="grid-template-rows: 1.00rem repeat(288, minmax(0px, 1fr)) auto;"
                   class="droppable-container col-start-1 col-end-2
                   row-start-1 grid grid-cols-auto"
                   phx-update="stream"
@@ -203,6 +196,15 @@ defmodule BlocWeb.CalendarComponent do
     """
   end
 
+  @impl true
+  def update(assigns, socket) do
+    socket
+    |> assign(assigns)
+    |> stream(:blocks, Blocks.blocks_for_day(assigns.scope))
+    |> apply_action(:index, %{})
+    |> Tuples.ok()
+  end
+
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Block")
@@ -256,7 +258,7 @@ defmodule BlocWeb.CalendarComponent do
   end
 
   def handle_event("add_block", %{"id" => task_id, "window" => window}, socket) do
-    start_time = window_to_date_time(socket.assigns.scope, window)
+    start_time = window_to_date_time(socket.assigns.scope, window, socket.assigns.day)
 
     task = Tasks.get_task!(task_id)
     end_time = DateTime.add(start_time, task.estimated_minutes || 30, :minute)
@@ -278,7 +280,7 @@ defmodule BlocWeb.CalendarComponent do
   end
 
   def handle_event("move_block", %{"id" => block_id, "window" => window}, socket) do
-    start_time = window_to_date_time(socket.assigns.scope, window)
+    start_time = window_to_date_time(socket.assigns.scope, window, socket.assigns.day)
 
     block = Blocks.get_block!(block_id)
     diff = DateTime.diff(block.end_time, block.start_time, :minute)
@@ -289,13 +291,13 @@ defmodule BlocWeb.CalendarComponent do
 
   def handle_event("resize_up", %{"id" => block_id, "window" => window}, socket) do
     update_block(socket, block_id, %{
-      start_time: window_to_date_time(socket.assigns.scope, window)
+      start_time: window_to_date_time(socket.assigns.scope, window, socket.assigns.day)
     })
   end
 
   def handle_event("resize_down", %{"id" => block_id, "window" => window}, socket) do
     update_block(socket, block_id, %{
-      end_time: window_to_date_time(socket.assigns.scope, window + 1)
+      end_time: window_to_date_time(socket.assigns.scope, window + 1, socket.assigns.day)
     })
   end
 
@@ -317,12 +319,11 @@ defmodule BlocWeb.CalendarComponent do
     end
   end
 
-  defp window_to_date_time(%Scope{timezone: timezone}, window) do
+  defp window_to_date_time(%Scope{timezone: timezone}, window, day) do
     window = window - 1
     time_from_minutes = Time.from_seconds_after_midnight(window * 15 * 60)
 
-    timezone
-    |> Timex.today()
+    day
     |> DateTime.new!(time_from_minutes, timezone)
     |> Timex.Timezone.convert("UTC")
   end

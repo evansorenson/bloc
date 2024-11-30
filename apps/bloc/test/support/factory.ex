@@ -82,6 +82,16 @@ defmodule Bloc.Factory do
     }
   end
 
+  def habit_day_factory do
+    %Bloc.Habits.HabitDay{
+      date: Date.utc_today(),
+      completed_count: 1,
+      completed?: true,
+      habit: build(:habit),
+      user: build(:user)
+    }
+  end
+
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
 

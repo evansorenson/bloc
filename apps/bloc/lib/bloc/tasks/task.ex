@@ -53,7 +53,7 @@ defmodule Bloc.Tasks.Task do
     |> cast_assoc(:blocks)
     |> validate_required(@required_fields)
     |> validate_length(:title, min: 1, max: 512)
-    |> require_task_list_or_parent()
+    # |> require_task_list_or_parent()
   end
 
   def habit_changeset(task, attrs) do
@@ -66,15 +66,15 @@ defmodule Bloc.Tasks.Task do
     cast(task, attrs, @update_allowed_fields)
   end
 
-  defp require_task_list_or_parent(changeset) do
-    task_list_id = get_field(changeset, :task_list_id)
-    parent_id = get_field(changeset, :parent_id)
-    habit_id = get_field(changeset, :habit_id)
+  # defp require_task_list_or_parent(changeset) do
+  #   task_list_id = get_field(changeset, :task_list_id)
+  #   parent_id = get_field(changeset, :parent_id)
+  #   habit_id = get_field(changeset, :habit_id)
 
-    if task_list_id || parent_id || habit_id do
-      changeset
-    else
-      add_error(changeset, :task_list_id, "must belong to a task list, parent, or habit")
-    end
-  end
+  #   if task_list_id || parent_id || habit_id do
+  #     changeset
+  #   else
+  #     add_error(changeset, :task_list_id, "must belong to a task list, parent, or habit")
+  #   end
+  # end
 end

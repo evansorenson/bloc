@@ -1,3 +1,4 @@
 {
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "java.format.settings.url": "\"java.format.settings.url\": \"https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml\""
 }

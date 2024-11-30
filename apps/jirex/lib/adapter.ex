@@ -17,7 +17,6 @@ defmodule Jirex.Adapter do
 
   @impl true
   def call(env, attrs) do
-    IO.inspect("calling Jirex.Adapter")
     opts = Adapter.opts(@default_opts, env, Map.to_list(attrs))
     Finch.call(env, opts)
   end

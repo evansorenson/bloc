@@ -3,13 +3,15 @@ defmodule Bloc.Habits do
   The Habits context.
   """
 
-  import Ecto.Query, warn: false
+  import Ecto.Query
 
-  alias Bloc.Accounts.User
   alias Bloc.Habits.Habit
+  alias Bloc.Habits.HabitDay
   alias Bloc.Repo
+  alias Bloc.Scope
   alias Bloc.Tasks.Task
-  alias Ecto.Changeset
+
+  require Logger
 
   @doc """
   Returns the list of habits.
@@ -20,11 +22,17 @@ defmodule Bloc.Habits do
       [%Habit{}, ...]
 
   """
-  def list_habits(%User{id: user_id}, opts \\ []) do
+  def list_habits(%Scope{} = scope, opts \\ []) do
     Habit
-    |> QueryBuilder.where(user_id: user_id)
-    |> QueryBuilder.from_list(opts)
+    |> Bloc.Query.for_scope(scope)
+    |> by_period_type(opts[:period_type])
     |> Repo.all()
+  end
+
+  defp by_period_type(query, nil), do: query
+
+  defp by_period_type(query, period_type) do
+    where(query, [h], h.period_type == ^period_type)
   end
 
   @doc """
@@ -56,9 +64,9 @@ defmodule Bloc.Habits do
 
   """
   def create_habit(attrs \\ %{}) do
-    Repo.transaction(fn _ ->
+    Repo.transaction(fn ->
       with {:ok, habit} <- %Habit{} |> Habit.changeset(attrs) |> Repo.insert(),
-           {:ok, _task} <- habit |> task_for_habit_today() |> maybe_insert_task() do
+           :ok <- insert_tasks_for_habit(habit) do
         habit
       else
         {:error, changeset} -> Repo.rollback(changeset)
@@ -66,24 +74,36 @@ defmodule Bloc.Habits do
     end)
   end
 
-  defp maybe_insert_task(%Changeset{} = task) do
-    Repo.insert(task)
+  @spec insert_tasks_for_habit(Habit.t()) :: Task.t()
+  def insert_tasks_for_habit(%Habit{period_type: :daily} = habit) do
+    today = Date.utc_today()
+    next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
+
+    tasks =
+      today
+      |> Date.range(next_year)
+      |> Enum.flat_map(fn date ->
+        Enum.map(1..habit.required_count, fn _ -> task_for_habit_day(habit, date) end)
+      end)
+      |> Enum.map(&Repo.insert!/1)
+
+    Logger.info("Inserted #{length(tasks)} tasks for habit #{habit.id}")
+
+    :ok
   end
 
-  defp maybe_insert_task(nil), do: {:ok, nil}
+  def insert_tasks_for_habit(_habit), do: {:ok, []}
 
-  @spec task_for_habit_today(Habit.t()) :: Task.t()
-  def task_for_habit_today(%Habit{} = habit) do
-    today = Date.utc_today()
-
+  @spec task_for_habit_day(Habit.t(), Date.t()) :: Changeset.t()
+  def task_for_habit_day(%Habit{} = habit, day) do
     blocks =
       if habit.start_time && habit.end_time do
         [
           %{
             title: habit.title,
             user_id: habit.user_id,
-            start_time: DateTime.new!(today, habit.start_time),
-            end_time: DateTime.new!(today, habit.end_time)
+            start_time: DateTime.new!(day, habit.start_time),
+            end_time: DateTime.new!(day, habit.end_time)
           }
         ]
       else
@@ -94,12 +114,10 @@ defmodule Bloc.Habits do
       title: habit.title,
       habit_id: habit.id,
       user_id: habit.user_id,
-      due_date: today,
+      due_date: day,
       blocks: blocks
     })
   end
-
-  def task_for_habit_today(_), do: {:ok, nil}
 
   @doc """
   Updates a habit.
@@ -113,10 +131,65 @@ defmodule Bloc.Habits do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_habit(%Habit{} = habit, attrs) do
-    habit
-    |> Habit.update_changeset(attrs)
-    |> Repo.update()
+  def update_habit(%Habit{} = habit, attrs, %Scope{} = scope) do
+    Repo.transaction(fn ->
+      # Get the old required count
+      old_required_count = habit.required_count
+      new_required_count = String.to_integer(attrs["required_count"] || attrs[:required_count])
+
+      diff_required_count = new_required_count - old_required_count
+      IO.inspect(diff_required_count, label: "diff_required_count")
+
+      # Update the habit
+      with {:ok, updated_habit} <- habit |> Habit.update_changeset(attrs) |> Repo.update() do
+        # If required_count changed, update future tasks
+        if diff_required_count != 0 do
+          :ok = update_tasks_for_habit(updated_habit, diff_required_count, scope)
+        end
+
+        updated_habit
+      end
+    end)
+  end
+
+  defp update_tasks_for_habit(%Habit{} = habit, diff_required_count, %Scope{} = scope) do
+    today = TimeUtils.today(scope)
+
+    if diff_required_count > 0 do
+      # Create new tasks with updated count
+      next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
+
+      tasks =
+        today
+        |> Date.range(next_year)
+        |> Enum.flat_map(fn date ->
+          Enum.map(1..diff_required_count, fn _ -> task_for_habit_day(habit, date) end)
+        end)
+        |> Enum.map(&Repo.insert!/1)
+
+      Logger.info("Inserted #{length(tasks)} future tasks for habit #{habit.id}")
+    else
+      # Get tasks to delete by finding excess tasks for each day
+      tasks_to_delete =
+        from(t in Task,
+          where: t.habit_id == ^habit.id and t.due_date >= ^today,
+          select: %{
+            id: t.id,
+            row_number: over(row_number(), partition_by: [:due_date], order_by: [asc_nulls_first: :complete?])
+          }
+        )
+        |> subquery()
+        |> where([t], t.row_number > ^habit.required_count)
+        |> select([t], t.id)
+
+      # Delete the identified tasks
+      {deleted_count, _} =
+        Repo.delete_all(from(t in Task, where: t.id in subquery(tasks_to_delete)))
+
+      Logger.info("Deleted #{deleted_count} excess tasks for habit #{habit.id}")
+    end
+
+    :ok
   end
 
   @doc """
@@ -152,5 +225,96 @@ defmodule Bloc.Habits do
   @spec change_update_habit(Habit.t(), map) :: Ecto.Changeset.t()
   def change_update_habit(%Habit{} = habit, attrs \\ %{}) do
     Habit.update_changeset(habit, attrs)
+  end
+
+  def list_habit_days(%Scope{} = scope, %Date{} = start_date, %Date{} = end_date, opts \\ []) do
+    HabitDay
+    |> Bloc.Query.for_scope(scope)
+    |> where([hd], hd.date >= ^start_date and hd.date <= ^end_date)
+    |> order_by([hd], asc: hd.date)
+    |> Bloc.Query.preloads(opts[:preload])
+    |> Repo.all()
+  end
+
+  @spec calculate_streak(Habit.t(), Scope.t()) :: {:ok, Habit.t()}
+  def calculate_streak(%Habit{} = habit, %Scope{} = scope) do
+    today = TimeUtils.today(scope)
+
+    streak =
+      from(hd in HabitDay,
+        where: hd.habit_id == ^habit.id,
+        where: hd.date < ^today,
+        where: hd.completed? == true,
+        order_by: [desc: :date]
+      )
+      |> Repo.all()
+      |> Enum.reduce_while(0, fn habit_day, streak ->
+        if Date.add(habit_day.date, 1) == Date.add(today, -streak) do
+          {:cont, streak + 1}
+        else
+          {:halt, streak}
+        end
+      end)
+
+    completed_today? =
+      Repo.exists?(
+        from(hd in HabitDay, where: hd.habit_id == ^habit.id, where: hd.date == ^today, where: hd.completed? == true)
+      )
+
+    streak = if completed_today?, do: streak + 1, else: streak
+
+    habit
+    |> Habit.update_changeset(%{streak: streak})
+    |> Repo.update()
+  end
+
+  def calculate_streak(_habit), do: {:ok, :no_habit}
+
+  def get_or_create_habit_day(%Habit{} = habit, date) do
+    case Repo.get_by(HabitDay, habit_id: habit.id, date: date) do
+      nil ->
+        %HabitDay{}
+        |> HabitDay.changeset(%{
+          date: date,
+          habit_id: habit.id,
+          user_id: habit.user_id
+        })
+        |> Repo.insert()
+
+      %HabitDay{} = habit_day ->
+        {:ok, habit_day}
+    end
+  end
+
+  @spec increment_habit_day_and_calculate_streak(Habit.t(), Scope.t(), Date.t(), Keyword.t()) ::
+          {:ok, HabitDay.t()} | {:ok, :no_habit}
+  def increment_habit_day_and_calculate_streak(habit, scope, date, opts \\ [])
+
+  def increment_habit_day_and_calculate_streak(%Habit{} = habit, %Scope{} = scope, date, opts) do
+    Repo.transaction(fn ->
+      with {:ok, habit_day} <- get_or_create_habit_day(habit, date),
+           {:ok, updated_day} <- update_habit_day_count(habit_day, habit, scope, opts) do
+        updated_day
+      end
+    end)
+  end
+
+  def increment_habit_day_and_calculate_streak(_habit, _scope, _date, _opts), do: {:ok, :no_habit}
+
+  defp update_habit_day_count(%HabitDay{} = habit_day, habit, scope, opts) do
+    change = if opts[:decrement?], do: -1, else: 1
+    new_count = habit_day.completed_count + change
+    completed? = new_count >= habit.required_count
+
+    with {:ok, habit_day} <-
+           habit_day
+           |> HabitDay.changeset(%{
+             completed_count: new_count,
+             completed?: completed?
+           })
+           |> Repo.update(),
+         {:ok, _habit} <- calculate_streak(habit, scope) do
+      habit_day
+    end
   end
 end

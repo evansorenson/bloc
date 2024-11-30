@@ -15,18 +15,21 @@ defmodule Bloc.Habits.Habit do
     field :deleted?, :utc_datetime, default: nil
     field :start_time, :time
     field :end_time, :time
+    field :streak, :integer, default: 0
+    field :required_count, :integer, default: 1
+    has_many :habit_days, Bloc.Habits.HabitDay
 
-    has_many :tasks, Task
+    has_many :tasks, Task, on_delete: :delete_all
     belongs_to :user, Bloc.Accounts.User
 
     timestamps(type: :utc_datetime)
   end
 
   @create_required_fields ~w(title period_type user_id)a
-  @optional_fields ~w(notes start_time end_time)a
+  @optional_fields ~w(notes start_time end_time required_count)a
   @all_fields @create_required_fields ++ @optional_fields
 
-  @update_allowed ~w(title notes period_type deleted?)a
+  @update_allowed ~w(title notes period_type deleted? streak required_count)a
 
   @doc false
   def changeset(habit, attrs) do

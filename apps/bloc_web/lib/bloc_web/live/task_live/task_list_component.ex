@@ -2,10 +2,15 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   @moduledoc false
   use BlocWeb, :live_component
 
-  alias Bloc.Repo
+  alias Bloc.Events.TaskCompleted
+  alias Bloc.Events.TaskCreated
+  alias Bloc.Events.TaskDeleted
+  alias Bloc.Events.TaskUpdated
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
   alias Bloc.Tasks.TaskList
+
+  require Logger
 
   attr(:task_list, TaskList, required: true)
   attr(:id, :string, required: true)
@@ -18,6 +23,7 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
         id={@id}
         title={@task_list.title}
         count={@count}
+        delete?={@task_list.title != "Unassigned"}
         new_item_to_focus={"#new_task-#{@id}-title-input"}
       >
         <:new_item>
@@ -54,27 +60,32 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
   end
 
   @impl true
-  def update(%{task_list: task_list} = assigns, socket) do
-    task_list = Repo.preload(task_list, tasks: :subtasks)
-
+  def update(%{task_list: %TaskList{tasks: tasks} = task_list} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:task_list, task_list)
      |> assign(task: %Task{task_list_id: task_list.id})
-     |> assign(:count, length(task_list.tasks))
-     |> stream(:tasks, task_list.tasks)}
+     |> assign(:count, length(tasks))
+     |> stream(:tasks, tasks)}
   end
 
-  def update(%{task: task, block: _block}, socket) do
-    remove_task(socket, task)
+  def update(%{event: %TaskCompleted{task: %Task{} = completed_task}}, socket) do
+    remove_task(socket, completed_task)
   end
 
-  def update(%{task: %Task{complete?: complete?, deleted?: deleted?} = removed_task}, socket)
-      when not is_nil(complete?) or not is_nil(deleted?) do
-    remove_task(socket, removed_task)
+  def update(%{event: %TaskDeleted{task: %Task{} = deleted_task}}, socket) do
+    remove_task(socket, deleted_task)
   end
 
-  def update(%{task: %Task{} = inserted_task}, socket) do
+  def update(%{event: %TaskUpdated{task: %Task{} = updated_task}}, socket) do
+    Logger.debug("updated task #{updated_task.id}")
+    {:ok, stream_insert(socket, :tasks, updated_task)}
+  end
+
+  def update(%{event: %TaskCreated{task: %Task{} = inserted_task}}, socket) do
+    Logger.debug("inserted task #{inserted_task.id}")
+
     {:ok,
      socket
      |> assign(:count, socket.assigns.count + 1)
@@ -103,5 +114,16 @@ defmodule BlocWeb.TaskLive.TaskListComponent do
      socket
      |> stream_delete(:tasks, Tasks.get_task!(id))
      |> assign(:count, socket.assigns.count - 1)}
+  end
+
+  @impl true
+  def handle_event("delete_list", _params, socket) do
+    case Tasks.delete_task_list(socket.assigns.task_list, socket.assigns.scope) do
+      {:ok, _task_list} ->
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash!(socket, :error, "Could not delete task list")}
+    end
   end
 end

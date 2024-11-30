@@ -13,13 +13,13 @@ defmodule Bloc.Scope do
   Feel free to extend the fields on this struct to fit the needs of the
   growing application requirements.
   """
-  defstruct current_user: nil, current_user_id: nil, timezone: "America/Chicago"
+  defstruct current_user: nil, current_user_id: nil, timezone: "America/Los_Angeles"
 
   def for_user(nil) do
     %__MODULE__{current_user: nil, current_user_id: nil, timezone: nil}
   end
 
   def for_user(%Bloc.Accounts.User{} = user) do
-    %__MODULE__{current_user: user, current_user_id: user.id, timezone: "America/Chicago"}
+    %__MODULE__{current_user: user, current_user_id: user.id, timezone: "America/Los_Angeles"}
   end
 end

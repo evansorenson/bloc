@@ -22,8 +22,106 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { Sortable, Droppable, Plugins } from "@shopify/draggable";
+import Hooks from "./hooks";
 
-let Hooks = {};
+window.dragStartJira = (event) => {
+  const target = event.currentTarget;
+  event.dataTransfer.setData(
+    "application/json",
+    JSON.stringify({
+      type: "jira",
+      key: target.dataset.jiraKey,
+      summary: target.dataset.jiraSummary,
+    })
+  );
+};
+
+let dropPreview = null;
+
+window.handleJiraTaskDragOver = (event) => {
+  event.preventDefault();
+  const container = event.currentTarget;
+  const tasksList = container.querySelector("#day-tasks");
+
+  if (!dropPreview) {
+    dropPreview = document.createElement("div");
+    dropPreview.className = "drop-preview";
+    container.classList.add("task-list-dragging");
+  }
+
+  // Find the closest task element to insert preview before/after
+  const tasks = Array.from(tasksList.children);
+  const mouseY = event.clientY;
+
+  let insertBefore = null;
+  for (const task of tasks) {
+    const rect = task.getBoundingClientRect();
+    const midPoint = rect.top + rect.height / 2;
+
+    if (mouseY < midPoint) {
+      insertBefore = task;
+      break;
+    }
+  }
+
+  // Remove old preview if it exists
+  if (dropPreview.parentNode) {
+    dropPreview.remove();
+  }
+
+  // Insert preview at the right position
+  if (insertBefore) {
+    insertBefore.parentNode.insertBefore(dropPreview, insertBefore);
+  } else {
+    tasksList.appendChild(dropPreview);
+  }
+};
+
+window.handleJiraTaskDragLeave = (event) => {
+  // Only remove if we're leaving the container, not entering a child
+  if (!event.relatedTarget?.closest("#day-tasks-container")) {
+    if (dropPreview) {
+      dropPreview.remove();
+      dropPreview = null;
+    }
+    event.currentTarget.classList.remove("task-list-dragging");
+  }
+};
+
+window.handleJiraTaskDrop = (event) => {
+  event.preventDefault();
+  const data = JSON.parse(event.dataTransfer.getData("application/json"));
+
+  if (data.type === "jira") {
+    // Clean up preview elements
+    if (dropPreview) {
+      dropPreview.remove();
+      dropPreview = null;
+    }
+    event.currentTarget.classList.remove("task-list-dragging");
+
+    // Dispatch the event for the hook to handle
+    const target = event.currentTarget;
+    target.dispatchEvent(
+      new CustomEvent("jira-task-drop", {
+        bubbles: true,
+        detail: data,
+      })
+    );
+  }
+};
+
+Hooks.JiraTaskDrop = {
+  mounted() {
+    this.el.addEventListener("jira-task-drop", (e) => {
+      const data = e.detail;
+      this.pushEventTo(this.el, "create_jira_task", {
+        key: data.key,
+        summary: data.summary,
+      });
+    });
+  },
+};
 
 Hooks.Sortable = {
   mounted() {

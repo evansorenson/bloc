@@ -67,7 +67,7 @@ defmodule BlocWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition overflow-hidden p-0"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -612,6 +612,7 @@ defmodule BlocWeb.CoreComponents do
   attr(:title, :string, required: true)
   attr(:count, :integer, required: true)
   attr(:new_item_to_focus, :string, default: nil)
+  attr(:delete?, :boolean, default: true)
 
   def dropdown_list(assigns) do
     ~H"""
@@ -624,6 +625,17 @@ defmodule BlocWeb.CoreComponents do
           </div>
         </div>
 
+
+        <%= if @delete? do %>
+          <button
+            type="button"
+            phx-click="delete_list"
+            data-confirm="Are you sure you want to delete this list and all its tasks?"
+            class="p-1 rounded-md hover:bg-gray-100"
+          >
+            <.icon name="hero-trash" class="h-4 w-4 text-gray-400" />
+          </button>
+        <% end %>
         <button
           role="button"
           phx-click={new_item(@id, @new_item_to_focus)}
@@ -805,7 +817,7 @@ defmodule BlocWeb.CoreComponents do
   """
   attr(:name, :string, required: true)
   attr(:id, :string, default: nil)
-  attr(:class, :string, default: nil)
+  attr(:class, :any, default: nil)
   attr(:type, :atom, values: [:outline, :solid, :mini, :micro], default: :outline)
   attr(:rest, :global)
 
@@ -822,8 +834,8 @@ defmodule BlocWeb.CoreComponents do
     """
   end
 
-  defp enabled_class, do: "bg-gray-800 text-white"
-  defp disabled_class, do: "bg-none text-gray-400 hover:text-white hover:bg-gray-800"
+  defp enabled_class, do: "bg-gray-800/50 hover:bg-gray-800/75"
+  defp disabled_class, do: "hover:bg-gray-800/50"
 
   attr(:name, :string, required: true)
   attr(:icon, :string, required: true)
@@ -837,15 +849,75 @@ defmodule BlocWeb.CoreComponents do
     <li>
       <.link
         navigate={@navigate}
-        class={"nav-bar-item text-white group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold #{if @active?, do: enabled_class(), else: disabled_class()}"}
+        class={"nav-bar-item group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold #{if @active?, do: enabled_class(), else: disabled_class()}"}
       >
-        <.icon name={@icon} />
-        <span class="sr-only"><%= @name %></span>
-        <%= if @show_name? do %>
+        <.icon
+          name={@icon}
+          class={
+            "h-6 w-6 transition-colors duration-200 #{
+              case @name do
+                "Today" -> if(@active?, do: "text-orange-400", else: "text-orange-400/60 group-hover:text-orange-400")
+                "Tasks" -> if(@active?, do: "text-green-400", else: "text-green-400/60 group-hover:text-green-400")
+                "Habits" -> if(@active?, do: "text-blue-400", else: "text-blue-400/60 group-hover:text-blue-400")
+                "Rewards" -> if(@active?, do: "text-purple-400", else: "text-purple-400/60 group-hover:text-purple-400")
+                _ -> "text-gray-400"
+              end
+            }"
+          }
+        />
+        <span class={
+          if(@show_name?, do: "text-sm font-medium transition-colors duration-200", else: "sr-only")
+        }>
           <%= @name %>
-        <% end %>
+        </span>
       </.link>
     </li>
+    """
+  end
+
+  attr(:current_view, :string, required: true)
+  def task_nav(assigns) do
+    ~H"""
+    <div class="flex-none w-16 bg-gray-900 flex flex-col items-center py-4 border-l border-gray-800">
+      <nav class="flex flex-col items-center space-y-3">
+        <button
+          phx-click="switch_view"
+          phx-value-view="tasks"
+          class={[
+            "p-2 rounded-lg transition-colors duration-200",
+            @current_view == "tasks" && "bg-gray-800"
+          ]}
+          aria-label="Tasks view"
+        >
+          <.icon
+            name="hero-check-circle"
+            class={[
+              "h-6 w-6",
+              @current_view == "tasks" && "text-green-400",
+              @current_view != "tasks" && "text-green-400/60 hover:text-green-400"
+            ]}
+          />
+        </button>
+        <button
+          phx-click="switch_view"
+          phx-value-view="jira"
+          class={[
+            "p-2 rounded-lg transition-colors duration-200",
+            @current_view == "jira" && "bg-gray-800"
+          ]}
+          aria-label="Jira view"
+        >
+          <.icon
+            name="hero-command-line"
+            class={[
+              "h-6 w-6",
+              @current_view == "jira" && "text-blue-400",
+              @current_view != "jira" && "text-blue-400/60 hover:text-blue-400"
+            ]}
+          />
+        </button>
+      </nav>
+    </div>
     """
   end
 

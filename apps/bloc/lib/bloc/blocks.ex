@@ -6,6 +6,7 @@ defmodule Bloc.Blocks do
   import Ecto.Query, warn: false
 
   alias Bloc.Blocks.Block
+  alias Bloc.Query
   alias Bloc.Repo
   alias Bloc.Scope
 
@@ -18,15 +19,10 @@ defmodule Bloc.Blocks do
       [%Block{}, ...]
 
   """
-  def list_blocks(%Scope{} = scope, opts \\ []) do
-    all_query(Block, scope, opts)
-  end
-
-  defp all_query(query, %Scope{current_user_id: user_id}, opts) do
-    query
-    |> QueryBuilder.where(user_id: user_id)
-    # |> QueryBuilder.preload([:task])
-    |> QueryBuilder.from_list(opts)
+  def list_blocks(%Scope{current_user_id: user_id}, opts \\ []) do
+    Block
+    |> Query.for_user(user_id)
+    |> Query.preloads(opts[:preload])
     |> Repo.all()
   end
 
@@ -34,12 +30,14 @@ defmodule Bloc.Blocks do
     beginning_of_day =
       timezone |> DateTime.now!() |> Timex.beginning_of_day() |> Timex.Timezone.convert("UTC")
 
-    end_of_day = timezone |> DateTime.now!() |> Timex.end_of_day() |> Timex.Timezone.convert("UTC")
+    end_of_day =
+      timezone |> DateTime.now!() |> Timex.end_of_day() |> Timex.Timezone.convert("UTC")
 
     Block
-    |> QueryBuilder.where({:start_time, :ge, beginning_of_day})
-    |> QueryBuilder.where({:start_time, :le, end_of_day})
-    |> all_query(scope, opts)
+    |> Query.for_user(scope.current_user_id)
+    |> between_times({beginning_of_day, end_of_day})
+    |> Query.preloads(opts[:preload])
+    |> Repo.all()
   end
 
   @doc """
@@ -59,6 +57,14 @@ defmodule Bloc.Blocks do
         {:halt, last_end_time}
       end
     end)
+  end
+
+  defp between_times(query, nil), do: query
+
+  defp between_times(query, {start_time, end_time}) do
+    query
+    |> where([q], q.start_time >= ^start_time)
+    |> where([q], q.start_time <= ^end_time)
   end
 
   @doc """

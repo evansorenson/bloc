@@ -66,7 +66,8 @@ defmodule BlocWeb.Router do
     pipe_through([:browser, :require_authenticated_user])
 
     live_session :require_authenticated_user,
-      on_mount: [{BlocWeb.UserAuth, :ensure_authenticated}, BlocWeb.Scope, BlocWeb.Nav] do
+      on_mount: [{BlocWeb.UserAuth, :ensure_authenticated}, BlocWeb.Scope, BlocWeb.Nav],
+      layout: {BlocWeb.Layouts, :live} do
       live("/users/settings", UserSettingsLive, :edit)
       live("/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email)
 
@@ -93,6 +94,10 @@ defmodule BlocWeb.Router do
 
       live("/tasks/:id", TaskLive.Show, :show)
       live("/tasks/:id/show/edit", TaskLive.Show, :edit)
+
+      live "/rewards", RewardLive.Index, :index
+      live "/rewards/new", RewardLive.Index, :new
+      live "/rewards/:id/edit", RewardLive.Index, :edit
     end
   end
 

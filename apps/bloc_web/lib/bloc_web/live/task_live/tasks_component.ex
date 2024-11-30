@@ -6,11 +6,38 @@ defmodule BlocWeb.TaskLive.TasksComponent do
   alias Bloc.Tasks.Task
   alias Bloc.Tasks.TaskList
 
+  require Logger
+
   @impl true
   def update(assigns, socket) do
+    scope = assigns.scope
+    task_lists = Tasks.list_task_lists(scope)
+
+    # Get unassigned tasks
+    # Get tasks where habit_id is nil and task_list_id is nil
+    unassigned_tasks = Tasks.list_tasks(scope, habit_id: :none, task_list_id: :none)
+
+    # Create virtual unassigned list
+    unassigned_list = %TaskList{
+      id: nil,
+      title: "Unassigned",
+      position: -1,
+      color: "gray-200",
+      tasks: unassigned_tasks
+    }
+
+    # Add unassigned list if there are unassigned tasks
+    task_lists =
+      if length(unassigned_tasks) > 0 do
+        task_lists ++ [unassigned_list]
+      else
+        task_lists
+      end
+
     socket
     |> assign(assigns)
-    |> stream(:task_lists, Tasks.list_task_lists(assigns.scope))
+    |> assign(:current_view, "tasks")
+    |> stream(:task_lists, task_lists)
     |> apply_action(:index, %{})
     |> Tuples.ok()
   end
@@ -18,96 +45,115 @@ defmodule BlocWeb.TaskLive.TasksComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full flex md:pl-20">
-      <div class="flex-none w-96 px-4 py-4 sm:px-6 md:overflow-y-auto md:border-r md:border-gray-200 md:py-6 md:px-8 md:block">
-        <.header>
-          Tasks
-          <:actions>
-            <.button phx-target={@myself} phx-click="new_task">New Task</.button>
-            <.button phx-target={@myself} phx-click="new_task_list">New List</.button>
-          </:actions>
-        </.header>
+    <div class="w-full h-full flex">
+      <div class={[
+        "flex-1 flex",
+        @current_view == "jira" && "hidden"
+      ]}>
+        <div class="px-4 py-4 sm:px-6 md:overflow-y-auto md:border-l md:border-gray-200 md:py-6 md:px-8 md:block">
+          <.header>
+            Tasks
+            <:actions>
+              <.button phx-target={@myself} phx-click="new_task">New Task</.button>
+              <.button phx-target={@myself} phx-click="new_task_list">New List</.button>
+            </:actions>
+          </.header>
 
-        <%!-- <div class="mt-2" phx-update="stream" id="tasks">
-    <%= for {id, task} <- @streams.tasks do %>
-    <.live_component module={BlocWeb.TaskLive.TaskComponent} id={id} task={task} />
-    <% end %>
-    </div>
-    --%>
-
-        <div class="my-8 space-y-4" phx-update="stream" id="task-lists">
-          <%= for {id, task_list} <- @streams.task_lists do %>
-            <.live_component
-              module={BlocWeb.TaskLive.TaskListComponent}
-              scope={@scope}
-              id={id}
-              task_list={task_list}
-            />
-          <% end %>
+          <div class="my-8 space-y-4" phx-update="stream" id="task-lists">
+            <%= for {id, task_list} <- @streams.task_lists do %>
+              <.live_component
+                module={BlocWeb.TaskLive.TaskListComponent}
+                scope={@scope}
+                id={id}
+                task_list={task_list}
+              />
+            <% end %>
+          </div>
         </div>
-
-        <%!-- <.table
-    id="tasks"
-    rows={@streams.tasks}
-    row_click={fn {_id, task} -> JS.navigate(~p"/tasks/#{task}") end}
-    >
-    <:col :let={{_id, task}} label="Title"><%= task.title %></:col>
-    <:col :let={{_id, task}} label="Notes"><%= task.notes %></:col>
-    <:col :let={{_id, task}} label="Is complete"><%= task.complete? %></:col>
-    <:col :let={{_id, task}} label="Is active"><%= task.active? %></:col>
-    <:col :let={{_id, task}} label="Due date"><%= task.due_date %></:col>
-    <:action :let={{_id, task}}>
-    <div class="sr-only">
-      <.link navigate={~p"/tasks/#{task}"}>Show</.link>
-    </div>
-    <.link patch={~p"/tasks/#{task}/edit"}>Edit</.link>
-    </:action>
-    <:action :let={{id, task}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: task.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-    </:action>
-    </.table> --%>
-
-        <.modal
-          :if={@live_action in [:new_task, :edit_task]}
-          id="task-modal"
-          show
-          on_cancel={JS.push("cancel", target: @myself)}
-        >
-          <.live_component
-            module={BlocWeb.TaskLive.FormComponent}
-            id={@task.id || :new}
-            on_save={fn -> JS.push("saved", target: @myself) end}
-            title={@page_title}
-            action={@live_action}
-            task={@task}
-            patch={~p"/tasks"}
-            scope={@scope}
-          />
-        </.modal>
-
-        <.modal
-          :if={@live_action in [:new_list, :edit_list]}
-          id="task_list-modal"
-          show
-          on_cancel={JS.push("cancel", target: @myself)}
-        >
-          <.live_component
-            module={BlocWeb.TaskLive.ListFormComponent}
-            id={@task_list.id || :new_list}
-            on_save={fn -> JS.push("saved", target: @myself) end}
-            title={@page_title}
-            action={@live_action}
-            task_list={@task_list}
-            patch={~p"/tasks"}
-            scope={@scope}
-          />
-        </.modal>
       </div>
+
+      <%= if @current_view == "jira" do %>
+        <.live_component module={BlocWeb.TaskLive.JiraComponent} id="jira-tasks" scope={@scope} />
+      <% end %>
+
+      <div class="flex-none w-14 bg-[#f5f6f8] flex flex-col items-center py-4 border-l border-gray-200">
+        <nav class="flex flex-col items-center space-y-3">
+          <button
+            phx-click="switch_view"
+            phx-target={@myself}
+            phx-value-view="tasks"
+            class={[
+              "p-2 rounded-lg transition-colors duration-200",
+              @current_view == "tasks" && "bg-gray-200"
+            ]}
+            aria-label="Tasks view"
+          >
+            <.icon
+              name="hero-check-circle"
+              class={[
+                "h-5 w-5",
+                @current_view == "tasks" && "text-green-400",
+                @current_view != "tasks" && "text-green-400/60 hover:text-green-400"
+              ]}
+            />
+          </button>
+          <button
+            phx-click="switch_view"
+            phx-target={@myself}
+            phx-value-view="jira"
+            class={[
+              "p-2 rounded-lg transition-colors duration-200",
+              @current_view == "jira" && "bg-gray-200"
+            ]}
+            aria-label="Jira view"
+          >
+            <.icon
+              name="hero-command-line"
+              class={[
+                "h-5 w-5",
+                @current_view == "jira" && "text-blue-400",
+                @current_view != "jira" && "text-blue-400/60 hover:text-blue-400"
+              ]}
+            />
+          </button>
+        </nav>
+      </div>
+
+      <.modal
+        :if={@live_action in [:new_task, :edit_task]}
+        id="task-modal"
+        show
+        on_cancel={JS.push("cancel", target: @myself)}
+      >
+        <.live_component
+          module={BlocWeb.TaskLive.FormComponent}
+          id={@task.id || :new}
+          on_save={fn -> JS.push("saved", target: @myself) end}
+          title={@page_title}
+          action={@live_action}
+          task={@task}
+          return_to={~p"/tasks"}
+          scope={@scope}
+        />
+      </.modal>
+
+      <.modal
+        :if={@live_action in [:new_list, :edit_list]}
+        id="task_list-modal"
+        show
+        on_cancel={JS.push("cancel", target: @myself)}
+      >
+        <.live_component
+          module={BlocWeb.TaskLive.ListFormComponent}
+          id={@task_list.id || :new_list}
+          on_save={fn -> JS.push("saved", target: @myself) end}
+          title={@page_title}
+          action={@live_action}
+          task_list={@task_list}
+          patch={~p"/tasks"}
+          scope={@scope}
+        />
+      </.modal>
     </div>
     """
   end
@@ -169,6 +215,10 @@ defmodule BlocWeb.TaskLive.TasksComponent do
   # end
 
   @impl true
+  def handle_event("switch_view", %{"view" => view}, socket) do
+    {:noreply, assign(socket, :current_view, view)}
+  end
+
   def handle_event("cancel", _params, socket) do
     socket |> apply_action(:index) |> Tuples.noreply()
   end
@@ -187,8 +237,14 @@ defmodule BlocWeb.TaskLive.TasksComponent do
 
   def handle_event("delete", %{"id" => id}, socket) do
     task = Tasks.get_task!(id)
-    {:ok, _} = Tasks.delete_task(task)
+    {:ok, _} = Tasks.delete_task(task, socket.assigns.scope)
 
     {:noreply, stream_delete(socket, :tasks, task)}
+  end
+
+  def handle_event("saved", _params, socket) do
+    Logger.debug("saved tasks")
+    socket |> apply_action(:index) |> Tuples.noreply()
+    {:noreply, socket}
   end
 end

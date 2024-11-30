@@ -59,4 +59,22 @@ defmodule TimeUtils do
       "#{hours}h #{remainder}m"
     end
   end
+
+  def format_hour(hour) do
+    cond do
+      hour == 0 -> "12 AM"
+      hour < 12 -> "#{hour} AM"
+      hour == 12 -> "12 PM"
+      true -> "#{hour - 12} PM"
+    end
+  end
+
+  def format_event_time(start_time, end_time) do
+    "#{Calendar.strftime(start_time, "%-l:%M")} - #{Calendar.strftime(end_time, "%-l:%M")}"
+  end
+
+  def current_time_percentage do
+    now = Time.utc_now()
+    (now.hour * 60 + now.minute) / (24 * 60) * 100
+  end
 end

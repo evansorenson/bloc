@@ -89,5 +89,13 @@
         scope={@scope}
       />
     </.modal>
+
+    <.modal :if={@reward} id="reward-modal" show on_cancel={JS.push("hide_reward_modal")}>
+      <.live_component
+        module={BlocWeb.TaskLive.RewardModalComponent}
+        id="reward-modal"
+        reward={@reward}
+      />
+    </.modal>
   </div>
 </div>

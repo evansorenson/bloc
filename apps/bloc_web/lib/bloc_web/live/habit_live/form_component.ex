@@ -10,11 +10,25 @@ defmodule BlocWeb.HabitLive.FormComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
-      <.header>
-        <%= @title %>
-        <:subtitle>Use this form to manage habit records in your database.</:subtitle>
-      </.header>
+    <div class="bg-white rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center">
+          <%= case @action do %>
+            <% :new -> %>
+              <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                <.icon name="hero-plus" class="h-5 w-5 text-indigo-600" />
+              </div>
+            <% :edit -> %>
+              <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                <.icon name="hero-pencil" class="h-5 w-5 text-blue-600" />
+              </div>
+          <% end %>
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900"><%= @title %></h2>
+            <p class="mt-1 text-sm text-gray-500">Create and manage your recurring habits</p>
+          </div>
+        </div>
+      </div>
 
       <.simple_form
         for={@form}
@@ -22,23 +36,74 @@ defmodule BlocWeb.HabitLive.FormComponent do
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
+        class="p-6 space-y-6"
       >
-        <.input field={@form[:title]} type="text" label="Title" />
-        <.input field={@form[:notes]} type="text" label="Notes" />
-        <.input
-          field={@form[:period_type]}
-          type="select"
-          label="Period type"
-          prompt="Choose a value"
-          options={Ecto.Enum.values(Bloc.Habits.Habit, :period_type)}
-        />
-        <.input field={@form[:start_time]} type="time" label="Start time" />
-        <.input field={@form[:end_time]} type="time" label="End time" />
-        <:actions>
-          <.button phx-disable-with="Saving...">
-            Save Habit
+        <div class="space-y-4">
+          <div>
+            <.input
+              field={@form[:title]}
+              type="text"
+              label="Title"
+              placeholder="e.g. Morning Meditation"
+              class="rounded-lg"
+            />
+          </div>
+
+          <div>
+            <.input
+              field={@form[:notes]}
+              type="text"
+              label="Notes (optional)"
+              placeholder="Add any additional details"
+              class="rounded-lg"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <.input
+                field={@form[:period_type]}
+                type="select"
+                label="Repeat"
+                prompt="Choose frequency"
+                options={[
+                  {"🌅 Daily", :daily},
+                  {"📅 Weekly", :weekly},
+                  {"🗓️ Monthly", :monthly}
+                ]}
+                class="rounded-lg"
+              />
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <.input field={@form[:start_time]} type="time" label="Start time" class="rounded-lg" />
+              </div>
+              <div class="flex-1">
+                <.input field={@form[:end_time]} type="time" label="End time" class="rounded-lg" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <.input
+              field={@form[:required_count]}
+              type="number"
+              label="Count"
+              min="1"
+              class="rounded-lg"
+            />
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <.button
+            phx-disable-with="Saving..."
+            class="w-full bg-indigo-600 hover:bg-indigo-500 rounded-lg"
+          >
+            <%= if @action == :new, do: "Create Habit", else: "Save Changes" %>
           </.button>
-        </:actions>
+        </div>
       </.simple_form>
     </div>
     """
@@ -72,7 +137,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
 
   defp save_habit(socket, :edit, habit_params) do
     # TOOO: fix habit time based on user zone
-    case Habits.update_habit(socket.assigns.habit, habit_params) do
+    case Habits.update_habit(socket.assigns.habit, habit_params, socket.assigns.scope) do
       {:ok, habit} ->
         notify_parent({:saved, habit})
 

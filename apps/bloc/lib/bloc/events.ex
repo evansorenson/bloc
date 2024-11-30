@@ -1,20 +1,43 @@
 defmodule Bloc.Events do
   @moduledoc false
 
+  defmodule TaskCreated do
+    @moduledoc false
+    defstruct [:task, :task_list]
+  end
+
+  defmodule TaskUpdated do
+    @moduledoc false
+    defstruct [:task, :old_task]
+  end
+
+  defmodule TaskDeleted do
+    @moduledoc false
+    defstruct [:task, :task_list]
+  end
+
   defmodule TaskCompleted do
     @moduledoc false
-    defstruct task: nil
+    defstruct [:task, :reward]
   end
 
-  defmodule TaskAssignedDate do
+  defmodule TaskMoved do
     @moduledoc false
-
-    defstruct task: nil
+    defstruct [:task, :from_list, :to_list]
   end
 
-  defmodule TaskMovedList do
+  defmodule TaskListCreated do
     @moduledoc false
+    defstruct [:task_list]
+  end
 
-    defstruct task: nil
+  defmodule TaskListUpdated do
+    @moduledoc false
+    defstruct [:task_list]
+  end
+
+  defmodule TaskListDeleted do
+    @moduledoc false
+    defstruct [:task_list]
   end
 end

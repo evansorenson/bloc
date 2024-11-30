@@ -7,7 +7,6 @@ defmodule Bloc.Workers.HabitTask do
   alias Bloc.Habits
   alias Bloc.Habits.Habit
   alias Bloc.Repo
-
   require Logger
 
   @impl true
@@ -15,7 +14,7 @@ defmodule Bloc.Workers.HabitTask do
     tasks =
       from(h in Habit, where: h.period_type == :daily)
       |> Repo.all()
-      |> Enum.map(&Habits.task_for_habit_today/1)
+      |> Enum.map(&Habits.task_for_habit_day(&1, Date.utc_today()))
       |> Enum.map(&Repo.insert!/1)
 
     Logger.info("Inserted #{length(tasks)} tasks")

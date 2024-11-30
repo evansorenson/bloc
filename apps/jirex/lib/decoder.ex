@@ -19,8 +19,8 @@ defmodule Jirex.Decoder do
   def decode_response({:ok, %Tesla.Env{status: code} = response}, %{response: types} = _request) do
     with {:ok, decoded_json} <- decode_body(response, []),
          {:ok, response_type} <- get_type(types, code) do
-      IO.inspect(response_type, label: "response_type")
-      IO.inspect(decoded_json, label: "decoded_json")
+      # IO.inspect(response_type, label: "response_type")
+      # IO.inspect(decoded_json, label: "decoded_json")
 
       decoded_body = do_decode_types(decoded_json.body, response_type)
       {:ok, %{response | body: decoded_body}}
@@ -34,7 +34,7 @@ defmodule Jirex.Decoder do
     if res = Enum.find(types, fn {c, _} -> c == code end) do
       {:ok, elem(res, 1)}
     else
-      IO.inspect("#{inspect(types)} - #{code}", label: "not found")
+      # IO.inspect("#{inspect(types)} - #{code}", label: "not found")
       {:error, :not_found}
     end
   end

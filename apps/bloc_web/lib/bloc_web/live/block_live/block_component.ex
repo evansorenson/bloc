@@ -34,7 +34,7 @@ defmodule BlocWeb.BlockLive.BlockComponent do
         data-event="resize_down"
       />
       <div
-        style={"max-height: #{@span * 9}px;"}
+        style={"max-height: #{@span * 6}px;"}
         class="group h-full overflow-clip flex flex-col px-2 pt-1 rounded-lg bg-blue-50 hover:bg-blue-100"
         data-id={@block.id}
         draggable="true"

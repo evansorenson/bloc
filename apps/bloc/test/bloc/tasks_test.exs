@@ -77,7 +77,7 @@ defmodule Bloc.TasksTest do
       assert task.parent_id == parent_task.id
     end
 
-    test "task must be assigned to parent task or task list or habit", %{
+    test "task does not have to be assigned to parent task or task list or habit", %{
       user: user
     } do
       invalid_attrs = %{
@@ -89,7 +89,10 @@ defmodule Bloc.TasksTest do
         user_id: user.id
       }
 
-      assert {:error, %Ecto.Changeset{}} = Tasks.create_task(invalid_attrs)
+      assert {:ok, %Task{} = task} = Tasks.create_task(invalid_attrs)
+      refute task.parent_id
+      refute task.task_list_id
+      refute task.habit_id
     end
 
     test "create_task/1 with invalid data returns error changeset" do
@@ -133,47 +136,54 @@ defmodule Bloc.TasksTest do
 
     @list_invalid_attrs %{position: nil, title: nil, color: nil}
 
-    test "list_task_lists/0 returns all task_lists", %{task_list: task_list} do
-      [queried_task_list] = Tasks.list_task_lists(%Scope{current_user_id: task_list.user_id})
-      assert task_list.id == queried_task_list.id
+    setup do
+      user = user_fixture()
+      scope = %Scope{current_user_id: user.id}
+      {:ok, user: user, scope: scope}
     end
 
-    test "get_task_list!/1 returns the task_list with given id", %{task_list: task_list} do
-      queried_task_list = Tasks.get_task_list!(task_list.id)
-      assert queried_task_list.id == task_list.id
+    test "list_task_lists/1 returns all task_lists for user", %{user: user, scope: scope} do
+      task_list = task_list_fixture(user_id: user.id)
+      assert Tasks.list_task_lists(scope) == [task_list]
     end
 
-    test "create_task_list/1 with valid data creates a task_list", %{user: user} do
-      valid_attrs = %{position: 42, title: "some title", color: "some color", user_id: user.id}
+    test "get_task_list!/2 returns the task_list with given id", %{user: user, scope: scope} do
+      task_list = task_list_fixture(user_id: user.id)
+      assert Tasks.get_task_list!(task_list.id, scope) == task_list
+    end
 
-      assert {:ok, %TaskList{} = task_list} = Tasks.create_task_list(valid_attrs)
-      assert task_list.position == 42
+    test "create_task_list/2 with valid data creates a task_list", %{scope: scope} do
+      valid_attrs = %{title: "some title", position: 42}
+
+      assert {:ok, %TaskList{} = task_list} = Tasks.create_task_list(valid_attrs, scope)
       assert task_list.title == "some title"
-      assert task_list.color == "some color"
+      assert task_list.position == 42
+      assert task_list.user_id == scope.current_user_id
     end
 
-    test "create_task_list/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tasks.create_task_list(@list_invalid_attrs)
+    test "create_task_list/2 with invalid data returns error changeset", %{scope: scope} do
+      assert {:error, %Ecto.Changeset{}} = Tasks.create_task_list(@invalid_attrs, scope)
     end
 
-    test "update_task_list/2 with valid data updates the task_list", %{task_list: task_list} do
-      update_attrs = %{position: 43, title: "some updated title", color: "some updated color"}
+    test "update_task_list/3 with valid data updates the task_list", %{user: user, scope: scope} do
+      task_list = task_list_fixture(user_id: user.id)
+      update_attrs = %{title: "some updated title", position: 43}
 
-      assert {:ok, %TaskList{} = task_list} = Tasks.update_task_list(task_list, update_attrs)
-      assert task_list.position == 43
+      assert {:ok, %TaskList{} = task_list} = Tasks.update_task_list(task_list, update_attrs, scope)
       assert task_list.title == "some updated title"
-      assert task_list.color == "some updated color"
+      assert task_list.position == 43
     end
 
-    test "update_task_list/2 with invalid data returns error changeset", %{task_list: task_list} do
-      assert {:error, %Ecto.Changeset{}} = Tasks.update_task_list(task_list, @list_invalid_attrs)
-      not_updated_task_list = Tasks.get_task_list!(task_list.id)
-      assert not_updated_task_list.updated_at == task_list.updated_at
+    test "update_task_list/3 with invalid data returns error changeset", %{user: user, scope: scope} do
+      task_list = task_list_fixture(user_id: user.id)
+      assert {:error, %Ecto.Changeset{}} = Tasks.update_task_list(task_list, @invalid_attrs, scope)
+      assert task_list == Tasks.get_task_list!(task_list.id, scope)
     end
 
-    test "delete_task_list/1 deletes the task_list", %{task_list: task_list} do
-      assert {:ok, %TaskList{}} = Tasks.delete_task_list(task_list)
-      assert_raise Ecto.NoResultsError, fn -> Tasks.get_task_list!(task_list.id) end
+    test "delete_task_list/2 deletes the task_list", %{user: user, scope: scope} do
+      task_list = task_list_fixture(user_id: user.id)
+      assert {:ok, %TaskList{}} = Tasks.delete_task_list(task_list, scope)
+      assert_raise Ecto.NoResultsError, fn -> Tasks.get_task_list!(task_list.id, scope) end
     end
 
     test "change_task_list/1 returns a task_list changeset", %{task_list: task_list} do
