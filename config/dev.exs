@@ -25,8 +25,8 @@ config :bloc, BlocWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "soaJ06H5/G20MuhOf66k38jXGDLc4WUGnf5lD9jjQGI6arNuc3zj3khjetJwVAFG",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:bloc, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:bloc, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
