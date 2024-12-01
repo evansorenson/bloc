@@ -229,7 +229,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
   defp save_habit(socket, :new, habit_params) do
     habit_params
     |> Map.put("user_id", socket.assigns.scope.current_user_id)
-    |> Habits.create_habit()
+    |> Habits.create_habit(socket.assigns.scope)
     |> case do
       {:ok, habit} ->
         notify_parent({:saved, habit})

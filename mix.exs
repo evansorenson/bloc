@@ -12,6 +12,7 @@ defmodule Bloc.MixProject do
       version: "0.1.0",
       elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [warnings_as_errors: true],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -59,7 +60,8 @@ defmodule Bloc.MixProject do
       {:tesla, "~> 1.4"},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:styler, "~> 0.11", only: [:dev, :test], runtime: false},
-      {:heroicons, github: "tailwindlabs/heroicons", tag: "v2.1.1", sparse: "optimized", app: false, compile: false, depth: 1},
+      {:heroicons,
+       github: "tailwindlabs/heroicons", tag: "v2.1.1", sparse: "optimized", app: false, compile: false, depth: 1},
       {:tails, "~> 0.1"}
     ]
   end

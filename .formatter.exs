@@ -17,7 +17,6 @@ locals_without_parens = [
 
 [
   plugins: [Styler, Phoenix.LiveView.HTMLFormatter],
-  inputs: ["mix.exs", "config/*.exs"],
-  subdirectories: ["apps/*"],
+  inputs: [".credo.exs", ".formatter.exs", "mix.exs", "{config,lib,priv,test}/**/*.{ex,exs}"],
   locals_without_parens: locals_without_parens
 ]

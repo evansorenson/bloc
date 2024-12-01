@@ -10,6 +10,7 @@ defmodule Bloc.Habits do
   alias Bloc.Repo
   alias Bloc.Scope
   alias Bloc.Tasks.Task
+  alias Bloc.Blocks.Block
 
   require Logger
 
@@ -63,10 +64,11 @@ defmodule Bloc.Habits do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_habit(attrs \\ %{}) do
+  def create_habit(attrs \\ %{}, %Scope{} = scope) do
+
     Repo.transaction(fn ->
       with {:ok, habit} <- %Habit{} |> Habit.changeset(attrs) |> Repo.insert(),
-           :ok <- insert_tasks_for_habit(habit) do
+           :ok <- insert_tasks_for_habit(habit, scope) do
         habit
       else
         {:error, changeset} -> Repo.rollback(changeset)
@@ -74,24 +76,64 @@ defmodule Bloc.Habits do
     end)
   end
 
-  @spec insert_tasks_for_habit(Habit.t()) :: Task.t()
-  def insert_tasks_for_habit(%Habit{period_type: :daily} = habit) do
+
+
+  @spec insert_tasks_for_habit(Habit.t(), Scope.t()) :: Task.t()
+  def insert_tasks_for_habit(%Habit{period_type: :daily} = habit, %Scope{} = scope) do
     today = Date.utc_today()
     next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    tasks =
+    # Get all dates that match the habit's days
+    dates =
       today
       |> Date.range(next_year)
       |> Enum.filter(fn date ->
         Date.day_of_week(date) in (habit.days || [1, 2, 3, 4, 5, 6, 7])
       end)
+
+    # Build task entries for bulk insert
+    task_entries =
+      dates
       |> Enum.flat_map(fn date ->
-        Enum.map(1..habit.required_count, fn _ -> task_for_habit_day(habit, date) end)
+        Enum.map(1..habit.required_count, fn _ ->
+          %{
+            id: Ecto.UUID.generate(),
+            title: habit.title,
+            habit_id: habit.id,
+            user_id: habit.user_id,
+            due_date: date,
+            inserted_at: now,
+            updated_at: now
+          }
+        end)
       end)
-      |> Enum.map(&Repo.insert!/1)
 
-    Logger.info("Inserted #{length(tasks)} tasks for habit #{habit.id}")
+    # Perform bulk task insert
+    {count, tasks} = Repo.insert_all(Task, task_entries, returning: [:id, :due_date])
 
+    # If habit has time blocks, create block entries
+    if habit.start_time && habit.end_time do
+      block_entries =
+        tasks
+        |> Enum.map(fn task ->
+          %{
+            id: Ecto.UUID.generate(),
+            title: habit.title,
+            user_id: habit.user_id,
+            task_id: task.id,
+            start_time: DateTime.new!(task.due_date, habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            end_time: DateTime.new!(task.due_date, habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            inserted_at: now,
+            updated_at: now
+          }
+        end)
+
+      {block_count, _} = Repo.insert_all(Block, block_entries)
+      Logger.info("Inserted #{block_count} blocks for habit #{habit.id}")
+    end
+
+    Logger.info("Inserted #{count} tasks for habit #{habit.id}")
     :ok
   end
 
