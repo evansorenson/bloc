@@ -16,7 +16,7 @@ config :bloc, Bloc.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :bloc_web, BlocWeb.Endpoint,
+config :bloc, BlocWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
@@ -25,8 +25,8 @@ config :bloc_web, BlocWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "soaJ06H5/G20MuhOf66k38jXGDLc4WUGnf5lD9jjQGI6arNuc3zj3khjetJwVAFG",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:bloc_web, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:bloc_web, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:bloc, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:bloc, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -53,7 +53,7 @@ config :bloc_web, BlocWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :bloc_web, BlocWeb.Endpoint,
+config :bloc, BlocWeb.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
@@ -64,7 +64,7 @@ config :bloc_web, BlocWeb.Endpoint,
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :bloc_web, dev_routes: true
+config :bloc, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

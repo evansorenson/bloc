@@ -1,59 +1,78 @@
 # Workaround for `mix deps.get` not being able to install Hex locally
 # on Elixir 1.15+ due to Zscaler cert issue.
 # See Github issue: https://github.com/elixir-lang/elixir/issues/13169
-"./apps/bloc/priv/repo/cert/zscaler_root_ca.pem" |> Path.expand() |> :public_key.cacerts_load()
+"priv/cert/zscaler_root_ca.pem" |> Path.expand() |> :public_key.cacerts_load()
 
-defmodule Bloc.Umbrella.MixProject do
+defmodule Bloc.MixProject do
   use Mix.Project
 
   def project do
     [
-      apps_path: "apps",
+      app: :bloc,
       version: "0.1.0",
+      elixir: "~> 1.16",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
       aliases: aliases(),
-      elixirc_options: [warnings_as_errors: true]
+      deps: deps()
     ]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options.
-  #
-  # Dependencies listed here are available only for this project
-  # and cannot be accessed from applications inside the apps/ folder.
+  def application do
+    [
+      mod: {Bloc.Application, []},
+      extra_applications: [:logger, :runtime_tools]
+    ]
+  end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   defp deps do
     [
-      # Required to run "mix format" on ~H/.heex files from the umbrella root
-      {:phoenix_live_view, ">= 0.0.0"},
-      {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
+      {:phoenix, "~> 1.7.11"},
+      {:phoenix_ecto, "~> 4.4"},
+      {:ecto_sql, "~> 3.10"},
+      {:postgrex, ">= 0.0.0"},
+      {:phoenix_html, "~> 4.0"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_view, "~> 0.20.2"},
+      {:floki, "~> 0.36"},
+      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
+      {:swoosh, "~> 1.5"},
+      {:finch, "~> 0.13"},
+      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_poller, "~> 1.0"},
+      {:gettext, "~> 0.20"},
+      {:jason, "~> 1.2"},
+      {:bandit, "~> 1.2"},
+      {:bcrypt_elixir, "~> 3.0"},
+      {:phoenix_pubsub, "~> 2.1"},
+      {:dns_cluster, "~> 0.1.1"},
+      {:uuidv7, "~> 0.2"},
+      {:tzdata, "~> 1.1"},
+      {:query_builder, "~> 1.4.2"},
+      {:timex, "~> 3.0"},
+      {:oban, "~> 2.17"},
+      {:tesla, "~> 1.4"},
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:styler, "~> 0.11", only: [:dev, :test], runtime: false},
+      {:heroicons, github: "tailwindlabs/heroicons", tag: "v2.1.1", sparse: "optimized", app: false, compile: false, depth: 1},
+      {:tails, "~> 0.1"}
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to install project dependencies and perform other setup tasks, run:
-  #
-  #     $ mix setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
-  #
-  # Aliases listed here are available only for this project
-  # and cannot be accessed from applications inside the apps/ folder.
   defp aliases do
     [
-      # run `mix setup` in all child apps
-      setup: ["cmd mix setup"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "ecto.seeds"],
+      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      "ecto.seeds": ["run apps/bloc/priv/repo/seeds.exs"],
-      "ecto.migrate": ["ecto.migrate"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.build": ["tailwind default", "esbuild default"],
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
     ]
   end
 end

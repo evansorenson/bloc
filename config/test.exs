@@ -18,7 +18,7 @@ config :bloc, Bloc.Repo,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :bloc_web, BlocWeb.Endpoint,
+config :bloc, BlocWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "DPcdgGdjIF9mVzxGBPhFGBG2UR9AOfvYVjc0+H6B82aNBVFGDaq2y1nz3KfDjho7",
   server: false

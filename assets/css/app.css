@@ -2,3 +2,25 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* This file is for your main application CSS */
+
+.drop-preview {
+  @apply border-2 border-dashed border-indigo-300 bg-indigo-50 rounded-lg my-2;
+  height: 64px;
+}
+
+.task-list-dragging {
+  @apply bg-gray-50;
+}
+
+.dropzone {
+  @apply transition-colors duration-200;
+}
+
+.dropzone.drop-active {
+  @apply bg-indigo-50;
+}
+
+.block-dragging {
+  @apply opacity-50;
+}

@@ -1,3 +1,0 @@
-# Bloc
-
-**TODO: Add description**

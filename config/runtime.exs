@@ -36,12 +36,11 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  config :bloc_web, BlocWeb.Endpoint,
+  config :bloc, BlocWeb.Endpoint,
     http: [
       # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: String.to_integer(System.get_env("PORT") || "4000")
+      port: String.to_integer(System.get_env("PORT") || "8080")
     ],
     secret_key_base: secret_key_base
 
@@ -50,7 +49,7 @@ if config_env() == :prod do
   # If you are doing OTP releases, you need to instruct Phoenix
   # to start each relevant endpoint:
   #
-  #     config :bloc_web, BlocWeb.Endpoint, server: true
+  config :bloc, BlocWeb.Endpoint, server: true
   #
   # Then you can assemble a release by calling `mix release`.
   # See `mix help release` for more information.
@@ -60,7 +59,7 @@ if config_env() == :prod do
   # To get SSL working, you will need to add the `https` key
   # to your endpoint configuration:
   #
-  #     config :bloc_web, BlocWeb.Endpoint,
+  #     config :bloc, BlocWeb.Endpoint,
   #       https: [
   #         ...,
   #         port: 443,
@@ -82,7 +81,7 @@ if config_env() == :prod do
   # We also recommend setting `force_ssl` in your config/prod.exs,
   # ensuring no data is ever sent via http, always redirecting to https:
   #
-  #     config :bloc_web, BlocWeb.Endpoint,
+  #     config :bloc, BlocWeb.Endpoint,
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
@@ -108,7 +107,7 @@ if config_env() == :prod do
   config :bloc, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 end
 
-config :jirex,
+config :bloc,
   base_url: "https://billcom.atlassian.net",
   username: "evan.sorenson@hq.bill.com",
   password: System.get_env("JIRA_TOKEN")
