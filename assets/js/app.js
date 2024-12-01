@@ -21,7 +21,7 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import { Sortable, Droppable, Plugins } from "@shopify/draggable";
+import { Sortable } from "../vendor/sortable.js";
 import Hooks from "./hooks";
 
 window.dragStartJira = (event) => {
