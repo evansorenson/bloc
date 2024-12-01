@@ -15,7 +15,7 @@ alias Bloc.Accounts.User
 %{
   email: "evan.sorenson.9@gmail.com",
   role: :admin,
-  password: "Bloc12345678"
+  password: "fm.TrMyreEpdNhthaC4o"
 }
 |> then(&User.registration_changeset(%User{}, &1))
 |> Bloc.Repo.insert!()

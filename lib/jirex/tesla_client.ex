@@ -13,11 +13,11 @@ defmodule Jirex.TeslaClient do
   # adapter(Jirex.Adapter)
 
   def new(opts \\ %{}) do
-    base_url = Application.fetch_env!(:jirex, :base_url)
+    base_url = Application.fetch_env!(:bloc, :base_url)
 
     basic_auth = %{
-      password: Application.fetch_env!(:jirex, :password),
-      username: Application.fetch_env!(:jirex, :username)
+      password: Application.fetch_env!(:bloc, :password),
+      username: Application.fetch_env!(:bloc, :username)
     }
 
     Tesla.client(
