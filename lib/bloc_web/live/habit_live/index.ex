@@ -126,7 +126,7 @@ defmodule BlocWeb.HabitLive.Index do
       habit_days =
         start_of_week
         |> Date.range(end_of_week)
-        |> Enum.map(fn date -> Map.get(habit_days, {habit.id, date}, %{completed?: false}) end)
+        |> Enum.map(fn date -> Map.get(habit_days, {habit.id, date}, %{completed?: false, date: date}) end)
 
       {habit, habit_days}
     end)

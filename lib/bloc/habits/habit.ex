@@ -11,12 +11,14 @@ defmodule Bloc.Habits.Habit do
   schema "habits" do
     field :title, :string
     field :notes, :string
-    field :period_type, Ecto.Enum, values: [:daily, :weekly, :monthly]
+    field :period_type, Ecto.Enum, values: [:daily, :monthly]
     field :deleted?, :utc_datetime, default: nil
     field :start_time, :time
     field :end_time, :time
     field :streak, :integer, default: 0
     field :required_count, :integer, default: 1
+    field :days, {:array, :integer}, default: [1, 2, 3, 4, 5, 6, 7]
+
     has_many :habit_days, Bloc.Habits.HabitDay
 
     has_many :tasks, Task, on_delete: :delete_all
@@ -26,10 +28,10 @@ defmodule Bloc.Habits.Habit do
   end
 
   @create_required_fields ~w(title period_type user_id)a
-  @optional_fields ~w(notes start_time end_time required_count)a
+  @optional_fields ~w(notes start_time end_time required_count days)a
   @all_fields @create_required_fields ++ @optional_fields
 
-  @update_allowed ~w(title notes period_type deleted? streak required_count)a
+  @update_allowed ~w(title notes period_type deleted? streak required_count days)a
 
   @doc false
   def changeset(habit, attrs) do

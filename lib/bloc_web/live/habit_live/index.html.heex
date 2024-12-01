@@ -129,17 +129,21 @@
             <div class="w-48 text-sm text-gray-900 truncate"><%= habit.title %></div>
             <div class="flex-1 grid grid-cols-7 gap-2 justify-items-center">
               <%= for habit_day <- habit_days do %>
-                <div class={[
-                  "h-8 w-8 rounded-lg border-2 flex items-center justify-center",
-                  habit_day.completed? && "bg-indigo-100 border-indigo-500",
-                  !habit_day.completed? && "border-gray-200"
-                ]}>
-                <%= if Map.get(habit_day, :required_count, 1) > 1 do %>
-                  <span class="text-xs font-medium text-indigo-600">
-                    <%= habit_day.completed_count %>/<%= habit.required_count %>
-                  </span>
+                <%= if Date.day_of_week(habit_day.date) in (habit.days || [1, 2, 3, 4, 5, 6, 7]) do %>
+                  <div class={[
+                    "h-8 w-8 rounded-lg border-2 flex items-center justify-center",
+                    habit_day.completed? && "bg-indigo-100 border-indigo-500",
+                    !habit_day.completed? && "border-gray-200"
+                  ]}>
+                    <%= if Map.get(habit_day, :required_count, 1) > 1 do %>
+                      <span class="text-xs font-medium text-indigo-600">
+                        <%= habit_day.completed_count %>/<%= habit.required_count %>
+                      </span>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="h-8 w-8"></div>
                 <% end %>
-                </div>
               <% end %>
             </div>
           </div>

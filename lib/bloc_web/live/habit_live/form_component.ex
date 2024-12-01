@@ -68,7 +68,6 @@ defmodule BlocWeb.HabitLive.FormComponent do
                 prompt="Choose frequency"
                 options={[
                   {"🌅 Daily", :daily},
-                  {"📅 Weekly", :weekly},
                   {"🗓️ Monthly", :monthly}
                 ]}
                 class="rounded-lg"
@@ -93,6 +92,82 @@ defmodule BlocWeb.HabitLive.FormComponent do
               min="1"
               class="rounded-lg"
             />
+          </div>
+
+          <div :if={@form[:period_type].value != :monthly} class="mt-4">
+            <label class="block text-sm font-medium text-gray-700">Days of Week</label>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="1"
+                  checked={1 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Mon</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="2"
+                  checked={2 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Tue</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="3"
+                  checked={3 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Wed</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="4"
+                  checked={4 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Thu</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="5"
+                  checked={5 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Fri</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="6"
+                  checked={6 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Sat</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  name="habit[days][]"
+                  value="7"
+                  checked={7 in (@form[:days].value || [])}
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="ml-2 text-sm text-gray-600">Sun</span>
+              </label>
+            </div>
           </div>
         </div>
 

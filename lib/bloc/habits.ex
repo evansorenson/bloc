@@ -82,9 +82,31 @@ defmodule Bloc.Habits do
     tasks =
       today
       |> Date.range(next_year)
+      |> Enum.filter(fn date ->
+        Date.day_of_week(date) in (habit.days || [1, 2, 3, 4, 5, 6, 7])
+      end)
       |> Enum.flat_map(fn date ->
         Enum.map(1..habit.required_count, fn _ -> task_for_habit_day(habit, date) end)
       end)
+      |> Enum.map(&Repo.insert!/1)
+
+    Logger.info("Inserted #{length(tasks)} tasks for habit #{habit.id}")
+
+    :ok
+  end
+
+  def insert_tasks_for_habit(%Habit{period_type: :monthly} = habit) do
+    # insert on the first day of the month for the year
+    today = Date.utc_today()
+    next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
+
+    tasks =
+      today
+      |> Date.range(next_year)
+      |> Enum.filter(fn date ->
+        date.day == 1
+      end)
+      |> Enum.map(&task_for_habit_day(habit, &1))
       |> Enum.map(&Repo.insert!/1)
 
     Logger.info("Inserted #{length(tasks)} tasks for habit #{habit.id}")
