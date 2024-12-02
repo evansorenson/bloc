@@ -80,7 +80,7 @@ defmodule Bloc.Habits do
 
   @spec insert_tasks_for_habit(Habit.t(), Scope.t()) :: Task.t()
   def insert_tasks_for_habit(%Habit{period_type: :daily} = habit, %Scope{} = scope) do
-    today = Date.utc_today()
+    today = TimeUtils.today(scope)
     next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
@@ -137,9 +137,9 @@ defmodule Bloc.Habits do
     :ok
   end
 
-  def insert_tasks_for_habit(%Habit{period_type: :monthly} = habit) do
+  def insert_tasks_for_habit(%Habit{period_type: :monthly} = habit, %Scope{} = scope) do
     # insert on the first day of the month for the year
-    today = Date.utc_today()
+    today = TimeUtils.today(scope)
     next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
 
     tasks =
@@ -148,7 +148,7 @@ defmodule Bloc.Habits do
       |> Enum.filter(fn date ->
         date.day == 1
       end)
-      |> Enum.map(&task_for_habit_day(habit, &1))
+      |> Enum.map(&task_for_habit_day(habit, &1, scope))
       |> Enum.map(&Repo.insert!/1)
 
     Logger.info("Inserted #{length(tasks)} tasks for habit #{habit.id}")
@@ -158,16 +158,16 @@ defmodule Bloc.Habits do
 
   def insert_tasks_for_habit(_habit), do: {:ok, []}
 
-  @spec task_for_habit_day(Habit.t(), Date.t()) :: Changeset.t()
-  def task_for_habit_day(%Habit{} = habit, day) do
+  @spec task_for_habit_day(Habit.t(), Date.t(), Scope.t()) :: Changeset.t()
+  def task_for_habit_day(%Habit{} = habit, %Date{} = day, %Scope{} = scope) do
     blocks =
       if habit.start_time && habit.end_time do
         [
           %{
             title: habit.title,
             user_id: habit.user_id,
-            start_time: DateTime.new!(day, habit.start_time),
-            end_time: DateTime.new!(day, habit.end_time)
+            start_time: DateTime.new!(day, habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            end_time: DateTime.new!(day, habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC")
           }
         ]
       else
@@ -227,7 +227,7 @@ defmodule Bloc.Habits do
         today
         |> Date.range(next_year)
         |> Enum.flat_map(fn date ->
-          Enum.map(1..diff_required_count, fn _ -> task_for_habit_day(habit, date) end)
+          Enum.map(1..diff_required_count, fn _ -> task_for_habit_day(habit, date, scope) end)
         end)
         |> Enum.map(&Repo.insert!/1)
 

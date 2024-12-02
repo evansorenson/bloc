@@ -7,7 +7,10 @@ defmodule BlocWeb.RewardLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :rewards, Rewards.list_rewards(socket.assigns.scope))}
+    socket
+    |> stream(:rewards, Rewards.list_rewards(socket.assigns.scope))
+    |> stream(:reward_history, Rewards.list_reward_history(socket.assigns.scope))
+    |> Tuples.ok()
   end
 
   @impl true
@@ -36,5 +39,17 @@ defmodule BlocWeb.RewardLive.Index do
     socket
     |> assign(:page_title, "Listing Rewards")
     |> assign(:reward, nil)
+  end
+
+  @impl true
+  def handle_event("redeem_reward", %{"id" => id}, socket) do
+    case Rewards.redeem_reward(id) do
+      {:ok, _reward_history} ->
+        reward_history = Rewards.list_reward_history(socket.assigns.scope)
+        {:noreply, assign(socket, :reward_history, reward_history)}
+
+      {:error, _changeset} ->
+        {:noreply, socket}
+    end
   end
 end

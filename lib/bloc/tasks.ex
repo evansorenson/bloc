@@ -238,12 +238,10 @@ defmodule Bloc.Tasks do
     Repo.transaction(fn ->
       with {:ok, task} <- task |> Task.update_changeset(%{complete?: complete_timestamp}) |> Repo.update(),
            {:ok, _habit_day} <-
-             Habits.increment_habit_day_and_calculate_streak(task.habit, scope, task.due_date, decrement?: not complete?) do
-        if complete? do
-          reward = Rewards.select_random_reward(scope)
-          broadcast_event(scope, %TaskCompleted{task: task, reward: reward})
-        end
-
+             Habits.increment_habit_day_and_calculate_streak(task.habit, scope, task.due_date, decrement?: not complete?),
+           {:ok, reward} <- (if complete?, do: Rewards.select_random_reward(scope), else: {:ok, nil}),
+           {:ok, _reward_history} <- Rewards.create_reward_history(reward, task, scope) do
+        broadcast_event(scope, %TaskCompleted{task: task, reward: reward})
         task
       else
         error ->

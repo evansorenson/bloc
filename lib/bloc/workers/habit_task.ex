@@ -7,6 +7,7 @@ defmodule Bloc.Workers.HabitTask do
   alias Bloc.Habits
   alias Bloc.Habits.Habit
   alias Bloc.Repo
+  alias Bloc.Scope
   require Logger
 
   @impl true
@@ -20,7 +21,8 @@ defmodule Bloc.Workers.HabitTask do
         where: fragment("? = ANY(?)", ^day_of_week, h.days)
       )
       |> Repo.all()
-      |> Enum.map(&Habits.task_for_habit_day(&1, today))
+      # todo pass scope from user in query
+      |> Enum.map(&Habits.task_for_habit_day(&1, today, %Scope{}))
       |> Enum.map(&Repo.insert!/1)
 
 
