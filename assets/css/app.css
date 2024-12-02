@@ -5,12 +5,14 @@
 /* This file is for your main application CSS */
 
 .drop-preview {
-  @apply border-2 border-dashed border-indigo-300 bg-indigo-50 rounded-lg my-2;
-  height: 64px;
+  height: 2px;
+  background-color: #3b82f6;
+  margin: 8px 0;
+  transition: all 0.2s ease;
 }
 
 .task-list-dragging {
-  @apply bg-gray-50;
+  background-color: #f9fafb;
 }
 
 .dropzone {

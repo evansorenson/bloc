@@ -96,7 +96,8 @@ defmodule BlocWeb.TaskLive.JiraComponent do
                 data-jira-key={task.key}
                 data-jira-summary={task.fields["summary"]}
                 ondragstart="dragStartJira(event)"
-                class="relative group flex items-start p-2.5 hover:bg-gray-50 rounded">
+                class="relative group flex items-start p-2.5 hover:bg-gray-50 rounded"
+              >
                 <div class="flex-grow min-w-0">
                   <div class="flex items-center gap-2 mb-1.5">
                     <img src={task.fields["issuetype"]["iconUrl"]} class="w-4 h-4" />

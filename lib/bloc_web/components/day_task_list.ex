@@ -26,7 +26,14 @@ defmodule BlocWeb.DayTaskList do
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto">
+      <div
+        id="day-tasks-container"
+        class="flex-1 overflow-y-auto"
+        ondragover="handleJiraTaskDragOver(event)"
+        ondragleave="handleJiraTaskDragLeave(event)"
+        ondrop="handleJiraTaskDrop(event)"
+        phx-hook="JiraTaskDrop"
+      >
         <div id="day_tasks_list" class="p-4 space-y-2" phx-update="stream">
           <%= for {id, task} <- @streams.day_tasks do %>
             <.live_component
@@ -96,11 +103,14 @@ defmodule BlocWeb.DayTaskList do
 
   @impl true
   def handle_event("create_jira_task", %{"key" => jira_key, "summary" => summary}, socket) do
+    bill_task_list = Tasks.get_task_list_by(socket.assigns.scope, title: "BILL")
+
     task_params = %{
       "title" => summary,
       "due_date" => socket.assigns.day,
       "user_id" => socket.assigns.scope.current_user_id,
-      "jira_key" => jira_key
+      "jira_key" => jira_key,
+      "task_list_id" => bill_task_list && bill_task_list.id
     }
 
     case Tasks.create_task(task_params, socket.assigns.scope) do

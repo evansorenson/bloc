@@ -3,21 +3,22 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   use BlocWeb, :live_component
 
   alias Bloc.Repo
-  alias Bloc.Scope
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
 
-  attr(:task, Task, required: true)
-  attr(:subtask, Task, default: nil)
+  # attr(:task, Task, required: true)
+  # attr(:subtask, Task, default: nil)
 
-  attr(:scope, Scope, required: true)
+  # attr(:scope, Scope, required: true)
   attr(:static?, :boolean, default: false)
 
-  # @impl true
-  # def mount(socket) do
-  #   Tuples.ok(socket)
-  #   # |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
-  # end
+  @impl true
+  def mount(socket) do
+    socket
+    |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
+    |> assign(:static?, socket.assigns[:static?] || false)
+    |> Tuples.ok()
+  end
 
   @impl true
   def render(assigns) do
@@ -211,7 +212,6 @@ defmodule BlocWeb.TaskLive.TaskComponent do
      |> assign(assigns)
      |> assign(:count, length(task.subtasks))
      |> assign(:subtask, nil)
-     |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
      |> stream(:subtasks, task.subtasks)}
   end
 

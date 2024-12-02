@@ -239,7 +239,7 @@ defmodule Bloc.Tasks do
       with {:ok, task} <- task |> Task.update_changeset(%{complete?: complete_timestamp}) |> Repo.update(),
            {:ok, _habit} <-
              Habits.increment_habit_day_and_calculate_streak(task.habit, scope, task.due_date, decrement?: not complete?),
-           reward <- (if complete?, do: Rewards.select_random_reward(scope), else: nil),
+           reward = if(complete?, do: Rewards.select_random_reward(scope)),
            {:ok, _reward_history} <- Rewards.create_reward_history(reward, task, scope) do
         broadcast_event(scope, %TaskCompleted{task: task, reward: reward})
         task
@@ -308,6 +308,10 @@ defmodule Bloc.Tasks do
     |> Query.order_by_position()
     |> Query.preloads(tasks: [:subtasks, :habit])
     |> Repo.all()
+  end
+
+  def get_task_list_by(%Scope{current_user_id: user_id}, opts \\ []) do
+    Repo.get_by(TaskList, Keyword.put(opts, :user_id, user_id))
   end
 
   @doc """

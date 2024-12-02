@@ -5,12 +5,12 @@ defmodule Bloc.Habits do
 
   import Ecto.Query
 
+  alias Bloc.Blocks.Block
   alias Bloc.Habits.Habit
   alias Bloc.Habits.HabitDay
   alias Bloc.Repo
   alias Bloc.Scope
   alias Bloc.Tasks.Task
-  alias Bloc.Blocks.Block
 
   require Logger
 
@@ -65,7 +65,6 @@ defmodule Bloc.Habits do
 
   """
   def create_habit(attrs \\ %{}, %Scope{} = scope) do
-
     Repo.transaction(fn ->
       with {:ok, habit} <- %Habit{} |> Habit.changeset(attrs) |> Repo.insert(),
            :ok <- insert_tasks_for_habit(habit, scope) do
@@ -76,13 +75,11 @@ defmodule Bloc.Habits do
     end)
   end
 
-
-
   @spec insert_tasks_for_habit(Habit.t(), Scope.t()) :: Task.t()
   def insert_tasks_for_habit(%Habit{period_type: :daily} = habit, %Scope{} = scope) do
     today = TimeUtils.today(scope)
     next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    now = DateTime.truncate(DateTime.utc_now(), :second)
 
     # Get all dates that match the habit's days
     dates =
@@ -94,8 +91,7 @@ defmodule Bloc.Habits do
 
     # Build task entries for bulk insert
     task_entries =
-      dates
-      |> Enum.flat_map(fn date ->
+      Enum.flat_map(dates, fn date ->
         Enum.map(1..habit.required_count, fn _ ->
           %{
             id: Ecto.UUID.generate(),
@@ -115,15 +111,15 @@ defmodule Bloc.Habits do
     # If habit has time blocks, create block entries
     if habit.start_time && habit.end_time do
       block_entries =
-        tasks
-        |> Enum.map(fn task ->
+        Enum.map(tasks, fn task ->
           %{
             id: Ecto.UUID.generate(),
             title: habit.title,
             user_id: habit.user_id,
             task_id: task.id,
-            start_time: DateTime.new!(task.due_date, habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
-            end_time: DateTime.new!(task.due_date, habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            start_time:
+              task.due_date |> DateTime.new!(habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            end_time: task.due_date |> DateTime.new!(habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
             inserted_at: now,
             updated_at: now
           }
@@ -166,8 +162,8 @@ defmodule Bloc.Habits do
           %{
             title: habit.title,
             user_id: habit.user_id,
-            start_time: DateTime.new!(day, habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
-            end_time: DateTime.new!(day, habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC")
+            start_time: day |> DateTime.new!(habit.start_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC"),
+            end_time: day |> DateTime.new!(habit.end_time, scope.timezone) |> DateTime.shift_zone!("Etc/UTC")
           }
         ]
       else
@@ -202,7 +198,6 @@ defmodule Bloc.Habits do
       new_required_count = String.to_integer(attrs["required_count"] || attrs[:required_count])
 
       diff_required_count = new_required_count - old_required_count
-      IO.inspect(diff_required_count, label: "diff_required_count")
 
       # Update the habit
       with {:ok, updated_habit} <- habit |> Habit.update_changeset(attrs) |> Repo.update() do
