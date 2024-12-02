@@ -652,7 +652,7 @@ defmodule BlocWeb.CoreComponents do
           <.icon
             id={"dropdown-list-chevron-left-#{@id}"}
             name="hero-chevron-left"
-            class="transition-all transform duration-300"
+            class="transition-all transform duration-300 -rotate-90"
           />
         </button>
       </div>
@@ -661,7 +661,7 @@ defmodule BlocWeb.CoreComponents do
         <%= render_slot(@new_item) %>
       </div>
 
-      <div id={"dropdown-items-#{@id}"} class="hidden">
+      <div id={"dropdown-items-#{@id}"} class="">
         <%= render_slot(@items) %>
       </div>
     </div>
