@@ -62,6 +62,7 @@ defmodule Bloc.Rewards do
       "received_at" => DateTime.utc_now()
     }
     |> then(&RewardHistory.changeset(%RewardHistory{}, &1))
+    |> dbg()
     |> Repo.insert()
   end
 
