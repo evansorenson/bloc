@@ -50,12 +50,17 @@ defmodule Bloc.Tasks do
       [%Task{complete?: ~U[2024-03-25 17:34:00Z]}, ...]
 
   """
-  def list_tasks(%Scope{current_user_id: user_id}, opts \\ []) do
+  def list_tasks(%Scope{} = scope, opts \\ []) do
+    from(t in Task)
+    |> Query.for_scope(scope)
+    |> do_list_tasks(opts)
+  end
+
+  defp do_list_tasks(query, opts) do
     defaults = [deleted?: false, completed?: false, preload: [:habit, :subtasks]]
     opts = Keyword.merge(defaults, opts)
 
-    from(t in Task)
-    |> Query.for_user(user_id)
+    query
     |> deleted(opts[:deleted?])
     |> completed(opts[:completed?])
     |> between_dates(opts[:between_dates])
@@ -64,6 +69,12 @@ defmodule Bloc.Tasks do
     |> filter_by_habit_id(opts[:habit_id])
     |> Query.preloads(opts[:preload])
     |> Repo.all()
+  end
+
+  def all_tasks_query(query, %Scope{} = scope, opts \\ []) do
+    query
+    |> Query.for_scope(scope)
+    |> do_list_tasks(opts)
   end
 
   defp filter_by_task_list_id(query, nil), do: query
@@ -431,6 +442,14 @@ defmodule Bloc.Tasks do
   end
 
   defp filter_by_date(query, nil), do: query
+
+  defp filter_by_date(query, {:lte, date}) do
+    where(query, [t], t.due_date <= ^date)
+  end
+
+  defp filter_by_date(query, {:gte, date}) do
+    where(query, [t], t.due_date >= ^date)
+  end
 
   defp filter_by_date(query, date) do
     where(query, [t], t.due_date == ^date)

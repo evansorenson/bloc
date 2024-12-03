@@ -2,6 +2,8 @@ defmodule BlocWeb.DayTaskList do
   @moduledoc false
   use BlocWeb, :live_component
 
+  import Ecto.Query
+
   alias Bloc.Events.TaskCompleted
   alias Bloc.Events.TaskCreated
   alias Bloc.Events.TaskDeleted
@@ -89,9 +91,12 @@ defmodule BlocWeb.DayTaskList do
     Logger.debug("day task list update", day: assigns.day)
 
     tasks =
-      Tasks.list_tasks(assigns.scope,
-        date: assigns.day,
-        order_by: [{:desc, :complete?}, {:asc, :due_date}]
+      Tasks.all_tasks_query(
+        from(t in Bloc.Tasks.Task,
+          where:
+            (is_nil(t.habit_id) and t.due_date <= ^assigns.day) or (not is_nil(t.habit_id) and t.due_date == ^assigns.day)
+        ),
+        assigns.scope
       )
 
     {:ok,

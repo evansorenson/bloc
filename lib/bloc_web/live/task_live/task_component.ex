@@ -104,7 +104,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
               <div class="mt-1 flex items-center gap-2">
                 <%= if @task.due_date do %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
-                    <%= case Date.diff(@task.due_date, Date.utc_today()) do %>
+                    <%= case Date.diff(@task.due_date, TimeUtils.today(@scope)) do %>
                       <% 0 -> %>
                         <.icon name="hero-sun" class="h-3.5 w-3.5 text-amber-500" />
                         <span class="text-amber-700">Today</span>
