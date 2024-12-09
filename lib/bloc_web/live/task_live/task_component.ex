@@ -48,10 +48,10 @@ defmodule BlocWeb.TaskLive.TaskComponent do
               aria-describedby="tasks-description"
               name="tasks"
               type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-200"
               phx-click="complete"
               checked={@task.complete?}
-              disabled={is_nil(@task.id)}
+              disabled={is_nil(@task.id) or (is_nil(@task.parent_id) and Enum.any?(@task.subtasks, &is_nil(&1.complete?)))}
               phx-target={@myself}
             />
           </div>
