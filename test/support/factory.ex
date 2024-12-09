@@ -4,6 +4,7 @@ defmodule Bloc.Factory do
   use ExMachina.Ecto, repo: Bloc.Repo
 
   alias Bloc.Accounts.User
+  alias Bloc.Repo
 
   def user(_context) do
     {:ok, user: insert(:user)}
@@ -34,7 +35,7 @@ defmodule Bloc.Factory do
   end
 
   def habit(%{user: user}) do
-    {:ok, habit: insert(:habit, user: user)}
+    {:ok, habit: insert(:habit, user: user) |> Repo.preload([:user, :subhabits])}
   end
 
   def habit_factory do

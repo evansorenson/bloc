@@ -103,12 +103,12 @@ defmodule BlocWeb.CalendarComponent do
               <div class="w-14 bg-white flex-none ring-1 ring-gray-100"></div>
               <div id="day-grid" class="grid flex-auto grid-cols-1 grid-rows-1">
                 <div
-                  style="grid-template-rows: repeat(48, minmax(2.0rem, 1fr));"
+                  style="grid-template-rows: repeat(36, minmax(2.0rem, 1fr));"
                   class="col-start-1 col-end-2 row-start-1
                   grid divide-y divide-gray-100"
                 >
                   <div class="row-end-1 h-7"></div>
-                  <%= for hour <- ["12AM", "1AM", "2AM", "3AM", "4AM", "5AM", "6AM", "7AM", "8AM", "9AM", "10AM", "11AM", "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM", "7PM", "8PM", "9PM", "10PM", "11PM"] do %>
+                  <%= for hour <- ["6AM", "7AM", "8AM", "9AM", "10AM", "11AM", "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM", "7PM", "8PM", "9PM", "10PM", "11PM"] do %>
                     <div>
                       <div class="-ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
                         <%= hour %>
@@ -124,8 +124,8 @@ defmodule BlocWeb.CalendarComponent do
                   id="window-list"
                 >
                   <li class="static row-span-1" />
-                  <%!-- Dropzones - 15 minute windows for 24 hours --%>
-                  <%= for window <- 1..(24 * 4) do %>
+                  <%!-- Dropzones - 15 minute windows for 18 hours --%>
+                  <%= for window <- 1..(18 * 4) do %>
                     <li
                       class="dropzone relative flex bg-none row-span-3"
                       id={"block-#{window}"}
@@ -321,7 +321,7 @@ defmodule BlocWeb.CalendarComponent do
 
   defp window_to_date_time(%Scope{timezone: timezone}, window, day) do
     window = window - 1
-    time_from_minutes = Time.from_seconds_after_midnight(window * 15 * 60)
+    time_from_minutes = Time.from_seconds_after_midnight((window * 15 + 360) * 60)
 
     day
     |> DateTime.new!(time_from_minutes, timezone)

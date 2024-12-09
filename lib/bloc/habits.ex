@@ -27,6 +27,7 @@ defmodule Bloc.Habits do
     Habit
     |> Bloc.Query.for_scope(scope)
     |> by_period_type(opts[:period_type])
+    |> preload(:subhabits)
     |> Repo.all()
   end
 
@@ -64,19 +65,45 @@ defmodule Bloc.Habits do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_habit(attrs \\ %{}, %Scope{} = scope) do
-    Repo.transaction(fn ->
-      with {:ok, habit} <- %Habit{} |> Habit.changeset(attrs) |> Repo.insert(),
-           :ok <- insert_tasks_for_habit(habit, scope) do
-        habit
+  def create_habit(attrs, scope) do
+    subhabits = Map.get(attrs, "subhabits", [])
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:habit, Habit.changeset(attrs))
+    |> Ecto.Multi.run(:subhabits, fn repo, %{habit: habit} ->
+      results =
+        Enum.map(subhabits, fn subhabit_attrs ->
+          subhabit_attrs
+          |> Map.merge(%{
+            "parent_id" => habit.id,
+            "user_id" => habit.user_id,
+            "period_type" => habit.period_type,
+            "days" => habit.days
+          })
+          |> Habit.changeset()
+          |> repo.insert()
+        end)
+
+      if Enum.any?(results, fn {status, _} -> status == :error end) do
+        {:error, "Failed to create sub-habits"}
       else
-        {:error, changeset} -> Repo.rollback(changeset)
+        {:ok, Enum.map(results, fn {_status, subhabit} -> subhabit end)}
       end
     end)
+    |> Ecto.Multi.run(:tasks, fn _repo, %{habit: habit, subhabits: subhabits} ->
+      insert_tasks_for_habit(habit, subhabits, scope)
+
+      {:ok, :complete}
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{habit: habit}} -> {:ok, habit}
+      {:error, _failed_operation, failed_value, _changes} -> {:error, failed_value}
+    end
   end
 
   @spec insert_tasks_for_habit(Habit.t(), Scope.t()) :: Task.t()
-  def insert_tasks_for_habit(%Habit{period_type: :daily} = habit, %Scope{} = scope) do
+  def insert_tasks_for_habit(%Habit{period_type: :daily} = habit, subhabits, %Scope{} = scope) do
     today = TimeUtils.today(scope)
     next_year = Date.new!(today.year + 1, today.month, today.day, today.calendar)
     now = DateTime.truncate(DateTime.utc_now(), :second)
@@ -92,9 +119,10 @@ defmodule Bloc.Habits do
     # Build task entries for bulk insert
     task_entries =
       Enum.flat_map(dates, fn date ->
-        Enum.map(1..habit.required_count, fn _ ->
-          %{
-            id: Ecto.UUID.generate(),
+        1..habit.required_count
+        |> Enum.flat_map(fn _ ->
+          parent_task = %{
+            id: UUIDv7.generate(),
             title: habit.title,
             habit_id: habit.id,
             user_id: habit.user_id,
@@ -102,6 +130,19 @@ defmodule Bloc.Habits do
             inserted_at: now,
             updated_at: now
           }
+
+          subtasks =
+            Enum.map(subhabits, fn %Habit{} = subhabit ->
+              Map.merge(parent_task, %{
+                id: UUIDv7.generate(),
+                title: subhabit.title,
+                habit_id: subhabit.id,
+                user_id: subhabit.user_id,
+                parent_id: parent_task.id
+              })
+            end)
+
+          [parent_task | subtasks]
         end)
       end)
 
@@ -327,7 +368,7 @@ defmodule Bloc.Habits do
     |> Repo.update()
   end
 
-  def calculate_streak(_habit), do: {:ok, :no_habit}
+  def calculate_streak(_habit, _scope), do: {:ok, :no_habit}
 
   def get_or_create_habit_day(%Habit{} = habit, date) do
     case Repo.get_by(HabitDay, habit_id: habit.id, date: date) do

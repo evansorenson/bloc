@@ -410,6 +410,7 @@ defmodule BlocWeb.CoreComponents do
       <textarea
         id={@id}
         name={@name}
+        phx-debounce="500"
         class={[
           @class || "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
           "min-h-[6rem] phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
@@ -433,6 +434,7 @@ defmodule BlocWeb.CoreComponents do
         name={@name}
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        phx-debounce="500"
         class={[
           @class || "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
@@ -624,7 +626,6 @@ defmodule BlocWeb.CoreComponents do
             <p class="px-1.5 text-gray-600 bg-gray-200 rounded-full text-sm"><%= @count %></p>
           </div>
         </div>
-
 
         <%= if @delete? do %>
           <button
@@ -876,6 +877,7 @@ defmodule BlocWeb.CoreComponents do
   end
 
   attr(:current_view, :string, required: true)
+
   def task_nav(assigns) do
     ~H"""
     <div class="flex-none w-16 bg-gray-900 flex flex-col items-center py-4 border-l border-gray-800">

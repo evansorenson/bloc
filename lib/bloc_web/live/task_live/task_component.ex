@@ -86,7 +86,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <% else %>
               <div class="text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2">
-                  <%= if @task.habit_id do %>
+                  <%= if is_nil(@task.parent_id) && @task.habit_id do %>
                     <div class="flex-shrink-0">
                       <.icon name="hero-arrow-path" class="h-4 w-4 text-indigo-500" />
                     </div>

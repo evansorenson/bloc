@@ -34,43 +34,74 @@
           </div>
           <ul phx-update="stream" id={"#{period}-habits"} role="list" class="divide-y divide-gray-200 bg-white">
             <%= for {id, habit} <- @streams[period] do %>
-              <li id={id} class="group hover:bg-gray-50 transition-colors">
-                <div class="px-6 py-5">
-                  <div class="flex items-center justify-between">
-                    <div class="flex min-w-0 gap-x-4">
-                      <div class="min-w-0 flex-auto">
-                        <div class="flex items-center gap-2">
-                          <p class="text-sm font-medium text-gray-900 truncate"><%= habit.title %></p>
-                          <%= if habit.streak > 0 do %>
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                              <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
-                              <%= habit.streak %>
-                            </span>
+              <%= if is_nil(habit.parent_id) do %>
+                <li id={id} class="group">
+                  <div class="px-6 py-5 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between">
+                      <div class="flex min-w-0 gap-x-4">
+                        <div class="min-w-0 flex-auto">
+                          <div class="flex items-center gap-2">
+                            <p class="text-sm font-medium text-gray-900 truncate"><%= habit.title %></p>
+                            <%= if habit.streak > 0 do %>
+                              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                                <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
+                                <%= habit.streak %>
+                              </span>
+                            <% end %>
+                          </div>
+                          <%= if habit.notes do %>
+                            <p class="mt-2 text-sm text-gray-500 truncate"><%= habit.notes %></p>
                           <% end %>
                         </div>
-                        <%= if habit.notes do %>
-                          <p class="mt-2 text-sm text-gray-500 truncate"><%= habit.notes %></p>
-                        <% end %>
+                      </div>
+                      <div class="flex items-center gap-x-2">
+                        <.link
+                          patch={~p"/habits/#{habit}/edit"}
+                          class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          Edit
+                        </.link>
+                        <button
+                          phx-click="confirm_delete"
+                          phx-value-id={habit.id}
+                          class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-                    <div class="flex items-center gap-x-2">
-                      <.link
-                        patch={~p"/habits/#{habit}/edit"}
-                        class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        Edit
-                      </.link>
-                      <button
-                        phx-click="confirm_delete"
-                        phx-value-id={habit.id}
-                        class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
-                </div>
-              </li>
+
+                  <%= if habit.subhabits && length(habit.subhabits) > 0 do %>
+                    <ul class="divide-y divide-gray-100 pl-8 border-l border-gray-100 ml-8">
+                      <%= for subhabit <- habit.subhabits do %>
+                        <li id={"#{id}-sub-#{subhabit.id}"} class="group">
+                          <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center justify-between">
+                              <div class="flex min-w-0 gap-x-4">
+                                <div class="min-w-0 flex-auto">
+                                  <div class="flex items-center gap-2">
+                                    <.icon name="hero-arrow-small-right" class="h-4 w-4 text-gray-400" />
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                      <%= subhabit.title %>
+                                    </p>
+                                    <%= if subhabit.streak > 0 do %>
+                                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                                        <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
+                                        <%= subhabit.streak %>
+                                      </span>
+                                    <% end %>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      <% end %>
+                    </ul>
+                  <% end %>
+                </li>
+              <% end %>
             <% end %>
           </ul>
         </div>

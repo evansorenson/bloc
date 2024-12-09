@@ -53,6 +53,7 @@ defmodule Bloc.Tasks.Task do
     |> cast_assoc(:blocks)
     |> validate_required(@required_fields)
     |> validate_length(:title, min: 1, max: 512)
+
     # |> require_task_list_or_parent()
   end
 
