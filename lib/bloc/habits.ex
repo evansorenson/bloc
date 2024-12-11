@@ -119,15 +119,15 @@ defmodule Bloc.Habits do
     # Build task entries for bulk insert
     task_entries =
       Enum.flat_map(dates, fn date ->
-        1..habit.required_count
-        |> Enum.flat_map(fn _ ->
+        Enum.flat_map(1..habit.required_count, fn _ ->
           parent_task = %{
             id: UUIDv7.generate(),
             title: habit.title,
             habit_id: habit.id,
             user_id: habit.user_id,
             due_date: date,
-            inserted_at: now
+            inserted_at: now,
+            updated_at: now
           }
 
           subtasks =
@@ -196,7 +196,6 @@ defmodule Bloc.Habits do
 
   @spec task_for_habit_day(Habit.t(), Date.t(), Scope.t()) :: Changeset.t()
   def task_for_habit_day(%Habit{} = habit, %Date{} = day, %Scope{} = scope) do
-
     blocks =
       if habit.start_time && habit.end_time do
         [

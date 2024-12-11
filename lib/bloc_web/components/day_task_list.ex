@@ -20,11 +20,23 @@ defmodule BlocWeb.DayTaskList do
     ~H"""
     <div class="h-full bg-white flex flex-col border-r border-gray-200">
       <div class="flex-none px-4 py-3 border-b border-gray-200">
-        <div class="flex items-baseline">
-          <span class="text-base font-medium text-gray-900">
-            <%= Calendar.strftime(@day, "%A") %>
-          </span>
-          <span class="ml-2 text-sm text-gray-500"><%= Calendar.strftime(@day, "%B %d") %></span>
+        <div class="flex items-center justify-between">
+          <button phx-click="prev_day" phx-target={@myself} class="p-1 rounded hover:bg-gray-100">
+            <.icon name="hero-chevron-left" class="h-5 w-5" />
+          </button>
+
+          <div class="flex items-baseline">
+            <span class="text-base font-medium text-gray-900">
+              {Calendar.strftime(@day, "%A")}
+            </span>
+            <span class="ml-2 text-sm text-gray-500">
+              {Calendar.strftime(@day, "%B %d")}
+            </span>
+          </div>
+
+          <button phx-click="next_day" phx-target={@myself} class="p-1 rounded hover:bg-gray-100">
+            <.icon name="hero-chevron-right" class="h-5 w-5" />
+          </button>
         </div>
       </div>
 
@@ -90,14 +102,7 @@ defmodule BlocWeb.DayTaskList do
   def update(assigns, socket) do
     Logger.debug("day task list update", day: assigns.day)
 
-    tasks =
-      Tasks.all_tasks_query(
-        from(t in Bloc.Tasks.Task,
-          where:
-            (is_nil(t.habit_id) and t.due_date <= ^assigns.day) or (not is_nil(t.habit_id) and t.due_date == ^assigns.day)
-        ),
-        assigns.scope
-      )
+    tasks = list_tasks_for_day(assigns.day, assigns.scope)
 
     {:ok,
      socket
@@ -128,5 +133,32 @@ defmodule BlocWeb.DayTaskList do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, put_flash(socket, :error, "Error creating task: #{inspect(changeset.errors)}")}
     end
+  end
+
+  def handle_event("prev_day", _, socket) do
+    new_day = Date.add(socket.assigns.day, -1)
+
+    {:noreply, socket |> assign(day: new_day) |> stream(:day_tasks, [], reset: true) |> send_day_changed()}
+  end
+
+  def handle_event("next_day", _, socket) do
+    new_day = Date.add(socket.assigns.day, 1)
+
+    {:noreply, socket |> assign(day: new_day) |> stream(:day_tasks, [], reset: true) |> send_day_changed()}
+  end
+
+  defp send_day_changed(socket) do
+    send(self(), {:day_changed, socket.assigns.day})
+    socket
+  end
+
+  defp list_tasks_for_day(day, scope) do
+    Tasks.all_tasks_query(
+      from(t in Bloc.Tasks.Task,
+        where: is_nil(t.parent_id),
+        where: (is_nil(t.habit_id) and t.due_date <= ^day) or (not is_nil(t.habit_id) and t.due_date == ^day)
+      ),
+      scope
+    )
   end
 end

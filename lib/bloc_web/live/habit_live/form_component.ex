@@ -273,8 +273,7 @@ defmodule BlocWeb.HabitLive.FormComponent do
   end
 
   def handle_event("add_subhabit", _params, socket) do
-    subhabits = IO.inspect(socket.assigns.subhabits ++ [%{"title" => ""}])
-    {:noreply, assign(socket, :subhabits, subhabits)}
+    {:noreply, assign(socket, :subhabits, socket.assigns.subhabits ++ [%{"title" => ""}])}
   end
 
   def handle_event("remove_subhabit", %{"index" => index}, socket) do

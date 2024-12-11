@@ -5,6 +5,10 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   alias Bloc.Repo
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
+  alias Bloc.Events.TaskDeleted
+  alias Bloc.Events.TaskCompleted
+
+  require Logger
 
   # attr(:task, Task, required: true)
   # attr(:subtask, Task, default: nil)
@@ -15,7 +19,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @impl true
   def mount(socket) do
     socket
-    |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
+    # |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
     |> assign(:static?, socket.assigns[:static?] || false)
     |> Tuples.ok()
   end
@@ -51,7 +55,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
               class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-200"
               phx-click="complete"
               checked={@task.complete?}
-              disabled={is_nil(@task.id) or (is_nil(@task.parent_id) and Enum.any?(@task.subtasks, &is_nil(&1.complete?)))}
+              disabled={is_nil(@task.id) or (is_nil(@task.parent_id) and @count != 0)}
               phx-target={@myself}
             />
           </div>
@@ -195,6 +199,17 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   @impl true
+  def update(%{event: %TaskDeleted{task: %{parent_id: parent_id} = task}}, socket) when parent_id == socket.assigns.task.id do
+    Logger.debug("task deleted event - task component", task_id: task.id)
+    {:ok, stream_delete(socket, :subtasks, task) |> assign(:count, socket.assigns.count - 1)}
+  end
+
+  def update(%{event: %TaskCompleted{task: %{parent_id: parent_id} = task}}, socket) when parent_id == socket.assigns.task.id do
+    Logger.debug("task completed event - task component", task_id: task.id)
+
+    {:ok, stream_delete(socket, :subtasks, task) |> assign(:count, socket.assigns.count - 1)}
+  end
+
   def update(%{task: %Task{id: nil} = task} = assigns, socket) do
     changeset = Tasks.change_task(task)
 
