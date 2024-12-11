@@ -66,40 +66,41 @@
   </div>
 
 <!-- Static sidebar for desktop -->
-<div class="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-20 md:bg-[#f5f6f8] border-r border-gray-200">
+<div class="hidden md:fixed md:inset-y-0 md:left-0 md:z-50 md:block md:w-16 bg-white border-r border-gray-100">
   <div class="flex h-full flex-col">
-    <div class="flex h-16 shrink-0 items-center justify-center border-b border-gray-200">
+    <div class="flex h-16 shrink-0 items-center justify-center">
       <img class="h-8 w-auto" src="/images/logo.svg" alt="Bloc" />
     </div>
-    <nav class="mt-8 flex-1">
-      <ul role="list" class="flex flex-col items-center space-y-4">
+    
+    <nav class="flex-1 flex flex-col items-center justify-between py-8">
+      <ul role="list" class="flex flex-col items-center space-y-6">
         <.nav_bar_item
           name="Today"
           navigate={~p"/today"}
           icon="hero-calendar"
           active?={@active_tab == :today}
-          class="text-gray-600 hover:text-gray-900"
+          class="text-gray-500 hover:text-gray-900"
         />
         <.nav_bar_item
           name="Tasks"
           navigate={~p"/tasks"}
           icon="hero-check-circle"
           active?={@active_tab == :tasks}
-          class="text-gray-600 hover:text-gray-900"
+          class="text-gray-500 hover:text-gray-900"
         />
         <.nav_bar_item
           name="Habits"
           navigate={~p"/habits"}
           icon="hero-arrow-path-rounded-square"
           active?={@active_tab == :habits}
-          class="text-gray-600 hover:text-gray-900"
+          class="text-gray-500 hover:text-gray-900"
         />
         <.nav_bar_item
           name="Rewards"
           navigate={~p"/rewards"}
           icon="hero-gift"
           active?={@active_tab == :rewards}
-          class="text-gray-600 hover:text-gray-900"
+          class="text-gray-500 hover:text-gray-900"
         />
       </ul>
     </nav>

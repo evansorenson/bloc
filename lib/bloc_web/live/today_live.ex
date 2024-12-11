@@ -21,26 +21,32 @@ defmodule BlocWeb.TodayLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="w-full h-screen flex overflow-hidden">
-      <div class="flex pr-96">
-        <.live_component
-          id="day_tasks"
-          module={BlocWeb.DayTaskList}
-          day={@current_day}
-          scope={@scope}
-        />
+    <div class="h-screen flex overflow-hidden">
+      <div class="flex-1 flex">
+        <div class="flex-none w-96">
+          <.live_component
+            id="day_tasks"
+            module={BlocWeb.DayTaskList}
+            day={@current_day}
+            scope={@scope}
+          />
+        </div>
 
-        <.live_component
-          id="calendar"
-          module={BlocWeb.CalendarComponent}
-          scope={@scope}
-          day={@current_day}
-        />
-      </div>
+        <div class="flex-none w-64">
+          <.live_component
+            id="calendar"
+            module={BlocWeb.CalendarComponent}
+            scope={@scope}
+            day={@current_day}
+          />
+        </div>
 
-      <div class="flex flex-1 min-w-0">
         <div class="flex-1">
-          <.live_component id="task-lists" module={BlocWeb.TaskLive.TasksComponent} scope={@scope} />
+          <.live_component
+            id="task-lists"
+            module={BlocWeb.TaskLive.TasksComponent}
+            scope={@scope}
+          />
         </div>
       </div>
     </div>
@@ -91,10 +97,7 @@ defmodule BlocWeb.TodayLive do
     if task.parent_id do
       send_update(BlocWeb.TaskLive.TaskComponent, id: "day_tasks-#{task.parent_id}", event: event)
     else
-      send_update(BlocWeb.DayTaskList,
-      id: "day_tasks",
-      event: event
-    )
+      send_update(BlocWeb.DayTaskList, id: "day_tasks", event: event)
     end
 
     {:noreply, assign(socket, reward: Map.get(event, :reward))}

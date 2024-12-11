@@ -64,7 +64,9 @@ defmodule Bloc.Tasks.Task do
   end
 
   def update_changeset(task, attrs) do
-    cast(task, attrs, @update_allowed_fields)
+    task
+    |> cast(attrs, @update_allowed_fields)
+    |> validate_required(@required_fields)
   end
 
   # defp require_task_list_or_parent(changeset) do

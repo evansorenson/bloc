@@ -9,6 +9,7 @@ defmodule BlocWeb.Nav do
   alias BlocWeb.TaskLive.Index, as: TaskLiveIndex
   alias BlocWeb.TaskLive.Show, as: TaskLiveShow
   alias BlocWeb.TodayLive
+  alias BlocWeb.RewardLive.Index, as: RewardLiveIndex
 
   def on_mount(:default, _params, _session, socket) do
     {:cont, attach_hook(socket, :active_tab, :handle_params, &handle_active_tab_params/3)}
@@ -31,6 +32,9 @@ defmodule BlocWeb.Nav do
 
         {TaskLiveShow, _} ->
           :tasks
+
+        {RewardLiveIndex, _} ->
+          :rewards
 
         {_, _} ->
           nil

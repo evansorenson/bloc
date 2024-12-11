@@ -836,8 +836,8 @@ defmodule BlocWeb.CoreComponents do
     """
   end
 
-  defp enabled_class, do: "bg-gray-800/50 hover:bg-gray-800/75"
-  defp disabled_class, do: "hover:bg-gray-800/50"
+  # defp enabled_class, do: "bg-gray-800/50 hover:bg-gray-800/75"
+  # defp disabled_class, do: "hover:bg-gray-800/50"
 
   attr(:name, :string, required: true)
   attr(:icon, :string, required: true)
@@ -851,27 +851,25 @@ defmodule BlocWeb.CoreComponents do
     <li>
       <.link
         navigate={@navigate}
-        class={"nav-bar-item group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold #{if @active?, do: enabled_class(), else: disabled_class()}"}
+        class={[
+          "group flex p-2 rounded-xl transition-all duration-200",
+          if(@active?, do: "bg-gray-100", else: "hover:bg-gray-50")
+        ]}
       >
         <.icon
           name={@icon}
-          class={
-            "h-6 w-6 transition-colors duration-200 #{
-              case @name do
-                "Today" -> if(@active?, do: "text-orange-400", else: "text-orange-400/60 group-hover:text-orange-400")
-                "Tasks" -> if(@active?, do: "text-green-400", else: "text-green-400/60 group-hover:text-green-400")
-                "Habits" -> if(@active?, do: "text-blue-400", else: "text-blue-400/60 group-hover:text-blue-400")
-                "Rewards" -> if(@active?, do: "text-purple-400", else: "text-purple-400/60 group-hover:text-purple-400")
-                _ -> "text-gray-400"
-              end
-            }"
-          }
+          class={[
+            "h-5 w-5 transition-colors duration-200",
+            case @name do
+              "Today" -> if(@active?, do: "text-orange-500", else: "text-orange-400/70 group-hover:text-orange-500")
+              "Tasks" -> if(@active?, do: "text-green-500", else: "text-green-400/70 group-hover:text-green-500")
+              "Habits" -> if(@active?, do: "text-blue-500", else: "text-blue-400/70 group-hover:text-blue-500")
+              "Rewards" -> if(@active?, do: "text-purple-500", else: "text-purple-400/70 group-hover:text-purple-500")
+              _ -> "text-gray-400"
+            end
+          ]}
         />
-        <span class={
-          if(@show_name?, do: "text-sm font-medium transition-colors duration-200", else: "sr-only")
-        }>
-          <%= @name %>
-        </span>
+        <span class="sr-only"><%= @name %></span>
       </.link>
     </li>
     """

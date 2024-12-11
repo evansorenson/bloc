@@ -21,11 +21,18 @@ defmodule Bloc.Tasks.TaskList do
   end
 
   @required_fields ~w(title position color user_id)a
+  @update_fields ~w(title position color)a
 
   @doc false
   def changeset(task_list, attrs) do
     task_list
     |> cast(attrs, @required_fields)
     |> validate_required(@required_fields)
+  end
+
+  def update_changeset(task_list, attrs) do
+    task_list
+    |> cast(attrs, @update_fields)
+    |> validate_required(@update_fields)
   end
 end

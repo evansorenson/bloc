@@ -11,7 +11,7 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
+        {@title}
         <:subtitle>Use this form to manage task_list records in your database.</:subtitle>
       </.header>
 
@@ -72,6 +72,7 @@ defmodule BlocWeb.TaskLive.ListFormComponent do
 
   defp save_task_list(socket, :new_list, task_list_params) do
     task_list_params
+    |> Map.put("user_id", socket.assigns.scope.current_user_id)
     |> Tasks.create_task_list(socket.assigns.scope)
     |> case do
       {:ok, _task_list} ->

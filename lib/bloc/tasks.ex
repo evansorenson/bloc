@@ -358,8 +358,6 @@ defmodule Bloc.Tasks do
 
   """
   def create_task_list(attrs \\ %{}, %Scope{} = scope) do
-    attrs = Map.put(attrs, "user_id", scope.current_user_id)
-
     %TaskList{}
     |> TaskList.changeset(attrs)
     |> Repo.insert()
@@ -387,7 +385,7 @@ defmodule Bloc.Tasks do
   """
   def update_task_list(%TaskList{} = task_list, attrs, %Scope{} = scope) do
     task_list
-    |> TaskList.changeset(attrs)
+    |> TaskList.update_changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, task_list} ->
