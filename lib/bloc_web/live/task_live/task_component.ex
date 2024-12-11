@@ -32,7 +32,6 @@ defmodule BlocWeb.TaskLive.TaskComponent do
       data-id={@task.id}
       data-event="add_block"
       class={[
-        "drag-ghost:opacity-0 z-30",
         !@task.id && !@task.parent_id && "hidden",
         not @static? && "sortable"
       ]}

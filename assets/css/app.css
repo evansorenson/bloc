@@ -4,25 +4,37 @@
 
 /* This file is for your main application CSS */
 
+/* Modern drop preview */
 .drop-preview {
-  height: 2px;
-  background-color: #3b82f6;
-  margin: 8px 0;
-  transition: all 0.2s ease;
+  @apply h-0.5 bg-gradient-to-r from-blue-500/60 to-blue-600/60;
+  @apply my-2 rounded-full;
+  @apply shadow-sm shadow-blue-500/20;
+  @apply transition-all duration-200 ease-out;
 }
 
 .task-list-dragging {
-  background-color: #f9fafb;
+  @apply bg-white/90 backdrop-blur-md;
+  @apply shadow-lg shadow-gray-100/50;
+  @apply border border-gray-100/50;
+  @apply rounded-2xl;
+  @apply transition-all duration-200;
 }
 
 .dropzone {
-  @apply transition-colors duration-200;
+  @apply transition-all duration-200;
+  @apply rounded-xl;
 }
 
 .dropzone.drop-active {
-  @apply bg-indigo-50;
+  @apply bg-blue-50/80;
+  @apply backdrop-blur-sm;
+  @apply ring-1 ring-blue-100/50;
 }
 
 .block-dragging {
-  @apply opacity-50;
+  @apply opacity-90;
+  @apply scale-[1.02];
+  @apply rotate-1;
+  @apply shadow-xl shadow-gray-200/50;
+  @apply transition-all duration-200;
 }

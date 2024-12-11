@@ -76,24 +76,25 @@ defmodule BlocWeb.TaskLive.TasksComponent do
         <.live_component module={BlocWeb.TaskLive.JiraComponent} id="jira-tasks" scope={@scope} />
       <% end %>
 
-      <div class="flex-none w-14 bg-[#f5f6f8] flex flex-col items-center py-4 border-l border-gray-200">
-        <nav class="flex flex-col items-center space-y-3">
+      <div class="flex-none w-16 bg-gray-50 backdrop-blur-md flex flex-col items-center py-6 border-l border-gray-100">
+        <nav class="flex flex-col items-center space-y-4">
           <button
             phx-click="switch_view"
             phx-target={@myself}
             phx-value-view="tasks"
             class={[
-              "p-2 rounded-lg transition-colors duration-200",
-              @current_view == "tasks" && "bg-gray-200"
+              "p-2.5 rounded-xl transition-all duration-200",
+              "hover:bg-gray-50/80 hover:scale-105 active:scale-95",
+              @current_view == "tasks" && "bg-gray-200 shadow-sm"
             ]}
             aria-label="Tasks view"
           >
             <.icon
               name="hero-check-circle"
               class={[
-                "h-5 w-5",
-                @current_view == "tasks" && "text-green-400",
-                @current_view != "tasks" && "text-green-400/60 hover:text-green-400"
+                "h-6 w-6 transition-colors duration-200",
+                @current_view == "tasks" && "text-green-500",
+                @current_view != "tasks" && "text-green-400/70 hover:text-green-500"
               ]}
             />
           </button>
