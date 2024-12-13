@@ -79,18 +79,12 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                 />
                 <div class="mt-2 flex gap-2">
                   <.input field={@form[:due_date]} type="date" class="" />
-                  <button
-                    type="button"
-                    class="inline-flex items-center text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    <.icon name="hero-calendar" class="h-4 w-4 mr-1" /> Due date
-                  </button>
-                  <button
-                    type="button"
-                    class="inline-flex items-center text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    <.icon name="hero-clock" class="h-4 w-4 mr-1" /> Estimate
-                  </button>
+                  <.input
+                    field={@form[:estimated_minutes]}
+                    type="select"
+                    options={["15m": 15, "30m": 30, "45m": 45, "1h": 60, "1h30m": 90, "2h": 120]}
+                    class=""
+                  />
                 </div>
               </.simple_form>
             <% else %>

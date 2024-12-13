@@ -31,7 +31,9 @@ defmodule Bloc.Tasks.NaturalLanguageParser do
     "15m" => 15,
     "30m" => 30,
     "45m" => 45,
+    "60m" => 60,
     "1h" => 60,
+    "1h30m" => 90,
     "2h" => 120,
     "3h" => 180,
     "4h" => 240
@@ -105,13 +107,13 @@ defmodule Bloc.Tasks.NaturalLanguageParser do
   end
 
   defp extract_time_estimate(title) do
-    {estimate, pattern} =
+    {pattern, minutes} =
       Enum.find(@time_patterns, {nil, nil}, fn {pattern, _} ->
         String.contains?(title, pattern)
       end)
 
-    if estimate do
-      {String.replace(title, pattern, ""), @time_patterns[pattern]}
+    if pattern do
+      {String.replace(title, pattern, ""), minutes}
     else
       {title, nil}
     end
