@@ -89,16 +89,11 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <% else %>
               <div class="text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2">
-                  <%= if is_nil(@task.parent_id) && @task.habit_id do %>
-                    <div class="flex-shrink-0">
-                      <.icon name="hero-arrow-path" class="h-4 w-4 text-indigo-500" />
-                    </div>
-                    <%= if @task.habit.streak > 0 do %>
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                        <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
-                        {@task.habit.streak}
-                      </span>
-                    <% end %>
+                  <%= if  is_nil(@task.parent_id) && @task.habit_id && @task.habit.streak > 0 do %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                      <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
+                      {@task.habit.streak}
+                    </span>
                   <% end %>
                   {@task.title}
                 </div>

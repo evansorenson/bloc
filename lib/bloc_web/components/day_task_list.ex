@@ -48,15 +48,42 @@ defmodule BlocWeb.DayTaskList do
         ondrop="handleJiraTaskDrop(event)"
         phx-hook="JiraTaskDrop"
       >
-        <div id="day_tasks_list" class="p-4 space-y-2" phx-update="stream">
-          <%= for {id, task} <- @streams.day_tasks do %>
-            <.live_component
-              module={BlocWeb.TaskLive.TaskComponent}
-              scope={@scope}
-              id={id}
-              task={task}
-            />
-          <% end %>
+        <div id="day_tasks_list" class="divide-y divide-gray-100" phx-update="stream">
+          <div class="p-4">
+            <h3 class="text-md font-bold text-gray-700 mb-3 flex items-center">
+              <.icon name="hero-arrow-path" class="h-4 w-4 mr-1.5" /> Habits
+            </h3>
+            <div class="space-y-2">
+              <%= for {id, task} <- @streams.day_tasks do %>
+                <%= if task.habit_id do %>
+                  <.live_component
+                    module={BlocWeb.TaskLive.TaskComponent}
+                    scope={@scope}
+                    id={id}
+                    task={task}
+                  />
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="p-4">
+            <h3 class="text-md font-bold text-gray-700 mb-3 flex items-center">
+              <.icon name="hero-check-circle" class="h-4 w-4 mr-1.5" /> Tasks
+            </h3>
+            <div class="space-y-2">
+              <%= for {id, task} <- @streams.day_tasks do %>
+                <%= if !task.habit_id do %>
+                  <.live_component
+                    module={BlocWeb.TaskLive.TaskComponent}
+                    scope={@scope}
+                    id={id}
+                    task={task}
+                  />
+                <% end %>
+              <% end %>
+            </div>
+          </div>
         </div>
       </div>
     </div>
