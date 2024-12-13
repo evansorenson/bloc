@@ -67,6 +67,7 @@ defmodule Bloc.Tasks do
     |> filter_by_date(opts[:date])
     |> filter_by_task_list_id(opts[:task_list_id])
     |> filter_by_habit_id(opts[:habit_id])
+    |> filter_by_parent_id(opts[:parent_id])
     |> Query.preloads(opts[:preload])
     |> Repo.all()
   end
@@ -103,6 +104,20 @@ defmodule Bloc.Tasks do
 
   defp filter_by_habit_id(query, habit_ids) when is_list(habit_ids) do
     where(query, [q], q.habit_id in ^habit_ids)
+  end
+
+  defp filter_by_parent_id(query, nil), do: query
+
+  defp filter_by_parent_id(query, :none) do
+    where(query, [q], is_nil(q.parent_id))
+  end
+
+  defp filter_by_parent_id(query, parent_id) when is_binary(parent_id) do
+    where(query, [q], q.parent_id == ^parent_id)
+  end
+
+  defp filter_by_parent_id(query, parent_ids) when is_list(parent_ids) do
+    where(query, [q], q.parent_id in ^parent_ids)
   end
 
   @spec list_for_integration(Scope.t(), atom) :: {:ok, list()} | {:error, any()}

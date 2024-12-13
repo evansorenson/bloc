@@ -15,7 +15,7 @@ defmodule BlocWeb.TaskLive.TasksComponent do
 
     # Get unassigned tasks
     # Get tasks where habit_id is nil and task_list_id is nil
-    unassigned_tasks = Tasks.list_tasks(scope, habit_id: :none, task_list_id: :none)
+    unassigned_tasks = Tasks.list_tasks(scope, habit_id: :none, task_list_id: :none, parent_id: :none)
 
     # Create virtual unassigned list
     unassigned_list = %TaskList{

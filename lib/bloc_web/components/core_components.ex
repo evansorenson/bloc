@@ -80,7 +80,7 @@ defmodule BlocWeb.CoreComponents do
                 </button>
               </div>
               <div id={"#{@id}-content"}>
-                <%= render_slot(@inner_block) %>
+                {render_slot(@inner_block)}
               </div>
             </.focus_wrap>
           </div>
@@ -134,7 +134,7 @@ defmodule BlocWeb.CoreComponents do
           <div class="p-4">
             <div class="flex items-center">
               <div class="flex w-0 flex-1 justify-between">
-                <p class="w-0 flex-1 text-sm font-medium text-gray-900"><%= msg %></p>
+                <p class="w-0 flex-1 text-sm font-medium text-gray-900">{msg}</p>
                 <button
                   type="button"
                   class="ml-3 flex-shrink-0 rounded-md bg-white text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -253,9 +253,9 @@ defmodule BlocWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div>
-        <%= render_slot(@inner_block, f) %>
+        {render_slot(@inner_block, f)}
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
-          <%= render_slot(action, f) %>
+          {render_slot(action, f)}
         </div>
       </div>
     </.form>
@@ -287,7 +287,7 @@ defmodule BlocWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end
@@ -376,9 +376,9 @@ defmodule BlocWeb.CoreComponents do
           class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
           {@rest}
         />
-        <%= @label %>
+        {@label}
       </label>
-      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}>{msg}</.error>
     </div>
     """
   end
@@ -386,7 +386,7 @@ defmodule BlocWeb.CoreComponents do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div>
-      <.label :if={@label?} for={@id}><%= @label %></.label>
+      <.label :if={@label?} for={@id}>{@label}</.label>
       <select
         id={@id}
         name={@name}
@@ -397,10 +397,10 @@ defmodule BlocWeb.CoreComponents do
         multiple={@multiple}
         {@rest}
       >
-        <option :if={@prompt} value=""><%= @prompt %></option>
-        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Phoenix.HTML.Form.options_for_select(@options, @value)}
       </select>
-      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}>{msg}</.error>
     </div>
     """
   end
@@ -408,7 +408,7 @@ defmodule BlocWeb.CoreComponents do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div>
-      <.label :if={@label?} for={@id}><%= @label %></.label>
+      <.label :if={@label?} for={@id}>{@label}</.label>
       <textarea
         id={@id}
         name={@name}
@@ -421,7 +421,7 @@ defmodule BlocWeb.CoreComponents do
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
-      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}>{msg}</.error>
     </div>
     """
   end
@@ -430,7 +430,7 @@ defmodule BlocWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div>
-      <.label :if={@label?} for={@id}><%= @label %></.label>
+      <.label :if={@label?} for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
@@ -444,7 +444,7 @@ defmodule BlocWeb.CoreComponents do
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors} :if={@errors?}><%= msg %></.error>
+      <.error :for={msg <- @errors} :if={@errors?}>{msg}</.error>
     </div>
     """
   end
@@ -458,7 +458,7 @@ defmodule BlocWeb.CoreComponents do
   def label(assigns) do
     ~H"""
     <label for={@for} class="block text-sm font-medium leading-6 text-gray-900">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end
@@ -472,7 +472,7 @@ defmodule BlocWeb.CoreComponents do
     ~H"""
     <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
       <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -491,13 +491,13 @@ defmodule BlocWeb.CoreComponents do
     <header class={Tails.merge("flex items-center justify-between gap-6", @class) |> to_string()}>
       <div>
         <h1 class="text-lg font-semibold leading-8 text-zinc-800">
-          <%= render_slot(@inner_block) %>
+          {render_slot(@inner_block)}
         </h1>
         <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
-          <%= render_slot(@subtitle) %>
+          {render_slot(@subtitle)}
         </p>
       </div>
-      <div class="flex-none"><%= render_slot(@actions) %></div>
+      <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
   end
@@ -539,9 +539,9 @@ defmodule BlocWeb.CoreComponents do
       <table class="w-[40rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-zinc-500">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
+            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">{col[:label]}</th>
             <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only"><%= gettext("Actions") %></span>
+              <span class="sr-only">{gettext("Actions")}</span>
             </th>
           </tr>
         </thead>
@@ -559,7 +559,7 @@ defmodule BlocWeb.CoreComponents do
               <div class="block py-4 pr-6">
                 <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
                 <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
-                  <%= render_slot(col, @row_item.(row)) %>
+                  {render_slot(col, @row_item.(row))}
                 </span>
               </div>
             </td>
@@ -570,7 +570,7 @@ defmodule BlocWeb.CoreComponents do
                   :for={action <- @action}
                   class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
                 >
-                  <%= render_slot(action, @row_item.(row)) %>
+                  {render_slot(action, @row_item.(row))}
                 </span>
               </div>
             </td>
@@ -600,8 +600,8 @@ defmodule BlocWeb.CoreComponents do
     <div class="mt-14">
       <dl class="-my-4 divide-y divide-zinc-100">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500"><%= item.title %></dt>
-          <dd class="text-zinc-700"><%= render_slot(item) %></dd>
+          <dt class="w-1/4 flex-none text-zinc-500">{item.title}</dt>
+          <dd class="text-zinc-700">{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -620,51 +620,57 @@ defmodule BlocWeb.CoreComponents do
   def dropdown_list(assigns) do
     ~H"""
     <div id={@id}>
-      <div phx-click={toggle_dropdown(@id)} class="flex w-full group mb-2 items-center justify-center">
-        <div class="flex items-center justify-center">
-          <h3 class="text-md font-semibold text-gray-900"><%= @title %></h3>
-          <div class="pl-4">
-            <p class="px-1.5 text-gray-600 bg-gray-200 rounded-full text-sm"><%= @count %></p>
+      <div class="group">
+        <div class="flex items-center px-3 py-2.5 rounded-lg hover:bg-gray-50/80 transition-all duration-200">
+          <div class="flex items-center min-w-0 flex-1">
+            <button role="button" phx-click={toggle_dropdown(@id)} class="flex items-center gap-2">
+              <.icon
+                id={"dropdown-list-chevron-left-#{@id}"}
+                name="hero-chevron-down"
+                class="h-4 w-4 text-gray-400 transition-transform duration-300"
+              />
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-medium text-gray-900 truncate group-hover:text-gray-700">
+                  {@title}
+                </h3>
+                <%= if @count > 0 do %>
+                  <span class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-gray-50 text-gray-600 rounded-full border border-gray-200/70 group-hover:bg-gray-100/80 transition-colors duration-200">
+                    {@count}
+                  </span>
+                <% end %>
+              </div>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+            <button
+              role="button"
+              phx-click={new_item(@id, @new_item_to_focus)}
+              class="p-2 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-500 transition-colors duration-200 flex items-center justify-center"
+            >
+              <.icon name="hero-plus" class="h-4 w-4" />
+            </button>
+
+            <%= if @delete? do %>
+              <button
+                type="button"
+                phx-click="delete_list"
+                data-confirm="Are you sure you want to delete this list and all its tasks?"
+                class="p-2 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-500 transition-colors duration-200 flex items-center justify-center"
+              >
+                <.icon name="hero-trash" class="h-4 w-4" />
+              </button>
+            <% end %>
           </div>
         </div>
 
-        <%= if @delete? do %>
-          <button
-            type="button"
-            phx-click="delete_list"
-            data-confirm="Are you sure you want to delete this list and all its tasks?"
-            class="p-1 rounded-md hover:bg-gray-100"
-          >
-            <.icon name="hero-trash" class="h-4 w-4 text-gray-400" />
-          </button>
-        <% end %>
-        <button
-          role="button"
-          phx-click={new_item(@id, @new_item_to_focus)}
-          role="button"
-          class="ml-auto opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-md block mr-2 mt-0"
-        >
-          <.icon name="hero-plus" />
-        </button>
-        <button
-          role="button"
-          phx-click={toggle_dropdown(@id)}
-          class="hover:bg-gray-100 rounded-md block mr-2"
-        >
-          <.icon
-            id={"dropdown-list-chevron-left-#{@id}"}
-            name="hero-chevron-left"
-            class="transition-all transform duration-300 -rotate-90"
-          />
-        </button>
+        <div id={"new-item-#{@id}"} class="hidden" phx-click-away={JS.hide(to: "#new-item-#{@id}")}>
+          {render_slot(@new_item)}
+        </div>
       </div>
 
-      <div id={"new-item-#{@id}"} class="hidden" phx-click-away={JS.hide(to: "#new-item-#{@id}")}>
-        <%= render_slot(@new_item) %>
-      </div>
-
-      <div id={"dropdown-items-#{@id}"} class="">
-        <%= render_slot(@items) %>
+      <div id={"dropdown-items-#{@id}"} class="mt-1">
+        {render_slot(@items)}
       </div>
     </div>
     """
@@ -678,13 +684,16 @@ defmodule BlocWeb.CoreComponents do
 
   def new_item(id, new_item_to_focus \\ nil) do
     "-rotate-90"
-    |> JS.add_class(to: "#dropdown-list-chevron-left-#{id}")
+    |> JS.remove_class(to: "#dropdown-list-chevron-left-#{id}")
     |> JS.show(to: "#dropdown-items-#{id}")
-    |> JS.show(to: "#new-item-#{id}")
-
-    if new_item_to_focus do
-      JS.focus(to: new_item_to_focus)
-    end
+    |> JS.toggle(to: "#new-item-#{id}")
+    |> then(fn js ->
+      if new_item_to_focus do
+        JS.focus(js, to: new_item_to_focus)
+      else
+        js
+      end
+    end)
   end
 
   @doc """
@@ -720,7 +729,7 @@ defmodule BlocWeb.CoreComponents do
             aria-expanded="false"
           >
             <span class="text-base font-semibold leading-7">
-              <%= @title %>
+              {@title}
             </span>
             <span class="ml-6 flex h-7 items-center">
               <!--
@@ -757,7 +766,7 @@ defmodule BlocWeb.CoreComponents do
           </button>
         </dt>
         <dd class="mt-2 pr-12" id="faq-0">
-          <%= render_slot(@dropdown_item) %>
+          {render_slot(@dropdown_item)}
         </dd>
       </div>
       <!-- More questions... -->
@@ -771,7 +780,6 @@ defmodule BlocWeb.CoreComponents do
 
   def combobox(assigns) do
     ~H"""
-
     """
   end
 
@@ -793,7 +801,7 @@ defmodule BlocWeb.CoreComponents do
         class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
       >
         <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </.link>
     </div>
     """
@@ -861,15 +869,33 @@ defmodule BlocWeb.CoreComponents do
           class={[
             "h-5 w-5 transition-colors duration-200",
             case @name do
-              "Today" -> if(@active?, do: "text-orange-500", else: "text-orange-400/70 group-hover:text-orange-500")
-              "Tasks" -> if(@active?, do: "text-green-500", else: "text-green-400/70 group-hover:text-green-500")
-              "Habits" -> if(@active?, do: "text-blue-500", else: "text-blue-400/70 group-hover:text-blue-500")
-              "Rewards" -> if(@active?, do: "text-purple-500", else: "text-purple-400/70 group-hover:text-purple-500")
-              _ -> "text-gray-400"
+              "Today" ->
+                if(@active?,
+                  do: "text-orange-500",
+                  else: "text-orange-400/70 group-hover:text-orange-500"
+                )
+
+              "Tasks" ->
+                if(@active?,
+                  do: "text-green-500",
+                  else: "text-green-400/70 group-hover:text-green-500"
+                )
+
+              "Habits" ->
+                if(@active?, do: "text-blue-500", else: "text-blue-400/70 group-hover:text-blue-500")
+
+              "Rewards" ->
+                if(@active?,
+                  do: "text-purple-500",
+                  else: "text-purple-400/70 group-hover:text-purple-500"
+                )
+
+              _ ->
+                "text-gray-400"
             end
           ]}
         />
-        <span class="sr-only"><%= @name %></span>
+        <span class="sr-only">{@name}</span>
       </.link>
     </li>
     """

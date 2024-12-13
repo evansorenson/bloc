@@ -19,7 +19,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @impl true
   def mount(socket) do
     socket
-    # |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
+    # TODO: figure out how to get unique ids for subtasks without causing weird rendering issues
+    |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
     |> assign(:static?, socket.assigns[:static?] || false)
     |> Tuples.ok()
   end
@@ -32,13 +33,18 @@ defmodule BlocWeb.TaskLive.TaskComponent do
       data-id={@task.id}
       data-event="add_block"
       class={[
-        !@task.id && !@task.parent_id && "hidden",
         not @static? && "sortable"
       ]}
       phx-value-duration="30"
       draggable="true"
       ondragstart="dragStart(event)"
-      phx-click-away={if is_nil(@task.id) and !@task.parent_id, do: JS.hide()}
+      phx-click-away={
+        cond do
+          !@task.id && @task.parent_id -> JS.hide()
+          !@task.id -> JS.hide(to: "#new-task-#{@id}")
+          true -> nil
+        end
+      }
       phx-remove={JS.transition("fade-out duration-500")}
     >
       <div class={[
@@ -72,6 +78,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                   label?={false}
                 />
                 <div class="mt-2 flex gap-2">
+                  <.input field={@form[:due_date]} type="date" class="" />
                   <button
                     type="button"
                     class="inline-flex items-center text-xs text-gray-500 hover:text-gray-700"
@@ -89,18 +96,19 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <% else %>
               <div class="text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2">
-                  <%= if  is_nil(@task.parent_id) && @task.habit_id && @task.habit.streak > 0 do %>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                      <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
-                      {@task.habit.streak}
-                    </span>
-                  <% end %>
                   {@task.title}
                 </div>
               </div>
 
               <div class="mt-1 flex items-center gap-2">
-                <%= if @task.due_date && !@task.parent_id do %>
+                <%= if is_nil(@task.parent_id) && @task.habit_id && @task.habit.streak > 0 do %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                    <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500 hover:text-orange-500" />
+                    {@task.habit.streak}
+                  </span>
+                <% end %>
+
+                <%= if is_nil(@task.parent_id) && @task.due_date do %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
                     <%= case Date.diff(@task.due_date, TimeUtils.today(@scope)) do %>
                       <% 0 -> %>
@@ -128,13 +136,15 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
           <%= if @task.id && !@task.parent_id do %>
             <div class="flex-shrink-0 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                phx-click={new_subtask(@id) |> JS.push("new_subtask", target: @myself)}
-                class="p-1 rounded-md hover:bg-gray-100"
-              >
-                <.icon name="hero-plus" class="h-4 w-4 text-gray-400" />
-              </button>
+              <%= if !@task.habit_id do %>
+                <button
+                  type="button"
+                  phx-click={new_subtask(@id) |> JS.push("new_subtask", target: @myself)}
+                  class="p-1 rounded-md hover:bg-gray-100"
+                >
+                  <.icon name="hero-plus" class="h-4 w-4 text-gray-400" />
+                </button>
+              <% end %>
 
               <%= if !@task.parent_id && @count > 0 do %>
                 <button
@@ -244,7 +254,16 @@ defmodule BlocWeb.TaskLive.TaskComponent do
 
   @impl true
   def handle_event("validate", %{"task" => task_params}, socket) do
-    task_params = Map.put(task_params, "user_id", socket.assigns.scope.current_user.id)
+    parsed = Bloc.Tasks.NaturalLanguageParser.parse(task_params["title"])
+
+    IO.inspect(parsed, label: "parsed")
+
+    task_params =
+      task_params
+      |> Map.put("user_id", socket.assigns.scope.current_user.id)
+      |> Map.put("title", parsed.title)
+      |> Map.put("due_date", parsed.due_date || task_params["due_date"])
+      |> Map.put("estimated_minutes", parsed.estimated_minutes || task_params["estimated_minutes"])
 
     changeset =
       socket.assigns.task
@@ -255,6 +274,14 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   def handle_event("save", %{"task" => task_params}, socket) do
+    parsed = Bloc.Tasks.NaturalLanguageParser.parse(task_params["title"])
+
+    task_params =
+      task_params
+      |> Map.put("title", parsed.title)
+      |> Map.put("due_date", parsed.due_date)
+      |> Map.put("estimated_minutes", parsed.estimated_minutes)
+
     save_task(socket, :new, task_params)
   end
 
@@ -290,14 +317,19 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   defp save_task(socket, :new, task_params) do
+    task = socket.assigns.task
+
     task_params
     |> Map.put("user_id", socket.assigns.scope.current_user_id)
-    |> Map.put("task_list_id", socket.assigns.task.task_list_id)
-    |> Map.put("parent_id", socket.assigns[:parent_task_id])
+    |> Map.put("task_list_id", task.task_list_id)
+    |> Map.put("parent_id", task.parent_id)
     |> Tasks.create_task(socket.assigns.scope)
     |> case do
       {:ok, _task} ->
-        {:noreply, put_flash!(socket, :info, "Task created successfully")}
+        {:noreply,
+         socket
+         |> put_flash!(:info, "Task created successfully")
+         |> assign_form(Tasks.change_task(%Task{id: nil, parent_id: task.parent_id}))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
