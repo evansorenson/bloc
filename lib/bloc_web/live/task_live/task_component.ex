@@ -2,11 +2,11 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @moduledoc false
   use BlocWeb, :live_component
 
+  alias Bloc.Events.TaskCompleted
+  alias Bloc.Events.TaskDeleted
   alias Bloc.Repo
   alias Bloc.Tasks
   alias Bloc.Tasks.Task
-  alias Bloc.Events.TaskDeleted
-  alias Bloc.Events.TaskCompleted
 
   require Logger
 
@@ -96,16 +96,16 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                     <%= if @task.habit.streak > 0 do %>
                       <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
                         <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
-                        <%= @task.habit.streak %>
+                        {@task.habit.streak}
                       </span>
                     <% end %>
                   <% end %>
-                  <%= @task.title %>
+                  {@task.title}
                 </div>
               </div>
 
               <div class="mt-1 flex items-center gap-2">
-                <%= if @task.due_date do %>
+                <%= if @task.due_date && !@task.parent_id do %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
                     <%= case Date.diff(@task.due_date, TimeUtils.today(@scope)) do %>
                       <% 0 -> %>
@@ -116,7 +116,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                         <span class="text-blue-700">Tomorrow</span>
                       <% _ -> %>
                         <.icon name="hero-calendar" class="h-3.5 w-3.5" />
-                        <%= Calendar.strftime(@task.due_date, "%b %d") %>
+                        {Calendar.strftime(@task.due_date, "%b %d")}
                     <% end %>
                   </span>
                 <% end %>
@@ -124,7 +124,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                 <%= if @task.estimated_minutes do %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
                     <.icon name="hero-clock" class="h-3.5 w-3.5" />
-                    <%= TimeUtils.minutes_to_string(@task.estimated_minutes) %>
+                    {TimeUtils.minutes_to_string(@task.estimated_minutes)}
                   </span>
                 <% end %>
               </div>
@@ -198,15 +198,17 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   @impl true
-  def update(%{event: %TaskDeleted{task: %{parent_id: parent_id} = task}}, socket) when parent_id == socket.assigns.task.id do
+  def update(%{event: %TaskDeleted{task: %{parent_id: parent_id} = task}}, socket)
+      when parent_id == socket.assigns.task.id do
     Logger.debug("task deleted event - task component", task_id: task.id)
-    {:ok, stream_delete(socket, :subtasks, task) |> assign(:count, socket.assigns.count - 1)}
+    {:ok, socket |> stream_delete(:subtasks, task) |> assign(:count, socket.assigns.count - 1)}
   end
 
-  def update(%{event: %TaskCompleted{task: %{parent_id: parent_id} = task}}, socket) when parent_id == socket.assigns.task.id do
+  def update(%{event: %TaskCompleted{task: %{parent_id: parent_id} = task}}, socket)
+      when parent_id == socket.assigns.task.id do
     Logger.debug("task completed event - task component", task_id: task.id)
 
-    {:ok, stream_delete(socket, :subtasks, task) |> assign(:count, socket.assigns.count - 1)}
+    {:ok, socket |> stream_delete(:subtasks, task) |> assign(:count, socket.assigns.count - 1)}
   end
 
   def update(%{task: %Task{id: nil} = task} = assigns, socket) do
