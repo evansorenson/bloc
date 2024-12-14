@@ -76,21 +76,14 @@
                     <ul class="divide-y divide-gray-100 pl-8 border-l border-gray-100 ml-8">
                       <%= for subhabit <- habit.subhabits do %>
                         <li id={"#{id}-sub-#{subhabit.id}"} class="group">
-                          <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                          <div class="px-2 py-2 hover:bg-gray-50 transition-colors">
                             <div class="flex items-center justify-between">
                               <div class="flex min-w-0 gap-x-4">
                                 <div class="min-w-0 flex-auto">
                                   <div class="flex items-center gap-2">
-                                    <.icon name="hero-arrow-small-right" class="h-4 w-4 text-gray-400" />
                                     <p class="text-sm font-medium text-gray-900 truncate">
                                       <%= subhabit.title %>
-                                    </p>
-                                    <%= if subhabit.streak > 0 do %>
-                                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                                        <.icon name="hero-fire" class="h-3.5 w-3.5 text-orange-500" />
-                                        <%= subhabit.streak %>
-                                      </span>
-                                    <% end %>
+                                    </p> 
                                   </div>
                                 </div>
                               </div>

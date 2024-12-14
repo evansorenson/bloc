@@ -27,15 +27,18 @@ defmodule Bloc.Habits do
     Habit
     |> Bloc.Query.for_scope(scope)
     |> by_period_type(opts[:period_type])
+    |> by_parent_id(opts[:parent_id])
     |> preload(:subhabits)
     |> Repo.all()
   end
 
   defp by_period_type(query, nil), do: query
+  defp by_period_type(query, period_type), do: where(query, [h], h.period_type == ^period_type)
 
-  defp by_period_type(query, period_type) do
-    where(query, [h], h.period_type == ^period_type)
-  end
+  defp by_parent_id(query, nil), do: query
+  defp by_parent_id(query, :none), do: where(query, [h], is_nil(h.parent_id))
+  defp by_parent_id(query, parent_id) when is_binary(parent_id), do: where(query, [h], h.parent_id == ^parent_id)
+  defp by_parent_id(query, parent_ids) when is_list(parent_ids), do: where(query, [h], h.parent_id in ^parent_ids)
 
   @doc """
   Gets a single habit.

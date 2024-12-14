@@ -121,7 +121,7 @@ defmodule BlocWeb.HabitLive.Index do
       |> Map.new(fn habit_day -> {{habit_day.habit_id, habit_day.date}, habit_day} end)
 
     scope
-    |> Habits.list_habits(period_type: :daily)
+    |> Habits.list_habits(period_type: :daily, parent_id: :none)
     |> Enum.map(fn habit ->
       habit_days =
         start_of_week
