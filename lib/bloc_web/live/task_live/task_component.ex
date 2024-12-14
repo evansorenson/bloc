@@ -20,7 +20,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   def mount(socket) do
     socket
     # TODO: figure out how to get unique ids for subtasks without causing weird rendering issues
-    |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
+    # |> stream_configure(:subtasks, dom_id: &"subtasks#{System.unique_integer()}-#{&1.id}")
     |> assign(:static?, socket.assigns[:static?] || false)
     |> Tuples.ok()
   end
@@ -102,7 +102,7 @@ defmodule BlocWeb.TaskLive.TaskComponent do
                   </span>
                 <% end %>
 
-                <%= if is_nil(@task.parent_id) && @task.due_date do %>
+                <%= if is_nil(@task.parent_id) && @task.due_date && !@task.habit_id do %>
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
                     <%= case Date.diff(@task.due_date, TimeUtils.today(@scope)) do %>
                       <% 0 -> %>

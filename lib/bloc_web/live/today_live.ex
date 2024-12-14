@@ -42,11 +42,7 @@ defmodule BlocWeb.TodayLive do
         </div>
 
         <div class="flex-1">
-          <.live_component
-            id="task-lists"
-            module={BlocWeb.TaskLive.TasksComponent}
-            scope={@scope}
-          />
+          <.live_component id="task-lists" module={BlocWeb.TaskLive.TasksComponent} scope={@scope} />
         </div>
       </div>
     </div>
