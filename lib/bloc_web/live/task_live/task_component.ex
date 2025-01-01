@@ -2,6 +2,8 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   @moduledoc false
   use BlocWeb, :live_component
 
+  import Ecto.Query
+
   alias Bloc.Events.TaskCompleted
   alias Bloc.Events.TaskDeleted
   alias Bloc.Repo
@@ -90,7 +92,9 @@ defmodule BlocWeb.TaskLive.TaskComponent do
             <% else %>
               <div class="text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2">
-                  {@task.title}
+                  <span class={[@task.complete? && "line-through text-gray-400"]}>
+                    {@task.title}
+                  </span>
                 </div>
               </div>
 
@@ -220,7 +224,16 @@ defmodule BlocWeb.TaskLive.TaskComponent do
   end
 
   def update(%{task: %Task{parent_id: nil} = task} = assigns, socket) do
-    task = Repo.preload(task, :subtasks)
+    task =
+      Repo.preload(task,
+        subtasks: fn query ->
+          if assigns[:show_completed?] do
+            query
+          else
+            where(query, [t], is_nil(t.complete?))
+          end
+        end
+      )
 
     {:ok,
      socket

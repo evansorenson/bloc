@@ -8,6 +8,10 @@ defmodule TimeUtils do
     |> DateTime.to_date()
   end
 
+  def shift(%Scope{timezone: timezone}, %DateTime{} = datetime) do
+    DateTime.shift_zone!(datetime, timezone)
+  end
+
   def block_datetime_string(%Scope{timezone: timezone}, %DateTime{} = datetime, start_or_end) do
     datetime
     |> DateTime.shift_zone!(timezone)

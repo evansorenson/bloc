@@ -10,6 +10,15 @@ defmodule BlocWeb.TodayLive do
   on_mount({BlocWeb.UserAuth, :ensure_authenticated})
 
   @impl true
+  def mount(%{"date" => date}, _session, socket) do
+    if connected?(socket) do
+      Tasks.subscribe(socket.assigns.scope)
+    end
+
+    {:ok, assign(socket, current_day: Date.from_iso8601!(date))}
+  end
+
+  @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Tasks.subscribe(socket.assigns.scope)

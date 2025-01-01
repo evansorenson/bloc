@@ -38,6 +38,24 @@ defmodule BlocWeb.DayTaskList do
             <.icon name="hero-chevron-right" class="h-5 w-5" />
           </button>
         </div>
+
+        <div class="mt-2 flex items-center justify-end">
+          <button
+            phx-click="toggle_completed"
+            phx-target={@myself}
+            class="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900"
+          >
+            <.icon
+              name={(@show_completed? && "hero-eye-solid") || "hero-eye-slash"}
+              class={[
+                "h-4 w-4",
+                @show_completed? && "text-blue-700",
+                !@show_completed? && "text-gray-400"
+              ]}
+            />
+            <span>Show completed</span>
+          </button>
+        </div>
       </div>
 
       <div
@@ -61,6 +79,7 @@ defmodule BlocWeb.DayTaskList do
                     scope={@scope}
                     id={id}
                     task={task}
+                    show_completed?={@show_completed?}
                   />
                 <% end %>
               <% end %>
@@ -79,6 +98,7 @@ defmodule BlocWeb.DayTaskList do
                     scope={@scope}
                     id={id}
                     task={task}
+                    show_completed?={@show_completed?}
                   />
                 <% end %>
               <% end %>
@@ -128,14 +148,17 @@ defmodule BlocWeb.DayTaskList do
 
   def update(assigns, socket) do
     Logger.debug("day task list update", day: assigns.day)
+    IO.inspect(assigns.day)
 
-    tasks = list_tasks_for_day(assigns.day, assigns.scope)
+    tasks = list_tasks_for_day(assigns.day, assigns.scope, socket.assigns[:show_completed?] || false)
 
     {:ok,
      socket
      |> assign(assigns)
      |> assign(:count, length(tasks))
-     |> stream(:day_tasks, tasks)}
+     |> assign_new(:show_completed?, fn -> false end)
+     |> stream(:day_tasks, [], reset: true)
+     |> stream(:day_tasks, tasks, reset: true)}
   end
 
   @impl true
@@ -162,30 +185,74 @@ defmodule BlocWeb.DayTaskList do
     end
   end
 
-  def handle_event("prev_day", _, socket) do
+  def handle_event("prev_day", _params, socket) do
     new_day = Date.add(socket.assigns.day, -1)
 
-    {:noreply, socket |> assign(day: new_day) |> stream(:day_tasks, [], reset: true) |> send_day_changed()}
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/today?date=#{Date.to_iso8601(new_day)}")
+     |> stream(:day_tasks, [], reset: true)
+     |> send_day_changed(new_day)}
   end
 
-  def handle_event("next_day", _, socket) do
+  def handle_event("next_day", _params, socket) do
     new_day = Date.add(socket.assigns.day, 1)
 
-    {:noreply, socket |> assign(day: new_day) |> stream(:day_tasks, [], reset: true) |> send_day_changed()}
+    {:noreply,
+     socket
+     |> push_patch(to: ~p"/today?date=#{Date.to_iso8601(new_day)}")
+     |> send_day_changed(new_day)
+     |> stream(:day_tasks, [], reset: true)}
   end
 
-  defp send_day_changed(socket) do
-    send(self(), {:day_changed, socket.assigns.day})
-    socket
+  def handle_event("toggle_completed", _params, socket) do
+    show_completed? = !socket.assigns.show_completed?
+    tasks = list_tasks_for_day(socket.assigns.day, socket.assigns.scope, show_completed?)
+
+    {:noreply,
+     socket
+     |> assign(:show_completed?, show_completed?)
+     |> stream(:day_tasks, tasks, reset: true)}
   end
 
-  defp list_tasks_for_day(day, scope) do
-    Tasks.all_tasks_query(
+  defp list_tasks_for_day(day, scope, show_completed?) do
+    # Query for:
+    # - Habits that are due on the day and maybe completed
+    # - Tasks that are due on the day OR in the past and are ONLY completed on the day
+
+    query =
+      maybe_include_completed(
+        from(t in Bloc.Tasks.Task,
+          where: is_nil(t.parent_id) and is_nil(t.complete?) and is_nil(t.habit_id) and t.due_date <= ^day,
+          or_where: is_nil(t.parent_id) and not is_nil(t.habit_id) and t.due_date == ^day and is_nil(t.complete?)
+        ),
+        day,
+        scope,
+        show_completed?
+      )
+
+    Tasks.all_tasks_query(query, scope, include_completed?: show_completed?)
+  end
+
+  defp maybe_include_completed(query, day, scope, show_completed?) do
+    daytime = DateTime.new!(day, ~T[00:00:00], scope.timezone)
+    day_start = Timex.beginning_of_day(daytime)
+    day_end = Timex.end_of_day(daytime)
+
+    if show_completed? do
       from(t in Bloc.Tasks.Task,
-        where: is_nil(t.parent_id),
-        where: (is_nil(t.habit_id) and t.due_date <= ^day) or (not is_nil(t.habit_id) and t.due_date == ^day)
-      ),
-      scope
-    )
+        where:
+          is_nil(t.parent_id) and is_nil(t.habit_id) and
+            ((t.complete? >= ^day_start and t.complete? <= ^day_end) or is_nil(t.complete?)),
+        or_where: is_nil(t.parent_id) and not is_nil(t.habit_id) and t.due_date == ^day
+      )
+    else
+      query
+    end
+  end
+
+  defp send_day_changed(socket, day) do
+    send(self(), {:day_changed, day})
+    socket
   end
 end

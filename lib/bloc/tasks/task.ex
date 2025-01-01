@@ -38,8 +38,7 @@ defmodule Bloc.Tasks.Task do
 
     has_many :subtasks, __MODULE__,
       foreign_key: :parent_id,
-      preload_order: [asc: :position],
-      where: [complete?: nil]
+      preload_order: [asc: :position]
 
     has_many :blocks, Block
 

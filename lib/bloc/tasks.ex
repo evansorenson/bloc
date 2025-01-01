@@ -62,7 +62,7 @@ defmodule Bloc.Tasks do
 
     query
     |> deleted(opts[:deleted?])
-    |> completed(opts[:completed?])
+    # |> include_completed(opts[:include_completed?])
     |> between_dates(opts[:between_dates])
     |> filter_by_date(opts[:date])
     |> filter_by_task_list_id(opts[:task_list_id])
@@ -484,11 +484,11 @@ defmodule Bloc.Tasks do
     where(query, [q], is_nil(q.deleted?))
   end
 
-  defp completed(query, true) do
-    where(query, [q], not is_nil(q.complete?))
-  end
+  # defp include_completed(query, true) do
+  #   query
+  # end
 
-  defp completed(query, _completed) do
-    where(query, [q], is_nil(q.complete?))
-  end
+  # defp include_completed(query, _completed) do
+  #   where(query, [q], is_nil(q.complete?))
+  # end
 end
